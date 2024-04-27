@@ -45,8 +45,8 @@ public class Note extends BaseEntity {
     @OneToMany(mappedBy = "note")
     private List<Text> texts= new ArrayList<>();
 
-    @OneToMany(mappedBy = "note")
-    private List<Note> notes= new ArrayList<>();
+    // @OneToMany(mappedBy = "note")
+    // private List<Note> notes= new ArrayList<>();
 
     @OneToMany(mappedBy = "note")
     private List<Summary> summaries= new ArrayList<>();
