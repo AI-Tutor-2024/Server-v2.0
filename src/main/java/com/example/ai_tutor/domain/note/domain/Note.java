@@ -3,6 +3,7 @@ package com.example.ai_tutor.domain.note.domain;
 
 import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
+import com.example.ai_tutor.domain.common.Status;
 import com.example.ai_tutor.domain.summary.domain.Summary;
 import com.example.ai_tutor.domain.text.domain.Text;
 import com.example.ai_tutor.domain.tutor.domain.Tutor;
@@ -34,6 +35,10 @@ public class Note extends BaseEntity {
     @Column(name="step")
     private int step;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name="note_status")
+    private NoteStatus noteStatus=NoteStatus.IN_PROGRESS;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="folder_id")
     private Folder folder;
@@ -51,6 +56,9 @@ public class Note extends BaseEntity {
     @OneToMany(mappedBy = "note")
     private List<Summary> summaries= new ArrayList<>();
 
+    public void updateStatus(NoteStatus noteStatus) {
+        this.noteStatus = noteStatus;
+    }
     @Builder
     public Note(Folder folder, User user, String title, int length, int step){
         this.folder = folder;
