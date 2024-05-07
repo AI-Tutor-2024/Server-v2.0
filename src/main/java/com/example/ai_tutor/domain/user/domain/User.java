@@ -31,6 +31,14 @@ public class User extends BaseEntity {
     @Column(name="email")
     private String email;
 
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
+
+    private String providerId;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Folder> folders=new ArrayList<>();
 
@@ -50,9 +58,14 @@ public class User extends BaseEntity {
     private List<Summary> summaries=new ArrayList<>();
 
     @Builder
-    public User(String name, String email){
+    public User(String name, String email, Provider provider, String providerId){
         this.name = name;
         this.email = email;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.role = Role.USER;
     }
+
+    public void updateName(String name) { this.name = name; }
 
 }
