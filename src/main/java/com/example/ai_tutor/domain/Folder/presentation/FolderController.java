@@ -2,19 +2,18 @@ package com.example.ai_tutor.domain.Folder.presentation;
 
 import com.example.ai_tutor.domain.Folder.application.FolderService;
 import com.example.ai_tutor.domain.Folder.dto.request.FolderCreateReq;
+import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
 import com.example.ai_tutor.global.payload.ResponseCustom;
 import com.sun.security.auth.UserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,8 +36,17 @@ public class FolderController {
     public ResponseCustom<?> createNewFolder(
             @Parameter @CurrentUser UserPrincipal userPrincipal,
             @RequestBody FolderCreateReq folderCreateReq
-            ){
-        return ResponseCustom.OK(FolderService.createNewFolder());
+            )
+    {
+        String folderName = folderCreateReq.getFolderName();
+        String professor = folderCreateReq.getProfessor();
+        if(userPrincipal == null)
+            return ResponseCustom.BAD_REQUEST("로그인이 필요합니다.");
+        else if(folderName == null || professor == null){
+            return ResponseCustom.BAD_REQUEST("폴더 이름과 교수 이름을 입력해주세요.");
+        }
+        else{folderService.createNewFolder(userPrincipal, folderCreateReq);}
+        return ResponseCustom.OK();
     }
 
 
