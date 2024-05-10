@@ -12,7 +12,6 @@ import java.util.List;
 
 @Data
 public class ErrorResponse {
-
     private LocalDateTime timestamp = LocalDateTime.now();
 
     private String message;
