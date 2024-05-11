@@ -108,4 +108,31 @@ public class FolderService {
 
         return ResponseEntity.ok(apiResponse);
     }
+
+    public ResponseEntity<List<FolderNameListRes>> getFolderNames(UserPrincipal userPrincipal) {
+        Optional<User> optionalUser = userRepository.findById(Long.valueOf(userPrincipal.getName()));
+        User user= optionalUser.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        List <Folder> folders = folderRepository.findAllByUser(user);
+        List<FolderNameListRes> folderRes = folders.stream()
+                .map(folder -> new FolderNameListRes(
+                        folder.getFolderName()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(folderRes);
+    }
+
+    public ResponseEntity<List<FolderListRes>> getAllFolders(UserPrincipal userPrincipal) {
+        Optional<User> optionalUser = userRepository.findById(Long.valueOf(userPrincipal.getName()));
+        User user= optionalUser.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        List <Folder> folders = folderRepository.findAllByUser(user);
+        List<FolderListRes> folderRes = folders.stream()
+                .map(folder -> new FolderListRes(
+                        folder.getFolderName(),
+                        folder.getProfessor()
+                ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(folderRes);
+    }
 }
