@@ -68,6 +68,17 @@ public class FolderController {
         else{return ResponseCustom.OK(folderService.getAllFolders(userPrincipal));}
     }
 
+    @PutMapping("/{folderId}")
+    public ResponseCustom<?> updateFolder(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long folderId,
+            @RequestBody FolderCreateReq folderCreateReq
+    ) {
+        if(userPrincipal == null) { return ResponseCustom.BAD_REQUEST("로그인이 필요합니다."); }
+        else if(folderCreateReq.getFolderName() == null || folderCreateReq.getProfessor() == null){ return ResponseCustom.BAD_REQUEST("폴더 이름과 교수 이름을 입력해주세요."); }
+        else{folderService.updateFolder(userPrincipal, folderId, folderCreateReq); return ResponseCustom.OK();}
+    }
+
 
 
 }

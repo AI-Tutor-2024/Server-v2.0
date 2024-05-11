@@ -8,5 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 public class FolderNameListRes {
+    private Long folderId;
     private String folderName;
 }
