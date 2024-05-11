@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Database ###
+/src/main/resources/database/**
+/src/main/resources/oauth2/**
+
