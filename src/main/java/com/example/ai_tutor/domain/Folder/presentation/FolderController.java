@@ -36,19 +36,12 @@ public class FolderController {
     public ResponseCustom<?> createNewFolder(
             @Parameter @CurrentUser UserPrincipal userPrincipal,
             @RequestBody FolderCreateReq folderCreateReq
-            )
-    {
+            ) {
         String folderName = folderCreateReq.getFolderName();
         String professor = folderCreateReq.getProfessor();
-        if(userPrincipal == null)
-            return ResponseCustom.BAD_REQUEST("로그인이 필요합니다.");
-        else if(folderName == null || professor == null){
-            return ResponseCustom.BAD_REQUEST("폴더 이름과 교수 이름을 입력해주세요.");
-        }
-        else{folderService.createNewFolder(userPrincipal, folderCreateReq);}
-        return ResponseCustom.OK();
+        if(userPrincipal == null) { return ResponseCustom.BAD_REQUEST("로그인이 필요합니다."); }
+        else if(folderName == null || professor == null){ return ResponseCustom.BAD_REQUEST("폴더 이름과 교수 이름을 입력해주세요."); }
+        else{folderService.createNewFolder(userPrincipal, folderCreateReq); return ResponseCustom.OK();}
     }
-
-
 
 }
