@@ -14,10 +14,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequiredArgsConstructor
@@ -33,22 +31,54 @@ public class FolderController {
             @ApiResponse(responseCode = "400", description = "새 폴더 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PostMapping("/")
-    public ResponseCustom<?> createNewFolder(
+    public ResponseEntity<?> createNewFolder(
             @Parameter @CurrentUser UserPrincipal userPrincipal,
             @RequestBody FolderCreateReq folderCreateReq
-            )
-    {
-        String folderName = folderCreateReq.getFolderName();
-        String professor = folderCreateReq.getProfessor();
-        if(userPrincipal == null)
-            return ResponseCustom.BAD_REQUEST("로그인이 필요합니다.");
-        else if(folderName == null || professor == null){
-            return ResponseCustom.BAD_REQUEST("폴더 이름과 교수 이름을 입력해주세요.");
-        }
-        else{folderService.createNewFolder(userPrincipal, folderCreateReq);}
-        return ResponseCustom.OK();
+            ) {
+        return folderService.createNewFolder(userPrincipal, folderCreateReq);
     }
 
+
+    @Operation(summary = "폴더 이름 목록 조회 API", description = "폴더 이름 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "폴더 이름 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "폴더 이름 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/names")
+    public ResponseEntity<?> getFolderNames(
+            @Parameter @CurrentUser UserPrincipal userPrincipal
+        ) {
+        return folderService.getFolderNames(userPrincipal);
+    }
+
+    @Operation(summary = "폴더 목록 조회 API", description = "폴더 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "폴더 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "폴더 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/")
+    public ResponseEntity<?> getAllFolders(
+            @Parameter @CurrentUser UserPrincipal userPrincipal
+        ) {
+        return folderService.getAllFolders(userPrincipal);
+}
+
+    @PatchMapping("/{folderId}")
+    public ResponseEntity<?> updateFolder(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long folderId,
+            @RequestBody FolderCreateReq folderCreateReq
+    ) {
+        return folderService.updateFolder(userPrincipal, folderId, folderCreateReq);
+    }
+
+    @DeleteMapping("/{folderId}")
+    public ResponseEntity<?> deleteFolder(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long folderId
+    ) {
+        return folderService.deleteFolder(userPrincipal, folderId);
+    }
 
 
 }

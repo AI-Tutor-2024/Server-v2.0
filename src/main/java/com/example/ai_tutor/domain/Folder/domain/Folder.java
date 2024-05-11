@@ -57,4 +57,9 @@ public class Folder extends BaseEntity {
         this.folderName = folderName;
         this.professor = professor;
     }
+
+    public void updateFolder(String folderName, String professor) {
+        this.folderName = folderName;
+        this.professor = professor;
+    }
 }
