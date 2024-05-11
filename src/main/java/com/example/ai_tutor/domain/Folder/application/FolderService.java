@@ -102,4 +102,16 @@ public class FolderService {
         return ResponseEntity.ok(apiResponse);
     }
 
+    public ResponseEntity<?> deleteFolder(UserPrincipal userPrincipal, Long folderId) {
+        User user = userRepository.findById(Long.valueOf(userPrincipal.getName())).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+        folderRepository.delete(folder);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("폴더 삭제 성공")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
 }

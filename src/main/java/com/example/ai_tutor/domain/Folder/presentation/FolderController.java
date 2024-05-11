@@ -63,7 +63,7 @@ public class FolderController {
         return folderService.getAllFolders(userPrincipal);
 }
 
-    @PutMapping("/{folderId}")
+    @PatchMapping("/{folderId}")
     public ResponseEntity<?> updateFolder(
             @Parameter @CurrentUser UserPrincipal userPrincipal,
             @PathVariable Long folderId,
@@ -71,5 +71,14 @@ public class FolderController {
     ) {
         return folderService.updateFolder(userPrincipal, folderId, folderCreateReq);
     }
+
+    @DeleteMapping("/{folderId}")
+    public ResponseEntity<?> deleteFolder(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long folderId
+    ) {
+        return folderService.deleteFolder(userPrincipal, folderId);
+    }
+
 
 }
