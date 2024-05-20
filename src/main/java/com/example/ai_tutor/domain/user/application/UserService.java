@@ -43,7 +43,7 @@ public class UserService {
         // 사용자 가입일부터 현재 날짜까지의 기간을 계산
         Period period = Period.between(user.getCreatedAt().toLocalDate(), LocalDate.now());
         // 일수를 2자리 문자열로 포맷
-        int days = period.getDays();
+        int days = period.getDays() + 1;
         return String.format("%02d", days);
     }
 
