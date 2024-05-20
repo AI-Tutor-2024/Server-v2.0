@@ -7,8 +7,9 @@ import com.example.ai_tutor.domain.Folder.dto.response.FolderListRes;
 import com.example.ai_tutor.domain.Folder.dto.response.FolderNameListRes;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
+import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
-import com.sun.security.auth.UserPrincipal;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class FolderService {
     private final UserRepository userRepository;
 
     public ResponseEntity<?> createNewFolder(UserPrincipal userPrincipal, FolderCreateReq folderCreateReq) {
-        Optional<User> optionalUser = userRepository.findById(Long.valueOf(userPrincipal.getName()));
+        Optional<User> optionalUser = userRepository.findById(userPrincipal.getId());
         User user= optionalUser.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         String folderName = folderCreateReq.getFolderName();
@@ -45,7 +46,7 @@ public class FolderService {
     }
 
     public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal){
-        User user = userRepository.findById(Long.valueOf(userPrincipal.getName())).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         List<Folder> folders = folderRepository.findAllByUser(user);
         List<FolderNameListRes> folderRes = folders.stream()
                 .map(folder -> FolderNameListRes.builder()
@@ -64,7 +65,7 @@ public class FolderService {
     }
 
     public ResponseEntity<?> getAllFolders(UserPrincipal userPrincipal) {
-        User user = userRepository.findById(Long.valueOf(userPrincipal.getName())).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         List<Folder> folders = folderRepository.findAllByUser(user);
         List<FolderListRes> folderRes = folders.stream()
                 .map(folder -> FolderListRes.builder()
@@ -84,7 +85,7 @@ public class FolderService {
     }
 
     public ResponseEntity<?> updateFolder(UserPrincipal userPrincipal, Long folderId, FolderCreateReq folderCreateReq) {
-        User user = userRepository.findById(Long.valueOf(userPrincipal.getName())).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
         if(!Objects.equals(folder.getUser().getUserId(), user.getUserId())) { throw new IllegalArgumentException("폴더를 수정할 권한이 없습니다."); }
@@ -103,7 +104,7 @@ public class FolderService {
     }
 
     public ResponseEntity<?> deleteFolder(UserPrincipal userPrincipal, Long folderId) {
-        User user = userRepository.findById(Long.valueOf(userPrincipal.getName())).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         folderRepository.delete(folder);
 

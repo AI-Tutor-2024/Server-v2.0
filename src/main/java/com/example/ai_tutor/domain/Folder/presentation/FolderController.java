@@ -3,10 +3,10 @@ package com.example.ai_tutor.domain.Folder.presentation;
 import com.example.ai_tutor.domain.Folder.application.FolderService;
 import com.example.ai_tutor.domain.Folder.dto.request.FolderCreateReq;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
+import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
-import com.example.ai_tutor.global.payload.ResponseCustom;
-import com.sun.security.auth.UserPrincipal;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
