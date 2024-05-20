@@ -35,9 +35,12 @@ public class Note extends BaseEntity {
     @Column(name="step")
     private int step;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name="note_status")
-    private NoteStatus noteStatus=NoteStatus.IN_PROGRESS;
+    @Column(name="record_url")
+    private String recordUrl;
+
+//    @Enumerated(EnumType.STRING)
+//    @Column(name="note_status")
+//    private NoteStatus noteStatus=NoteStatus.IN_PROGRESS;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="folder_id")
@@ -50,21 +53,25 @@ public class Note extends BaseEntity {
     @OneToMany(mappedBy = "note")
     private List<Text> texts= new ArrayList<>();
 
+
+
     // @OneToMany(mappedBy = "note")
     // private List<Note> notes= new ArrayList<>();
 
     @OneToMany(mappedBy = "note")
     private List<Summary> summaries= new ArrayList<>();
 
-    public void updateStatus(NoteStatus noteStatus) {
-        this.noteStatus = noteStatus;
-    }
+//    public void updateStatus(NoteStatus noteStatus) {
+//        this.noteStatus = noteStatus;
+//    }
+
     @Builder
-    public Note(Folder folder, User user, String title, int length, int step){
-        this.folder = folder;
+    public Note(User user, Folder folder, String title, int length, int step, String recordUrl){
         this.user = user;
+        this.folder = folder;
         this.title = title;
         this.length = length;
         this.step = step;
+        this.recordUrl = recordUrl;
     }
 }
