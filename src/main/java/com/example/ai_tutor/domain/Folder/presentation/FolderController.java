@@ -38,6 +38,17 @@ public class FolderController {
         return folderService.createNewFolder(userPrincipal, folderCreateReq);
     }
 
+    @Operation(summary = "폴더 목록 조회 API", description = "폴더 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "폴더 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "폴더 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/")
+    public ResponseEntity<?> getAllFolders(
+            @Parameter @CurrentUser UserPrincipal userPrincipal
+    ) {
+        return folderService.getAllFolders(userPrincipal);
+    }
 
     @Operation(summary = "폴더 이름 목록 조회 API", description = "폴더 이름 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
@@ -50,18 +61,6 @@ public class FolderController {
         ) {
         return folderService.getFolderNames(userPrincipal);
     }
-
-    @Operation(summary = "폴더 목록 조회 API", description = "폴더 목록을 조회하는 API입니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "폴더 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
-            @ApiResponse(responseCode = "400", description = "폴더 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-    })
-    @GetMapping("/")
-    public ResponseEntity<?> getAllFolders(
-            @Parameter @CurrentUser UserPrincipal userPrincipal
-        ) {
-        return folderService.getAllFolders(userPrincipal);
-}
 
     @PatchMapping("/{folderId}")
     public ResponseEntity<?> updateFolder(
@@ -79,6 +78,5 @@ public class FolderController {
     ) {
         return folderService.deleteFolder(userPrincipal, folderId);
     }
-
 
 }
