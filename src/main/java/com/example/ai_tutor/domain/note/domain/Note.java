@@ -74,4 +74,8 @@ public class Note extends BaseEntity {
         this.step = step;
         this.recordUrl = recordUrl;
     }
+
+    public void updateStep(int step) {
+        this.step = step;
+    }
 }

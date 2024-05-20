@@ -3,6 +3,7 @@ package com.example.ai_tutor.domain.note.presentation;
 import com.example.ai_tutor.domain.note.application.NoteService;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
+import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -61,7 +62,7 @@ public class NoteController {
             @ApiResponse(responseCode = "200", description = "강의 노트 삭제 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
             @ApiResponse(responseCode = "400", description = "강의 노트 삭제 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @DeleteMapping("/{noteId}")
+    @DeleteMapping("/{/noteId}")
     public ResponseEntity<?> deleteNote(
             @Parameter @CurrentUser UserPrincipal userPrincipal,
             @PathVariable Long noteId,
@@ -69,6 +70,21 @@ public class NoteController {
     ) {
         return noteService.deleteNoteById(userPrincipal, noteDeleteReq, noteId);
     }
+
+    @Operation(summary = "학습 단계 업데이트 API", description = "특정 강의 노트의 학습 단계를 업데이트하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "학습 단계 업데이트 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "학습 단계 업데이트 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PatchMapping("/{noteId}")
+    public ResponseEntity<?> updateNoteLevel(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long noteId,
+            @RequestBody NoteStepUpdateReq noteStepUpdateReq
+    ) {
+        return noteService.updateNoteStep(userPrincipal, noteId, noteStepUpdateReq);
+    }
+
 
 
 }
