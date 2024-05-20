@@ -7,6 +7,9 @@ import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.auth.OAuth2UserInfo;
 import com.example.ai_tutor.global.config.security.auth.OAuth2UserInfoFactory;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -14,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -57,6 +61,7 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
                 .providerId(oAuth2UserInfo.getId())
                 .email(oAuth2UserInfo.getEmail())
                 .name(oAuth2UserInfo.getName())
+                .password(encodePassword(oAuth2UserInfo.getId()))
                 .build();
 
         return userRepository.save(user);
@@ -65,6 +70,17 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
     private User updateExistingUser(User user, OAuth2UserInfo oAuth2UserInfo) {
         user.updateName(oAuth2UserInfo.getName());
         return userRepository.save(user);
+    }
+
+    private String encodePassword(String password) {
+        // PasswordEncoder를 사용하여 비밀번호 인코딩
+        return customPasswordEncoder().encode(password);
+    }
+
+    // PasswordEncoder를 Bean으로 등록하여 사용할 수 있도록 설정
+    @Bean
+    public PasswordEncoder customPasswordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
 }
