@@ -5,6 +5,7 @@ import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.Repository.NoteRepository;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
+import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.domain.note.dto.response.NoteListDetailRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.user.domain.User;
@@ -86,5 +87,29 @@ public class NoteService {
                 .build();
 
         return ResponseEntity.ok(noteListRes);
+    }
+
+    public ResponseEntity<?> deleteNoteById(UserPrincipal userPrincipal, NoteDeleteReq noteDeleteReq, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Long folderId = noteDeleteReq.getFolderId();
+        Folder folder= FolderRepository.findAllByUser(user).stream()
+                .filter(f -> f.getFolderId().equals(folderId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+
+        List <Note> notes = noteRepository.findAllByFolder(folder);
+        Note note = notes.stream()
+                .filter(n -> n.getNoteId().equals(noteId))
+                .findFirst()
+                .orElseThrow(() -> new  IllegalArgumentException("노트를 찾을 수 없습니다."));
+
+        noteRepository.delete(note);
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("노트 삭제 성공")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
     }
 }

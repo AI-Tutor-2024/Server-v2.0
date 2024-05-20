@@ -2,6 +2,7 @@ package com.example.ai_tutor.domain.note.presentation;
 
 import com.example.ai_tutor.domain.note.application.NoteService;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
+import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -55,7 +56,19 @@ public class NoteController {
         return noteService.getAllNotes(userPrincipal, folderId);
     }
 
-
+    @Operation(summary = "노트 삭제 API", description = "특정 강의 노트를 삭제하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "강의 노트 삭제 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "강의 노트 삭제 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @DeleteMapping("/{noteId}")
+    public ResponseEntity<?> deleteNote(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long noteId,
+            @RequestBody NoteDeleteReq noteDeleteReq
+    ) {
+        return noteService.deleteNoteById(userPrincipal, noteDeleteReq, noteId);
+    }
 
 
 }
