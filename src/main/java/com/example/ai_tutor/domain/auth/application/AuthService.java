@@ -107,6 +107,7 @@ public class AuthService {
         return true;
     }
 
+    @Transactional
     public ResponseEntity<?> signIn(SignInReq signInReq) {
         User user = userRepository.findByEmail(signInReq.getEmail())
                 .orElseThrow(() -> new DefaultException(ErrorCode.INVALID_CHECK, "유저 정보가 유효하지 않습니다."));
