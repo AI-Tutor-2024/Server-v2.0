@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +28,7 @@ import java.util.List;
 @Tag(name = "학습 점검", description = "학습 점검 관련 API")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/practice")
+@RequestMapping("/api/v1/practice")
 public class PracticeController {
 
     private final PracticeService practiceService;
@@ -44,7 +43,7 @@ public class PracticeController {
     public ResponseEntity<?> findQuestion(
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "노트의 Id를 입력해주세요.", required = true) @RequestParam Long noteId,
-            @Parameter(description = "문제 번호를 입력해주세요. 기본 값은 1로 지정됩니다.", required = true) @DefaultValue(value = "1") @Positive @RequestParam int number) {
+            @Parameter(description = "문제 번호를 입력해주세요. 기본 값은 1로 지정됩니다.", required = true) @RequestParam(defaultValue = "1") int number) {
         return practiceService.getQuestion(userPrincipal, noteId, number);
     }
 
