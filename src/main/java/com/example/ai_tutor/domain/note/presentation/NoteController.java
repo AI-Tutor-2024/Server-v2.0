@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,9 +38,10 @@ public class NoteController {
     public ResponseEntity<?> createNewNote(
             @Parameter @CurrentUser UserPrincipal userPrincipal,
             @PathVariable Long folderId,
-            @RequestBody NoteCreateReq noteCreateReq
+            @RequestBody NoteCreateReq noteCreateReq,
+            @RequestParam MultipartFile note
     ) {
-        return noteService.createNewNote(userPrincipal, folderId, noteCreateReq);
+        return noteService.createNewNote(userPrincipal, folderId, noteCreateReq, note);
     }
 
 
