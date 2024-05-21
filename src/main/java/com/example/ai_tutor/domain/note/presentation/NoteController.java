@@ -4,6 +4,7 @@ import com.example.ai_tutor.domain.note.application.NoteService;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
+import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -47,7 +48,7 @@ public class NoteController {
 
     @Operation(summary = "노트 목록 조회 API", description = "강의 노트 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteListRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "강의 노트 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @GetMapping("/{folderId}")
@@ -86,7 +87,5 @@ public class NoteController {
     ) {
         return noteService.updateNoteStep(userPrincipal, noteId, noteStepUpdateReq);
     }
-
-
 
 }
