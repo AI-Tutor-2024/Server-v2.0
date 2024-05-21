@@ -33,14 +33,13 @@ public class NoteService {
     private final FolderRepository FolderRepository;
     private final AmazonS3 amazonS3;
 
-    public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq){
+    public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq, MultipartFile recordFile) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder = FolderRepository.findAllByUser(user).stream()
                 .filter(f -> f.getFolderId().equals(folderId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
-        MultipartFile recordFile = noteCreateReq.getRecordFile();
         String fileName= UUID.randomUUID().toString();
         try {
             amazonS3.putObject(new PutObjectRequest("ai-tutor-record", fileName, recordFile.getInputStream(), null));
