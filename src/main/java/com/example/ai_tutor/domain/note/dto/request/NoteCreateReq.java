@@ -12,5 +12,4 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 public class NoteCreateReq {
     private String title; //노트 제목
-    private MultipartFile recordFile; //녹음 파일
 }
