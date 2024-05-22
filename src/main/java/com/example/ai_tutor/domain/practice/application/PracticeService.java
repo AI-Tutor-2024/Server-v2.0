@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,8 +39,11 @@ public class PracticeService {
     public ResponseEntity<?> getQuestion(UserPrincipal userPrincipal, Long noteId, int number) {
         Optional<Note> noteOptional = noteRepository.findById(noteId);
         DefaultAssert.isTrue(noteOptional.isPresent(), "해당 노트가 존재하지 않습니다.");
+        Note note = noteOptional.get();
+        // 본인 노트 아니면 예외
+        DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
         // user 추가할지?
-        Practice practice = practiceRepository.findByNoteAndSequence(noteOptional.get(), number);
+        Practice practice = practiceRepository.findByNoteAndSequence(note, number);
         PracticeRes practiceRes = PracticeRes.builder()
                 .practiceId(practice.getPracticeId())
                 .content(practice.getContent())
@@ -61,6 +65,8 @@ public class PracticeService {
         DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
         Practice practice = practiceOptional.get();
 
+        DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
+
         practice.updateUserAnswer(answerReq.getUserAnswer());
 
         ApiResponse apiResponse = ApiResponse.builder()
@@ -77,7 +83,11 @@ public class PracticeService {
     public ResponseEntity<?> getQuestionsAndAnswers(UserPrincipal userPrincipal, Long noteId) {
         Optional<Note> noteOptional = noteRepository.findById(noteId);
         DefaultAssert.isTrue(noteOptional.isPresent(), "해당 노트가 존재하지 않습니다.");
-        List<Practice> practices = practiceRepository.findByNote(noteOptional.get());
+        Note note = noteOptional.get();
+
+        DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
+
+        List<Practice> practices = practiceRepository.findByNote(note);
 
         List<PracticeResultsRes> practiceResultsRes = practices.stream()
                 .map(practice -> PracticeResultsRes.builder()
@@ -104,6 +114,8 @@ public class PracticeService {
             Optional<Practice> practiceOptional = practiceRepository.findById(req.practiceId);
             DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
             Practice practice = practiceOptional.get();
+
+            DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
             // 새 답변을 입력한 경우만 업데이트
             if (req.getNewUserAnswer() != null) {
                 practice.updateUserAnswer(req.getNewUserAnswer());
