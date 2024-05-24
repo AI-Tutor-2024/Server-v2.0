@@ -31,6 +31,9 @@ public class User extends BaseEntity {
     @Column(name="email")
     private String email;
 
+    @Column(name="password")
+    private String password;
+
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
@@ -58,9 +61,10 @@ public class User extends BaseEntity {
     private List<Summary> summaries=new ArrayList<>();
 
     @Builder
-    public User(String name, String email, Provider provider, String providerId){
+    public User(String name, String email, Provider provider, String providerId, String password){
         this.name = name;
         this.email = email;
+        this.password = password;
         this.provider = provider;
         this.providerId = providerId;
         this.role = Role.USER;
