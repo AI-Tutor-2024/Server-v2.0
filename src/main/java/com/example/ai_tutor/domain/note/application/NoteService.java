@@ -3,7 +3,7 @@ package com.example.ai_tutor.domain.note.application;
 import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
-import com.example.ai_tutor.domain.note.domain.Repository.NoteRepository;
+import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
