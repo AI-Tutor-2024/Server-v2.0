@@ -41,6 +41,9 @@ jobs:
           echo "${{ secrets.APPLICATION_DATABASE_YML }}" | base64 --decode > src/main/resources/database/application-database.yml
           mkdir -p src/main/resources/oauth2
           echo "${{ secrets.APPLICATION_OAUTH2_YML }}" | base64 --decode > src/main/resources/oauth2/application-oauth2.yml
+          mkdir -p src/main/resources/s3
+          echo "${{ secrets.APPLICATION_S3_YML }}" | base64 --decode > src/main/resources/oauth2/application-s3.yml
+
 
     # (4) Gradle build (Test 제외)
     - name: Build with Gradle
