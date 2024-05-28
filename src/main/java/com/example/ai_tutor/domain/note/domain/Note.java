@@ -53,7 +53,10 @@ public class Note extends BaseEntity {
     @OneToMany(mappedBy = "note")
     private List<Text> texts= new ArrayList<>();
 
-
+    // 원본 텍스트
+    @Lob
+    @Column(name="original_text")
+    private String originalText;
 
     // @OneToMany(mappedBy = "note")
     // private List<Note> notes= new ArrayList<>();
@@ -66,13 +69,14 @@ public class Note extends BaseEntity {
 //    }
 
     @Builder
-    public Note(User user, Folder folder, String title, int length, int step, String recordUrl){
+    public Note(User user, Folder folder, String title, int length, int step, String recordUrl, String originalText){
         this.user = user;
         this.folder = folder;
         this.title = title;
         this.length = length;
         this.step = step;
         this.recordUrl = recordUrl;
+        this.originalText = originalText;
     }
 
     public void updateStep(int step) {
