@@ -25,8 +25,11 @@ public class Practice extends BaseEntity {
     @Column(name="user_answer")
     private String userAnswer;
 
-    @Column(name="ai_answer")
-    private String aiAnswer;
+    @Column(name="tutor_answer")
+    private String tutorAnswer;
+
+    @Column(name="tutor_record_url")
+    private String tutorRecordUrl;
 
     //@Column(name="sequence")
     //private Integer sequence;
@@ -44,13 +47,14 @@ public class Practice extends BaseEntity {
     private User user;
 
     @Builder
-    public Practice(User user, Folder folder, Note note, String content, String userAnswer, String aiAnswer){
+    public Practice(User user, Folder folder, Note note, String content, String userAnswer, String tutorAnswer, String tutorRecordUrl){
         this.user = user;
         this.folder = folder;
         this.note = note;
         this.content = content;
         this.userAnswer = userAnswer;
-        this.aiAnswer = aiAnswer;
+        this.tutorAnswer = tutorAnswer;
+        this.tutorRecordUrl = tutorRecordUrl;
     }
 
     public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
