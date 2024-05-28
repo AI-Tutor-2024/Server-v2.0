@@ -28,8 +28,8 @@ public class Practice extends BaseEntity {
     @Column(name="ai_answer")
     private String aiAnswer;
 
-    @Column(name="sequence")
-    private Integer sequence;
+    //@Column(name="sequence")
+    //private Integer sequence;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="note_id")
@@ -40,19 +40,17 @@ public class Practice extends BaseEntity {
     private Folder folder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-
     @JoinColumn(name="user_id")
     private User user;
 
     @Builder
-    public Practice(User user, Folder folder, Note note, String content, String userAnswer, String aiAnswer, Integer sequence){
+    public Practice(User user, Folder folder, Note note, String content, String userAnswer, String aiAnswer){
         this.user = user;
         this.folder = folder;
         this.note = note;
         this.content = content;
         this.userAnswer = userAnswer;
         this.aiAnswer = aiAnswer;
-        this.sequence = sequence;
     }
 
     public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
