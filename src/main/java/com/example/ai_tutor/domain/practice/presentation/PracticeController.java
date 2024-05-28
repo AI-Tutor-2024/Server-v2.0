@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +56,7 @@ public class PracticeController {
     }
 
     // Description : 학습결과 보기
-    @Operation(summary = "문제 및 나의 답변 조회", description = "학습결과 보기에서 문제와 내 답변을 조회합니다.")
+    @Operation(summary = "문제 및 나의 답변, 튜터 답변 조회", description = "학습결과 보기에서 문제와 내 답변, 튜터 답변을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PracticeResultsRes.class)) ) } ),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
@@ -81,18 +80,5 @@ public class PracticeController {
             @Parameter(description = "Schemas의 UpdateAnswersReq를 확인해주세요.", required = true) @RequestBody List<UpdateAnswersReq> updateAnswersReqs
             ) {
         return practiceService.updateMyAnswers(userPrincipal, updateAnswersReqs);
-    }
-
-    @Operation(summary = "AI 답변 조회", description = "학습결과 보기에서 AI Tutor의 답변을 조회합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AiTutorAnswerRes.class)) ) } ),
-            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-    })
-    @GetMapping("/result/{practiceId}")
-    public ResponseEntity<?> findAiTutorAnswers(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(description = "문제 Id를 입력해주세요.", required = true) @PathVariable Long practiceId
-    ) {
-        return practiceService.getAiTutorAnswer(userPrincipal, practiceId);
     }
 }
