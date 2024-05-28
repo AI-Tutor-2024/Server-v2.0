@@ -76,7 +76,28 @@ public class PracticeService {
     }
 
     // Description: 학습 결과보기
-    // 문제에 대한 ai 답변 생성
+    // 문제에 대한 ai 답변 조회
+    public ResponseEntity<?> getAiTutorAnswer(UserPrincipal userPrincipal, Long practiceId) {
+        Optional<Practice> practiceOptional = practiceRepository.findById(practiceId);
+        DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
+        Practice practice = practiceOptional.get();
+
+        // 사용자 검증
+        DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
+
+        AiTutorAnswerRes aiTutorAnswerRes = AiTutorAnswerRes.builder()
+                .aiTutor(practice.getAiAnswer())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(aiTutorAnswerRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // TODO: 챗봇 서술형 답변 / tts 호출
 
     // 문제 조회 및 내 답변 조회
     public ResponseEntity<?> getQuestionsAndAnswers(UserPrincipal userPrincipal, Long noteId) {

@@ -1,10 +1,7 @@
 package com.example.ai_tutor.domain.practice.presentation;
 
 import com.example.ai_tutor.domain.practice.application.PracticeService;
-import com.example.ai_tutor.domain.practice.dto.AnswerReq;
-import com.example.ai_tutor.domain.practice.dto.PracticeRes;
-import com.example.ai_tutor.domain.practice.dto.PracticeResultsRes;
-import com.example.ai_tutor.domain.practice.dto.UpdateAnswersReq;
+import com.example.ai_tutor.domain.practice.dto.*;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -84,5 +81,18 @@ public class PracticeController {
             @Parameter(description = "Schemas의 UpdateAnswersReq를 확인해주세요.", required = true) @RequestBody List<UpdateAnswersReq> updateAnswersReqs
             ) {
         return practiceService.updateMyAnswers(userPrincipal, updateAnswersReqs);
+    }
+
+    @Operation(summary = "AI 답변 조회", description = "학습결과 보기에서 AI Tutor의 답변을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AiTutorAnswerRes.class)) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/result/{practiceId}")
+    public ResponseEntity<?> findAiTutorAnswers(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "문제 Id를 입력해주세요.", required = true) @PathVariable Long practiceId
+    ) {
+        return practiceService.getAiTutorAnswer(userPrincipal, practiceId);
     }
 }
