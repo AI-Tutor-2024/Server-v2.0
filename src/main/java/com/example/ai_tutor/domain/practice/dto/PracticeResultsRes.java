@@ -19,6 +19,9 @@ public class PracticeResultsRes {
     @Size(max = 500)
     public String userAnswer;
 
+    @Schema( type = "String", example ="의뢰기관에 대한 이해를 가장 먼저 해야 한다.", description="튜터의 답변입니다.")
+    public String tutorAnswer;
+
     @Schema( type = "Integer", example ="1", description="문제의 번호(순서)입니다.")
     public Integer sequence;
 }

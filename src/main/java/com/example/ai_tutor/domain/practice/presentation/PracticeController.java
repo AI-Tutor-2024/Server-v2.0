@@ -1,10 +1,7 @@
 package com.example.ai_tutor.domain.practice.presentation;
 
 import com.example.ai_tutor.domain.practice.application.PracticeService;
-import com.example.ai_tutor.domain.practice.dto.AnswerReq;
-import com.example.ai_tutor.domain.practice.dto.PracticeRes;
-import com.example.ai_tutor.domain.practice.dto.PracticeResultsRes;
-import com.example.ai_tutor.domain.practice.dto.UpdateAnswersReq;
+import com.example.ai_tutor.domain.practice.dto.*;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -18,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,7 +56,7 @@ public class PracticeController {
     }
 
     // Description : 학습결과 보기
-    @Operation(summary = "문제 및 나의 답변 조회", description = "학습결과 보기에서 문제와 내 답변을 조회합니다.")
+    @Operation(summary = "문제 및 나의 답변, 튜터 답변 조회", description = "학습결과 보기에서 문제와 내 답변, 튜터 답변을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = PracticeResultsRes.class)) ) } ),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
