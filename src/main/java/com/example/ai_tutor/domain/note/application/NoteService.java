@@ -148,10 +148,20 @@ public class NoteService {
         List<Text> text = textRepository.findAllByNote(note);
         List<Summary> summary = summaryRepository.findAllByNote(note);
 
+        // summaryId 기준으로 정렬
+        List<Text> sortedText = text.stream()
+                .sorted(Comparator.comparing(t -> summary.stream()
+                        .filter(s -> s.getSummaryId().equals(t.getTextId()))
+                        .findFirst()
+                        .map(Summary::getSummaryId)
+                        .orElse(null)))
+                .collect(Collectors.toList());
+
+        // textId를 순차적으로 부여
         AtomicInteger counter = new AtomicInteger(1);
-        List<StepOneRes> stepOneRes = text.stream()
+        List<StepOneRes> stepOneRes = sortedText.stream()
                 .map(t -> StepOneRes.builder()
-                        .textId(counter.getAndIncrement()) //1부터 증가
+                        .textId(counter.getAndIncrement()) // 1부터 증가
                         .content(t.getContent())
                         .summaryId(summary.stream()
                                 .filter(s -> s.getSummaryId().equals(t.getTextId()))
@@ -166,12 +176,7 @@ public class NoteService {
                         .build())
                 .collect(Collectors.toList());
 
-        //정렬 후 내보내기
-        stepOneRes = stepOneRes.stream()
-                .sorted(Comparator.comparing(StepOneRes::getTextId))
-                .collect(Collectors.toList());
-
-        StepOneListRes stepOneListRes=StepOneListRes.builder()
+        StepOneListRes stepOneListRes = StepOneListRes.builder()
                 .stepOneRes(stepOneRes)
                 .build();
 
