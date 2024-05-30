@@ -29,6 +29,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -163,6 +164,11 @@ public class NoteService {
                                 .map(Summary::getContent)
                                 .orElse(null))
                         .build())
+                .collect(Collectors.toList());
+
+        //정렬 후 내보내기
+        stepOneRes = stepOneRes.stream()
+                .sorted(Comparator.comparing(StepOneRes::getTextId))
                 .collect(Collectors.toList());
 
         StepOneListRes stepOneListRes=StepOneListRes.builder()
