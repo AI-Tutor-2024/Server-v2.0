@@ -42,6 +42,7 @@ public class NoteController {
             @RequestBody NoteCreateReq noteCreateReq,
             @RequestParam MultipartFile note
     ) {
+        // AI APi 호출 로직 추가해야 함.
         return noteService.createNewNote(userPrincipal, folderId, noteCreateReq, note);
     }
 
@@ -87,5 +88,19 @@ public class NoteController {
     ) {
         return noteService.updateNoteStep(userPrincipal, noteId, noteStepUpdateReq);
     }
+
+    @Operation(summary = "1단계 학습 API", description = "텍스트 원문과 요약문을 타임스탬프에 따라 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "텍스트 원문/요약문 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "텍스트 원문/요약문 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/{noteId}/step/1")
+    public ResponseEntity<?> getStepOne(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long noteId
+    ) {
+        return noteService.getStepOne(userPrincipal, noteId);
+    }
+
 
 }
