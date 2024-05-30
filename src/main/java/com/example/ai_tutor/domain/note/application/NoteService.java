@@ -152,6 +152,11 @@ public class NoteService {
                 .map(t -> StepOneRes.builder()
                         .textId(counter.getAndIncrement()) //1부터 증가
                         .content(t.getContent())
+                        .summaryId(summary.stream()
+                                .filter(s -> s.getSummaryId().equals(t.getTextId()))
+                                .findFirst()
+                                .map(Summary::getSummaryId)
+                                .orElse(null))
                         .summary(summary.stream()
                                 .filter(s -> s.getSummaryId().equals(t.getTextId()))
                                 .findFirst()
