@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public class NoteListRes {
-    String folderName;
-    String professor;
-    List<NoteListDetailRes> noteListDetailRes;
+    private String folderName;
+    private String professor;
+    private List<NoteListDetailRes> noteListDetailRes;
 }

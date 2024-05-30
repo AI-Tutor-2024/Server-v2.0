@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class NoteDeleteReq {
-    Long folderId;
+    private Long folderId;
 }
