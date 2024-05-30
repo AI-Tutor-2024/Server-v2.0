@@ -5,14 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class NoteListRes {
-    private String folderName;
-    private String professor;
-    private List<NoteListDetailRes> noteListDetailRes;
+public class StepOneRes {
+    private int textId; //문단 번호이므로 int로 처리
+    private String content;
+    private String summary;
 }
