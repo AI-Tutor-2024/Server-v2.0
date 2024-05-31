@@ -81,4 +81,17 @@ public class PracticeController {
             ) {
         return practiceService.updateMyAnswers(userPrincipal, updateAnswersReqs);
     }
+
+    @Operation(summary = "튜터 TTS 파일 조회", description = "학습결과 보기에서 튜터 TTS 파일 링크를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = TutorRecordRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/result/tutor")
+    public ResponseEntity<?> findTutorRecord(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "문제의 id를 입력해주세요.", required = true) @RequestParam Long practiceId
+    ) {
+        return practiceService.getTutorRecord(userPrincipal, practiceId);
+    }
 }

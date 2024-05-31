@@ -130,4 +130,25 @@ public class PracticeService {
         return ResponseEntity.ok(apiResponse);
     }
 
+    // tts 호출
+    public ResponseEntity<?> getTutorRecord(UserPrincipal userPrincipal, Long practiceId) {
+        Optional<Practice> practiceOptional = practiceRepository.findById(practiceId);
+        DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
+        Practice practice = practiceOptional.get();
+
+        DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
+
+        TutorRecordRes tutorRecordRes = TutorRecordRes.builder()
+                .tutorRecordUrl(practice.getTutorRecordUrl())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(tutorRecordRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
+    }
+
 }
