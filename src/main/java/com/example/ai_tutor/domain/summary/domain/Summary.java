@@ -49,4 +49,8 @@ public class Summary extends BaseEntity {
         this.note = note;
         this.content = content;
     }
+
+    public void updateSummary(String newSummary) {
+        this.content = newSummary;
+    }
 }
