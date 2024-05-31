@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "학습 점검", description = "학습 점검 관련 API")
+@Tag(name = "학습 점검 및 결과", description = "학습 점검 및 결과 관련 API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/practice")

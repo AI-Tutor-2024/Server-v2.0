@@ -77,8 +77,6 @@ public class PracticeService {
 
     // Description: 학습 결과보기
 
-    // TODO: 챗봇 서술형 답변(서버에서 프롬프트) / 저장된 파일 tts 호출
-
     // 문제 조회 및 내 답변, 튜터 답변 조회
     public ResponseEntity<?> getQuestionsAndAnswers(UserPrincipal userPrincipal, Long noteId) {
         Optional<Note> noteOptional = noteRepository.findById(noteId);
