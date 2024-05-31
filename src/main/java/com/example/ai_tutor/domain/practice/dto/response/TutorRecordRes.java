@@ -1,4 +1,4 @@
-package com.example.ai_tutor.domain.practice.dto;
+package com.example.ai_tutor.domain.practice.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

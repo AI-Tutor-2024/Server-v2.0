@@ -1,7 +1,11 @@
 package com.example.ai_tutor.domain.practice.presentation;
 
 import com.example.ai_tutor.domain.practice.application.PracticeService;
-import com.example.ai_tutor.domain.practice.dto.*;
+import com.example.ai_tutor.domain.practice.dto.request.AnswerReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdateAnswersReq;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeResultsRes;
+import com.example.ai_tutor.domain.practice.dto.response.TutorRecordRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
