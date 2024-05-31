@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/note}")
+@RequestMapping("/api/v1/note")
 @Tag(name = "Summary", description = "요약문 관련 API입니다.")
 public class SummaryController {
 
@@ -39,5 +39,4 @@ public class SummaryController {
             ) {
         return summaryService.updateSummary(userPrincipal, noteId, summaryId, summaryUpdateReq);
     }
-
 }
