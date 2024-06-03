@@ -1,4 +1,4 @@
-package com.example.ai_tutor.domain.note.dto.request;
+package com.example.ai_tutor.domain.summary.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class NoteDeleteReq {
-    private Long folderId;
+public class SummaryUpdateReq {
+    private String summary;
 }

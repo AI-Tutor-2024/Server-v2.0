@@ -9,6 +9,12 @@ import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
 import com.example.ai_tutor.domain.note.dto.response.NoteListDetailRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
+import com.example.ai_tutor.domain.note.dto.response.StepOneListRes;
+import com.example.ai_tutor.domain.note.dto.response.StepOneRes;
+import com.example.ai_tutor.domain.summary.domain.Summary;
+import com.example.ai_tutor.domain.summary.domain.repository.SummaryRepository;
+import com.example.ai_tutor.domain.text.domain.Text;
+import com.example.ai_tutor.domain.text.domain.repository.TextRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
@@ -23,8 +29,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +41,8 @@ public class NoteService {
     private final UserRepository userRepository;
     private final NoteRepository noteRepository;
     private final FolderRepository folderRepository;
+    private final TextRepository textRepository;
+    private final SummaryRepository summaryRepository;
     private final AmazonS3 amazonS3;
 
     @Transactional
@@ -127,5 +137,51 @@ public class NoteService {
                 .build();
 
         return ResponseEntity.ok(apiResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getStepOne(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+        DefaultAssert.isTrue(note.getUser().equals(user), "해당 노트에 접근할 수 없습니다.");
+
+        List<Text> text = textRepository.findAllByNote(note);
+        List<Summary> summary = summaryRepository.findAllByNote(note);
+
+        // summaryId 기준으로 정렬
+        List<Text> sortedText = text.stream()
+                .sorted(Comparator.comparing(t -> summary.stream()
+                        .filter(s -> s.getSummaryId().equals(t.getTextId()))
+                        .findFirst()
+                        .map(Summary::getSummaryId)
+                        .orElse(null)))
+                .collect(Collectors.toList());
+
+        // textId를 순차적으로 부여
+        AtomicInteger counter = new AtomicInteger(1);
+        List<StepOneRes> stepOneRes = sortedText.stream()
+                .map(t -> StepOneRes.builder()
+                        .textId(counter.getAndIncrement()) // 1부터 증가
+                        .content(t.getContent())
+                        .summaryId(summary.stream()
+                                .filter(s -> s.getSummaryId().equals(t.getTextId()))
+                                .findFirst()
+                                .map(Summary::getSummaryId)
+                                .orElse(null))
+                        .summary(summary.stream()
+                                .filter(s -> s.getSummaryId().equals(t.getTextId()))
+                                .findFirst()
+                                .map(Summary::getContent)
+                                .orElse(null))
+                        .build())
+                .collect(Collectors.toList());
+
+        StepOneListRes stepOneListRes = StepOneListRes.builder()
+                .stepOneRes(stepOneRes)
+                .build();
+
+        return ResponseEntity.ok(stepOneListRes);
+
+
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface PracticeRepository extends JpaRepository<Practice, Long> {
 
-    Practice findByNoteAndSequence(Note note, int number);
+    //Practice findByNoteAndSequence(Note note, int number);
 
-    List<Practice> findByNote(Note note);
+    List<Practice> findAllByNoteOrderByPracticeId(Note note);
 }

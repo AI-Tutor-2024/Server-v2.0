@@ -16,14 +16,13 @@ import java.sql.Timestamp;
 @Table(name="Text")
 @NoArgsConstructor
 @Getter
-
 public class Text extends BaseEntity {
     @Id
     @Column(name="text_id", updatable = false, nullable = false)
     private Long textId;
 
-    @Column(name="timestamp")
-    private Timestamp timestamp;
+//    @Column(name="timestamp")
+//    private Timestamp timestamp;
 
     @Column(name="content")
     private String content;
@@ -41,11 +40,10 @@ public class Text extends BaseEntity {
     private Note note;
 
     @Builder
-    public Text(User user, Folder folder, Note note, Timestamp timestamp, String content){
+    public Text(User user, Folder folder, Note note, String content){
         this.user = user;
         this.folder = folder;
         this.note = note;
-        this.timestamp = timestamp;
         this.content = content;
     }
 }
