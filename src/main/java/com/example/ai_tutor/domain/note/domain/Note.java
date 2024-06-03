@@ -55,7 +55,7 @@ public class Note extends BaseEntity {
 
     // 원본 텍스트
     @Lob
-    @Column(name="original_text")
+    @Column(name="original_text", columnDefinition = "TEXT")
     private String originalText;
 
     // @OneToMany(mappedBy = "note")
