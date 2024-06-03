@@ -4,7 +4,11 @@ import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
-import com.example.ai_tutor.domain.practice.dto.*;
+import com.example.ai_tutor.domain.practice.dto.request.AnswerReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdateAnswersReq;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeResultsRes;
+import com.example.ai_tutor.domain.practice.dto.response.TutorRecordRes;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
@@ -77,8 +81,6 @@ public class PracticeService {
 
     // Description: 학습 결과보기
 
-    // TODO: 챗봇 서술형 답변(서버에서 프롬프트) / 저장된 파일 tts 호출
-
     // 문제 조회 및 내 답변, 튜터 답변 조회
     public ResponseEntity<?> getQuestionsAndAnswers(UserPrincipal userPrincipal, Long noteId) {
         Optional<Note> noteOptional = noteRepository.findById(noteId);
@@ -128,6 +130,27 @@ public class PracticeService {
                 .information(Message.builder().message("답변이 수정되었습니다.").build())
                 .build();
         return ResponseEntity.ok(apiResponse);
+    }
+
+    // tts 호출
+    public ResponseEntity<?> getTutorRecord(UserPrincipal userPrincipal, Long practiceId) {
+        Optional<Practice> practiceOptional = practiceRepository.findById(practiceId);
+        DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
+        Practice practice = practiceOptional.get();
+
+        DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
+
+        TutorRecordRes tutorRecordRes = TutorRecordRes.builder()
+                .tutorRecordUrl(practice.getTutorRecordUrl())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(tutorRecordRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
     }
 
 }
