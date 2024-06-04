@@ -7,6 +7,7 @@ import com.example.ai_tutor.domain.tutor.dto.response.TutorRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
+import com.example.ai_tutor.global.payload.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,6 +27,19 @@ import org.springframework.web.bind.annotation.*;
 public class TutorController {
 
     private final TutorService tutorService;
+
+    @Operation(summary = "챗봇 질의응답 시작", description = "챗봇 최초 시작 시 원문을 학습시킵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "원문 학습 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "원문 학습 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping("/{noteId}/init")
+    public ResponseEntity<?> startChatting(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "노트의 Id를 입력해주세요.", required = true) @PathVariable Long noteId
+    ){
+        return tutorService.initializeChatting(userPrincipal, noteId);
+    }
 
     @Operation(summary = "챗봇 질의응답 조회", description = "3단계 챗봇 질의응답 내역을 조회합니다.")
     @ApiResponses(value = {

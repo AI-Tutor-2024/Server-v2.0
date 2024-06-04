@@ -1,7 +1,6 @@
 package com.example.ai_tutor.domain.tutor.application;
 
 import com.example.ai_tutor.domain.chatgpt.application.GptService;
-import com.example.ai_tutor.domain.chatgpt.dto.ChatGptRes;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.tutor.domain.Tutor;
@@ -14,6 +13,7 @@ import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
+import com.example.ai_tutor.global.payload.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +33,21 @@ public class TutorService {
     private final TutorRepository tutorRepository;
     private final GptService gptService;
 
+    // 최초 호출 시 원문 내용 주입
+    public ResponseEntity<?> initializeChatting(UserPrincipal userPrincipal, Long noteId) {
+        Optional<Note> noteOptional = noteRepository.findById(noteId);
+        DefaultAssert.isTrue(noteOptional.isPresent(), "해당 노트가 존재하지 않습니다.");
+        Note note = noteOptional.get();
+
+        gptService.startConversation(noteId, note.getOriginalText());
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(Message.builder().message("원문이 주입되었습니다.").build())
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
     @Transactional
     public ResponseEntity<?> questionToTutor(UserPrincipal userPrincipal, Long noteId, QuestionReq questionReq) throws JsonProcessingException {
         Optional<User> userOptional = userRepository.findById(userPrincipal.getId());
@@ -45,7 +60,7 @@ public class TutorService {
 
         DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
         // 챗지피티 호출
-        String answer = gptService.getAssistantMsg(questionReq.getQuestion());
+        String answer = gptService.getAssistantMsg(noteId, questionReq.getQuestion());
         // 질문 저장
         // 답변 저장
         Tutor tutor = Tutor.builder()
