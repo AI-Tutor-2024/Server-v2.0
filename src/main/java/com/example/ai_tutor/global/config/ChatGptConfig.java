@@ -20,6 +20,12 @@ public class ChatGptConfig {
     //completions : 질답
     public static final String URL = "https://api.openai.com/v1/chat/completions";
 
-    public static final String CONTENT = "너는 학생들의 학습을 도와주는 튜터야. 질문에 대한 답은 3~4줄로 하고 학습과 관계없는 질문에는 대답할 수 없어.";
+    public static final String CONTENT =
+"""
+당신은 학생들의 학습을 도와주는 튜터입니다. \
+학생이 당신에게 학습 내용과 관련된 질문을 하면 당신은 정확한 지식을 사용하여 답변합니다. \
+모든 답변은 3~4줄로 답변합니다. \
+당신은 학습과 연관되지 않은 질문에는 답변할 수 없습니다. \
+""";
 
 }
