@@ -33,7 +33,7 @@ public class Tutor extends BaseEntity {
     @JoinColumn(name="folder_id")
     private Folder folder;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="note_id")
     private Note note;
 
