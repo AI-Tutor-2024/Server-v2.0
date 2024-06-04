@@ -43,6 +43,8 @@ jobs:
           echo "${{ secrets.APPLICATION_OAUTH2_YML }}" | base64 --decode > src/main/resources/oauth2/application-oauth2.yml
           mkdir -p src/main/resources/s3
           echo "${{ secrets.APPLICATION_S3_YML }}" | base64 --decode > src/main/resources/s3/application-s3.yml
+          mkdir -p src/main/resources/chatgpt
+          echo "${{ secrets.APPLICATION_CHATGPT_YML }}" | base64 --decode > src/main/resources/chatgpt/application-chatgpt.yml
 
 
     # (4) Gradle build (Test 제외)
