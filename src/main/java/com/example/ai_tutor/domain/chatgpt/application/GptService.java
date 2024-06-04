@@ -19,11 +19,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GptService {
 
-    //private final ChatgptService chatgptService;
-
-    //public String getGptResponse(String prompt) {
-    //    return chatgptService.sendMessage(prompt);
-    //}
+    private final List<Map<String, String>> chatHistory = new ArrayList<>();
 
     @Value("${chatgpt.api-key}")
     private String apiKey;
@@ -39,18 +35,19 @@ public class GptService {
         Map<String, Object> bodyMap = new HashMap<>();
         bodyMap.put("model", ChatGptConfig.MODEL);
 
-        List<Map<String, String>> messages = new ArrayList<>();
+        // 사용자 메시지 추가
         Map<String, String> userMessage = new HashMap<>();
         userMessage.put("role", "user");
         userMessage.put("content", userMsg);
-        messages.add(userMessage);
+        chatHistory.add(userMessage);
 
+        // 시스템 메시지 추가
         Map<String, String> assistantMessage = new HashMap<>();
         assistantMessage.put("role", "system");
         assistantMessage.put("content", ChatGptConfig.CONTENT);
-        messages.add(assistantMessage);
+        chatHistory.add(assistantMessage);
 
-        bodyMap.put("messages", messages);
+        bodyMap.put("messages", chatHistory);
 
         String body = objectMapper.writeValueAsString(bodyMap);
 
@@ -59,12 +56,25 @@ public class GptService {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.exchange(ChatGptConfig.URL, HttpMethod.POST, request, String.class);
 
-        return objectMapper.readTree(response.getBody());
+        JsonNode responseBody = objectMapper.readTree(response.getBody());
+
+        // 대화 내역 업데이트
+        Map<String, String> assistantResponse = new HashMap<>();
+        assistantResponse.put("role", "assistant");
+        assistantResponse.put("content", responseBody.path("choices").get(0).path("message").path("content").asText());
+        chatHistory.add(assistantResponse);
+
+        return responseBody;
     }
 
     public String getAssistantMsg(String userMsg) throws JsonProcessingException {
         JsonNode jsonNode = callChatGpt(userMsg);
 
         return jsonNode.path("choices").get(0).path("message").path("content").asText();
+    }
+
+    // 대화 내역 초기화
+    public void clearChatHistory() {
+        chatHistory.clear();
     }
 }
