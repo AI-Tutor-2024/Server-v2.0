@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class StepOneRes {
     private int textId; //문단 번호이므로 int로 처리
-    private String content;
-    private String summary;
+    private String content; //원문 내용
+    private Long summaryId; //요약문 id
+    private String summary; //요약문 내용
 }
