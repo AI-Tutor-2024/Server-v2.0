@@ -1,7 +1,11 @@
 package com.example.ai_tutor.domain.practice.presentation;
 
 import com.example.ai_tutor.domain.practice.application.PracticeService;
-import com.example.ai_tutor.domain.practice.dto.*;
+import com.example.ai_tutor.domain.practice.dto.request.AnswerReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdateAnswersReq;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeResultsRes;
+import com.example.ai_tutor.domain.practice.dto.response.TutorRecordRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -21,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "학습 점검", description = "학습 점검 관련 API")
+@Tag(name = "학습 점검 및 결과", description = "학습 점검 및 결과 관련 API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/practice")
@@ -80,5 +84,18 @@ public class PracticeController {
             @Parameter(description = "Schemas의 UpdateAnswersReq를 확인해주세요.", required = true) @RequestBody List<UpdateAnswersReq> updateAnswersReqs
             ) {
         return practiceService.updateMyAnswers(userPrincipal, updateAnswersReqs);
+    }
+
+    @Operation(summary = "튜터 TTS 파일 조회", description = "학습결과 보기에서 튜터 TTS 파일 링크를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = TutorRecordRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/result/tutor")
+    public ResponseEntity<?> findTutorRecord(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "문제의 id를 입력해주세요.", required = true) @RequestParam Long practiceId
+    ) {
+        return practiceService.getTutorRecord(userPrincipal, practiceId);
     }
 }

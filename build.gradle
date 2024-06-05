@@ -41,6 +41,9 @@ dependencies {
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 
+    // GPT
+    implementation 'io.github.flashvayne:chatgpt-spring-boot-starter:1.0.4'
+
     // Amazon S3
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
     implementation 'com.amazonaws:aws-java-sdk-s3'
