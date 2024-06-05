@@ -4,6 +4,7 @@ import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
+import com.example.ai_tutor.domain.note.dto.request.NoteCreateProcessReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
@@ -24,9 +25,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -44,6 +47,7 @@ public class NoteService {
     private final TextRepository textRepository;
     private final SummaryRepository summaryRepository;
     private final AmazonS3 amazonS3;
+    private final WebClient webClient;
 
     @Transactional
     public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq, MultipartFile recordFile) {
@@ -66,13 +70,39 @@ public class NoteService {
                 .user(user)
                 .build();
 
-        noteRepository.save(note);
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("노트 생성 성공")
+        NoteCreateProcessReq noteCreateProcessReq = NoteCreateProcessReq.builder()
+                .userId(user.getUserId())
+                .folderId(folderId)
+                .noteId(note.getNoteId())
+                .recordUrl(recordUrl)
                 .build();
 
-        return ResponseEntity.ok(apiResponse);
+        //post요청으로 user_id(Long), folder_id(Long), note_id(Long), 음성 url(String) 보내기
+        ResponseEntity requestResult = webClient.post()
+                .uri("/start-process")
+                .bodyValue(noteCreateProcessReq)
+                .retrieve()
+                .bodyToMono(ResponseEntity.class)
+                .block();
+
+        //상태코드로 완료 여부 판단
+        if(requestResult.getStatusCode().is2xxSuccessful()){
+            noteRepository.save(note);
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(true)
+                    .information("노트 생성 성공")
+                    .build();
+
+            return ResponseEntity.ok(apiResponse);
+        }
+        else{
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(false)
+                    .information("노트 생성 실패")
+                    .build();
+
+            return ResponseEntity.badRequest().body(apiResponse);
+        }
     }
 
     @Transactional(readOnly = true)
