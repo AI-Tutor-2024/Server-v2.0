@@ -103,6 +103,8 @@ public class PracticeService {
                 .sorted(Comparator.comparing(PracticeResultsRes::getSequence))
                 .collect(Collectors.toList());
 
+        // test
+
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
                 .information(practiceResultsRes)
