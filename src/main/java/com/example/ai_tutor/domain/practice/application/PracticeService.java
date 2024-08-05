@@ -40,7 +40,7 @@ public class PracticeService {
         DefaultAssert.isTrue(noteOptional.isPresent(), "해당 노트가 존재하지 않습니다.");
         Note note = noteOptional.get();
         // 본인 노트 아니면 예외
-        DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
+        // DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
         // user 추가할지?
         List<Practice> practices = practiceRepository.findAllByNoteOrderByPracticeId(note);
         Practice practice = practices.get(number - 1);
@@ -68,9 +68,9 @@ public class PracticeService {
         Practice practice = practiceOptional.get();
 
         // 사용자 검증
-        DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
+        // DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
 
-        practice.updateUserAnswer(answerReq.getUserAnswer());
+        // practice.updateUserAnswer(answerReq.getUserAnswer());
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
@@ -87,7 +87,7 @@ public class PracticeService {
         DefaultAssert.isTrue(noteOptional.isPresent(), "해당 노트가 존재하지 않습니다.");
         Note note = noteOptional.get();
 
-        DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
+        //DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
 
         List<Practice> practices = practiceRepository.findAllByNoteOrderByPracticeId(note);
         AtomicInteger sequence = new AtomicInteger(1);
@@ -96,8 +96,8 @@ public class PracticeService {
                 .map(practice -> PracticeResultsRes.builder()
                         .practiceId(practice.getPracticeId())
                         .content(practice.getContent())
-                        .userAnswer(practice.getUserAnswer())
-                        .tutorAnswer(practice.getTutorAnswer())
+                        //.userAnswer(practice.getUserAnswer())
+                        //.tutorAnswer(practice.getTutorAnswer())
                         .sequence(sequence.getAndIncrement()) // AtomicInteger로 sequence 값 증가
                         .build())
                 .sorted(Comparator.comparing(PracticeResultsRes::getSequence))
@@ -121,10 +121,10 @@ public class PracticeService {
             DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
             Practice practice = practiceOptional.get();
 
-            DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
+             // DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
             // 새 답변을 입력한 경우만 업데이트
             if (req.getNewUserAnswer() != null) {
-                practice.updateUserAnswer(req.getNewUserAnswer());
+                //practice.updateUserAnswer(req.getNewUserAnswer());
             }
         }
         ApiResponse apiResponse = ApiResponse.builder()
@@ -140,10 +140,10 @@ public class PracticeService {
         DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
         Practice practice = practiceOptional.get();
 
-        DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
+        //DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
 
         TutorRecordRes tutorRecordRes = TutorRecordRes.builder()
-                .tutorRecordUrl(practice.getTutorRecordUrl())
+                //.tutorRecordUrl(practice.getTutorRecordUrl())
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
