@@ -33,8 +33,8 @@ public class FolderService {
 
         Folder folder = Folder.builder()
                 .folderName(folderName)
-                .professor(professor)
-                .user(user)
+                //.professor(professor)
+                //.user(user)
                 .build();
 
         folderRepository.save(folder);
@@ -75,7 +75,7 @@ public class FolderService {
                 .map(folder -> FolderListRes.builder()
                         .folderId(folder.getFolderId())
                         .folderName(folder.getFolderName())
-                        .professor(folder.getProfessor())
+                        //.professor(folder.getProfessor())
                         .build(
                         ))
                 .toList();
@@ -92,9 +92,9 @@ public class FolderService {
     public ResponseEntity<?> updateFolder(UserPrincipal userPrincipal, Long folderId, FolderCreateReq folderCreateReq) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder=folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
+       // DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
-        folder.updateFolder(folderCreateReq.getFolderName(), folderCreateReq.getProfessor());
+        // folder.updateFolder(folderCreateReq.getFolderName(), folderCreateReq.getProfessor());
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
@@ -108,7 +108,7 @@ public class FolderService {
     public ResponseEntity<?> deleteFolder(UserPrincipal userPrincipal, Long folderId) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder=folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
+        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
         folderRepository.delete(folder);
         ApiResponse apiResponse = ApiResponse.builder()

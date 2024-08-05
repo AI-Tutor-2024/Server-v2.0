@@ -12,8 +12,6 @@ import com.example.ai_tutor.domain.note.dto.response.NoteListDetailRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.note.dto.response.StepOneListRes;
 import com.example.ai_tutor.domain.note.dto.response.StepOneRes;
-import com.example.ai_tutor.domain.summary.domain.Summary;
-import com.example.ai_tutor.domain.summary.domain.repository.SummaryRepository;
 import com.example.ai_tutor.domain.text.domain.Text;
 import com.example.ai_tutor.domain.text.domain.repository.TextRepository;
 import com.example.ai_tutor.domain.user.domain.User;
@@ -45,7 +43,6 @@ public class NoteService {
     private final NoteRepository noteRepository;
     private final FolderRepository folderRepository;
     private final TextRepository textRepository;
-    private final SummaryRepository summaryRepository;
     private final AmazonS3 amazonS3;
     private final WebClient webClient;
 
@@ -54,7 +51,7 @@ public class NoteService {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
+        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
         String fileName= UUID.randomUUID().toString();
         try {
@@ -64,10 +61,10 @@ public class NoteService {
         String recordUrl = amazonS3.getUrl("ai-tutor-record", fileName).toString();
         Note note = Note.builder()
                 .title(noteCreateReq.getTitle())
-                .recordUrl(recordUrl)
+                //.recordUrl(recordUrl)
                 .step(0)
                 .folder(folder)
-                .user(user)
+                //.user(user)
                 .build();
 
         NoteCreateProcessReq noteCreateProcessReq = NoteCreateProcessReq.builder()
@@ -110,7 +107,7 @@ public class NoteService {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
+        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
         List <Note> notes = noteRepository.findAllByFolder(folder);
         List<NoteListDetailRes> noteListDetailRes = notes.stream()
@@ -118,13 +115,13 @@ public class NoteService {
                         .title(note.getTitle())
                         .step(note.getStep())
                         .createdAt(note.getCreatedAt())
-                        .length(note.getLength())
+                        //.length(note.getLength())
                         .build())
                 .collect(Collectors.toList());
 
         NoteListRes noteListRes = NoteListRes.builder()
                 .folderName(folder.getFolderName())
-                .professor(folder.getProfessor())
+                //.professor(folder.getProfessor())
                 .noteListDetailRes(noteListDetailRes)
                 .build();
 
@@ -137,7 +134,7 @@ public class NoteService {
         Long folderId = noteDeleteReq.getFolderId();
 
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
+        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
         DefaultAssert.isTrue(note.getFolder().equals(folder), "해당 노트에 접근할 수 없습니다.");
 
@@ -156,7 +153,7 @@ public class NoteService {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Long folderId = noteStepUpdateReq.getFolderId();
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
+        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
         Note note=noteRepository.findById(noteId).orElseThrow(()->new IllegalArgumentException("노트를 찾을 수 없습니다."));
         note.updateStep(noteStepUpdateReq.getStep());
@@ -171,43 +168,43 @@ public class NoteService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<?> getStepOne(UserPrincipal userPrincipal, Long noteId) {
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(note.getUser().equals(user), "해당 노트에 접근할 수 없습니다.");
+//        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//        Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+//        DefaultAssert.isTrue(note.getUser().equals(user), "해당 노트에 접근할 수 없습니다.");
+//
+//        List<Text> text = textRepository.findAllByNote(note);
+//        List<Summary> summary = summaryRepository.findAllByNote(note);
 
-        List<Text> text = textRepository.findAllByNote(note);
-        List<Summary> summary = summaryRepository.findAllByNote(note);
-
-        // summaryId 기준으로 정렬
-        List<Text> sortedText = text.stream()
-                .sorted(Comparator.comparing(t -> summary.stream()
-                        .filter(s -> s.getSummaryId().equals(t.getTextId()))
-                        .findFirst()
-                        .map(Summary::getSummaryId)
-                        .orElse(null)))
-                .collect(Collectors.toList());
+//        // summaryId 기준으로 정렬
+//        List<Text> sortedText = text.stream()
+//                .sorted(Comparator.comparing(t -> summary.stream()
+//                        .filter(s -> s.getSummaryId().equals(t.getTextId()))
+//                        .findFirst()
+//                        .map(Summary::getSummaryId)
+//                        .orElse(null)))
+//                .collect(Collectors.toList());
 
         // textId를 순차적으로 부여
-        AtomicInteger counter = new AtomicInteger(1);
-        List<StepOneRes> stepOneRes = sortedText.stream()
-                .map(t -> StepOneRes.builder()
-                        .textId(counter.getAndIncrement()) // 1부터 증가
-                        .content(t.getContent())
-                        .summaryId(summary.stream()
-                                .filter(s -> s.getSummaryId().equals(t.getTextId()))
-                                .findFirst()
-                                .map(Summary::getSummaryId)
-                                .orElse(null))
-                        .summary(summary.stream()
-                                .filter(s -> s.getSummaryId().equals(t.getTextId()))
-                                .findFirst()
-                                .map(Summary::getContent)
-                                .orElse(null))
-                        .build())
-                .collect(Collectors.toList());
+//        AtomicInteger counter = new AtomicInteger(1);
+//        List<StepOneRes> stepOneRes = sortedText.stream()
+//                .map(t -> StepOneRes.builder()
+//                        .textId(counter.getAndIncrement()) // 1부터 증가
+//                        .content(t.getContent())
+//                        .summaryId(summary.stream()
+//                                .filter(s -> s.getSummaryId().equals(t.getTextId()))
+//                                .findFirst()
+//                                .map(Summary::getSummaryId)
+//                                .orElse(null))
+//                        .summary(summary.stream()
+//                                .filter(s -> s.getSummaryId().equals(t.getTextId()))
+//                                .findFirst()
+//                                .map(Summary::getContent)
+//                                .orElse(null))
+//                        .build())
+//                .collect(Collectors.toList());
 
         StepOneListRes stepOneListRes = StepOneListRes.builder()
-                .stepOneRes(stepOneRes)
+                //.stepOneRes(stepOneRes)
                 .build();
 
         return ResponseEntity.ok(stepOneListRes);

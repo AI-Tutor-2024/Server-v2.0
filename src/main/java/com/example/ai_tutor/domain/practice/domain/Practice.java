@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class Practice extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="practice_id", updatable = false, nullable = false)
@@ -22,40 +23,27 @@ public class Practice extends BaseEntity {
     @Column(name="content")
     private String content;
 
-    @Column(name="user_answer")
-    private String userAnswer;
+    @Column(name="solution")
+    private String solution;
 
-    @Column(name="tutor_answer")
-    private String tutorAnswer;
+    @Column(name="sequence")
+    private Integer sequence;
 
-    @Column(name="tutor_record_url")
-    private String tutorRecordUrl;
-
-    //@Column(name="sequence")
-    //private Integer sequence;
+    @Column(name="point")
+    private Integer score;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="note_id")
     private Note note;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="folder_id")
-    private Folder folder;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
-    private User user;
-
     @Builder
-    public Practice(User user, Folder folder, Note note, String content, String userAnswer, String tutorAnswer, String tutorRecordUrl){
-        this.user = user;
-        this.folder = folder;
+    public Practice(Note note, String content,  String solution, Integer score, Integer sequence){
         this.note = note;
         this.content = content;
-        this.userAnswer = userAnswer;
-        this.tutorAnswer = tutorAnswer;
-        this.tutorRecordUrl = tutorRecordUrl;
+        this.solution = solution;
+        this.score = score;
+        this.sequence = sequence;
     }
 
-    public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
+    // public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
 }
