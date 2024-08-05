@@ -27,7 +27,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # (2) JDK 11 세팅
+    # (2) JDK 17 세팅
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
@@ -45,6 +45,8 @@ jobs:
           echo "${{ secrets.APPLICATION_S3_YML }}" | base64 --decode > src/main/resources/s3/application-s3.yml
           mkdir -p src/main/resources/chatgpt
           echo "${{ secrets.APPLICATION_CHATGPT_YML }}" | base64 --decode > src/main/resources/chatgpt/application-chatgpt.yml
+          mkdir -p src/main/resources/webclient
+          echo "${{ secrets.APPLICATION_WEBCLIENT_YML }}" | base64 --decode > src/main/resources/webclient/application-webclient.yml
 
 
     # (4) Gradle build (Test 제외)
