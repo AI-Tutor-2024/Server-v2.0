@@ -49,7 +49,7 @@ public class StudentNoteService {
 
         NoteListRes<StudentNoteListDetailRes> noteListRes = NoteListRes.<StudentNoteListDetailRes>builder()
                 .folderName(folder.getFolderName())
-                .professor(folder.getProfessor().toString())
+                .professor(folder.getProfessor().getUser().getName())
                 .noteListDetailRes(studentNoteListDetailRes)
                 .build();
 

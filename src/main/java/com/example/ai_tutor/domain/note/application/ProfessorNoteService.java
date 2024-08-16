@@ -103,6 +103,7 @@ public class ProfessorNoteService {
     // }
 
     // 문제지 목록 조회
+    @Transactional
     public ResponseEntity<?> getAllNotesByFolder(UserPrincipal userPrincipal, Long folderId) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
@@ -128,7 +129,7 @@ public class ProfessorNoteService {
 
         NoteListRes<ProfessorNoteListDetailRes> noteListRes = NoteListRes.<ProfessorNoteListDetailRes>builder()
                 .folderName(folder.getFolderName())
-                .professor(folder.getProfessor().toString())
+                .professor(folder.getProfessor().getUser().getName())
                 .noteListDetailRes(noteListDetailRes)
                 .build();
         return ResponseEntity.ok(noteListRes);
