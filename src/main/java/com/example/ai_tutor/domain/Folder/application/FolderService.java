@@ -21,6 +21,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FolderService {
     private final FolderRepository folderRepository;
     private final UserRepository userRepository;
@@ -47,7 +48,6 @@ public class FolderService {
 
     }
 
-//    @Transactional(readOnly = true)
 //    public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal){
 //        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         // List<Folder> folders = folderRepository.findAllByUser(user);
