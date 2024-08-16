@@ -57,6 +57,7 @@ public class StudentNoteService {
                             .createdAt(noteStudent.getCreatedAt())
                             .closed(isClosed)
                             .score(noteStudent.getScore())
+                            .noteStatus(noteStudent.getNoteStatus().toString())
                             .build();
                 })
                 .collect(Collectors.toList());

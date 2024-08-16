@@ -32,4 +32,7 @@ public class StudentNoteListDetailRes {
     @Schema( type = "boolean", example ="true", description="해당 노트의 마감 여부입니다.")
     private boolean closed;
 
+    @Schema( type = "String", example ="IN_PROGRESS", description="IN_PROGRESS(응시 중), INCOMPLETE(미응시), COMPLETE(응시 완료) 해당 노트의 응시 상태입니다.")
+    private String noteStatus;
+
 }
