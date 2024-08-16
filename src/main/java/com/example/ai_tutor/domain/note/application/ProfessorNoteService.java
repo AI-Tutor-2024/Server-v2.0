@@ -9,7 +9,7 @@ import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.note.dto.response.ProfessorNoteListDetailRes;
-import com.example.ai_tutor.domain.note.dto.response.StudentNoteListDetailRes;
+import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
 import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
@@ -153,6 +153,10 @@ public class ProfessorNoteService {
             DefaultAssert.isTrue(!hasAnswer, "이미 응시한 학생이 있습니다.");
             practiceRepository.delete(practice);
         });
+
+        List<NoteStudent> noteStudentList = noteStudentRepository.findByNote(note);
+        noteStudentList.forEach(noteStudent ->
+                noteStudentRepository.delete(noteStudent));
 
         noteRepository.delete(note);
         ApiResponse apiResponse = ApiResponse.builder()

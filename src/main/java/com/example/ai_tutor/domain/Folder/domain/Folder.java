@@ -1,19 +1,11 @@
 package com.example.ai_tutor.domain.Folder.domain;
 
 import com.example.ai_tutor.domain.common.BaseEntity;
-import com.example.ai_tutor.domain.note.domain.Note;
-import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.professor.domain.Professor;
-import com.example.ai_tutor.domain.student.domain.Student;
-import com.example.ai_tutor.domain.text.domain.Text;
-import com.example.ai_tutor.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name="Folder")
