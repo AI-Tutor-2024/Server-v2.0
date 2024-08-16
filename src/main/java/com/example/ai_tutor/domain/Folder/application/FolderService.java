@@ -47,46 +47,46 @@ public class FolderService {
 
     }
 
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal){
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        List<Folder> folders = folderRepository.findAllByUser(user);
-        List<FolderNameListRes> folderRes = folders.stream()
-                .map(folder -> FolderNameListRes.builder()
-                        .folderId(folder.getFolderId())
-                        .folderName(folder.getFolderName())
-                        .build(
-                ))
-                .toList();
+//    @Transactional(readOnly = true)
+//    public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal){
+//        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // List<Folder> folders = folderRepository.findAllByUser(user);
+//        List<FolderNameListRes> folderRes = folders.stream()
+//                .map(folder -> FolderNameListRes.builder()
+//                        .folderId(folder.getFolderId())
+//                        .folderName(folder.getFolderName())
+//                        .build(
+//                ))
+//                .toList();
 
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(folderRes)
-                .build();
+//        ApiResponse apiResponse = ApiResponse.builder()
+//                .check(true)
+//                .information(folderRes)
+//                .build();
 
-        return ResponseEntity.ok(apiResponse);
-    }
+//        return ResponseEntity.ok(apiResponse);
+//    }
 
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> getAllFolders(UserPrincipal userPrincipal) {
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        List<Folder> folders = folderRepository.findAllByUser(user);
-        List<FolderListRes> folderRes = folders.stream()
-                .map(folder -> FolderListRes.builder()
-                        .folderId(folder.getFolderId())
-                        .folderName(folder.getFolderName())
-                        //.professor(folder.getProfessor())
-                        .build(
-                        ))
-                .toList();
+//    @Transactional(readOnly = true)
+//    public ResponseEntity<?> getAllFolders(UserPrincipal userPrincipal) {
+//        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//        List<Folder> folders = folderRepository.findAllByUser(user);
+//        List<FolderListRes> folderRes = folders.stream()
+//                .map(folder -> FolderListRes.builder()
+//                        .folderId(folder.getFolderId())
+//                        .folderName(folder.getFolderName())
+//                        //.professor(folder.getProfessor())
+//                        .build(
+//                        ))
+//                .toList();
 
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(folderRes)
-                .build();
+//        ApiResponse apiResponse = ApiResponse.builder()
+//                .check(true)
+//                .information(folderRes)
+//                .build();
 
-        return ResponseEntity.ok(apiResponse);
-    }
+//        return ResponseEntity.ok(apiResponse);
+//    }
 
     @Transactional
     public ResponseEntity<?> updateFolder(UserPrincipal userPrincipal, Long folderId, FolderCreateReq folderCreateReq) {

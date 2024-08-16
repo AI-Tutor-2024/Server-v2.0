@@ -33,15 +33,15 @@ public class Folder extends BaseEntity {
     @JoinColumn(name="professor_id")
     private Professor professor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="student_id")
-    private Student student;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name="student_id")
+    // private Student student;
 
     @Builder
-    public Folder(String folderName, Professor professor, Student student){
+    public Folder(String folderName, Professor professor){
         this.folderName = folderName;
         this.professor = professor;
-        this.student = student;
+        // this.student = student;
     }
 
     public void updateFolder(String folderName, Professor professor) {
