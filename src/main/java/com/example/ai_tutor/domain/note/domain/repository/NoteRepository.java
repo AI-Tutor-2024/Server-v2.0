@@ -9,5 +9,7 @@ import java.util.List;
 
 @Repository
 public interface NoteRepository extends JpaRepository<Note, Long> {
+    List<Note> findAllByFolderOrderByCreatedAtDesc(Folder folder);
+
     List<Note> findAllByFolder(Folder folder);
 }

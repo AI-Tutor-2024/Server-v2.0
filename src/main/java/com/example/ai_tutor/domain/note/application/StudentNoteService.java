@@ -4,31 +4,20 @@ import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
-import com.example.ai_tutor.domain.note.dto.request.NoteCreateProcessReq;
-import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
-import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
-import com.example.ai_tutor.domain.note.dto.response.NoteListDetailRes;
+import com.example.ai_tutor.domain.note.dto.response.StudentNoteListDetailRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
-import com.example.ai_tutor.domain.note.dto.response.StepOneListRes;
-import com.example.ai_tutor.domain.text.domain.repository.TextRepository;
+import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
-import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +27,7 @@ public class StudentNoteService {
     private final UserRepository userRepository;
     private final NoteRepository noteRepository;
     private final FolderRepository folderRepository;
+    private final NoteStudentRepository noteStudentRepository;
 
     // 문제지 목록 조회
     @Transactional(readOnly = true)
@@ -47,42 +37,42 @@ public class StudentNoteService {
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
-        List <Note> notes = noteRepository.findAllByFolder(folder);
-        List<NoteListDetailRes> noteListDetailRes = notes.stream()
-                .map(note -> NoteListDetailRes.builder()
+        List<Note> notes = noteRepository.findAllByFolder(folder);
+        List<StudentNoteListDetailRes> studentNoteListDetailRes = notes.stream()
+                .map(note -> StudentNoteListDetailRes.builder()
                         .title(note.getTitle())
-                        .step(note.getStep())
+                        //.step(note.getStep())
                         .createdAt(note.getCreatedAt())
                         //.length(note.getLength())
                         .build())
                 .collect(Collectors.toList());
 
-        NoteListRes noteListRes = NoteListRes.builder()
+        NoteListRes<StudentNoteListDetailRes> noteListRes = NoteListRes.<StudentNoteListDetailRes>builder()
                 .folderName(folder.getFolderName())
-                //.professor(folder.getProfessor())
-                .noteListDetailRes(noteListDetailRes)
+                .professor(folder.getProfessor().toString())
+                .noteListDetailRes(studentNoteListDetailRes)
                 .build();
 
         return ResponseEntity.ok(noteListRes);
     }
 
-    @Transactional
-    public ResponseEntity<?> updateNoteStep(UserPrincipal userPrincipal, Long noteId, NoteStepUpdateReq noteStepUpdateReq) {
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Long folderId = noteStepUpdateReq.getFolderId();
-        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
+//    @Transactional
+//    public ResponseEntity<?> updateNoteStep(UserPrincipal userPrincipal, Long noteId, NoteStepUpdateReq noteStepUpdateReq) {
+//        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//        Long folderId = noteStepUpdateReq.getFolderId();
+//        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+//        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
-        Note note=noteRepository.findById(noteId).orElseThrow(()->new IllegalArgumentException("노트를 찾을 수 없습니다."));
-        note.updateStep(noteStepUpdateReq.getStep());
+//        Note note=noteRepository.findById(noteId).orElseThrow(()->new IllegalArgumentException("노트를 찾을 수 없습니다."));
+//        note.updateStep(noteStepUpdateReq.getStep());
 
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("학습 단계 업데이트 성공")
-                .build();
+//        ApiResponse apiResponse = ApiResponse.builder()
+//                .check(true)
+//                .information("학습 단계 업데이트 성공")
+//                .build();
 
-        return ResponseEntity.ok(apiResponse);
-    }
+//        return ResponseEntity.ok(apiResponse);
+//    }
 
 //     @Transactional(readOnly = true)
 //     public ResponseEntity<?> getStepOne(UserPrincipal userPrincipal, Long noteId) {
@@ -129,4 +119,5 @@ public class StudentNoteService {
 
 
 //     }
+
 }

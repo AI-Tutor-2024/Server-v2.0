@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class NoteListDetailRes {
+public class StudentNoteListDetailRes {
+
+    @Schema( type = "Long", example ="1", description="노트의 id입니다.")
+    private Long noteId;
 
     @Schema( type = "String", example ="빅데이터기술특론 1주차", description="교수자가 생성한 노트의 이름입니다.")
     private String title; //노트 제목
@@ -24,7 +27,7 @@ public class NoteListDetailRes {
     private LocalDateTime createdAt;
 
     @Schema( type = "int", example ="10", description="문제의 개수입니다.")
-    private int size;
+    private int practiceSize;
 
     @Schema( type = "int", example ="90", description="사용자가 풀이한 문제의 총 점수입니다.")
     private int score;

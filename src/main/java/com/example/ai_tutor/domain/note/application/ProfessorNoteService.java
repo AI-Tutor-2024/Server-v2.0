@@ -5,7 +5,12 @@ import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.answer.domain.repository.AnswerRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
+import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
+import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
+import com.example.ai_tutor.domain.note.dto.response.ProfessorNoteListDetailRes;
+import com.example.ai_tutor.domain.note.dto.response.StudentNoteListDetailRes;
+import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
 import com.example.ai_tutor.domain.user.domain.User;
@@ -21,8 +26,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +40,8 @@ public class ProfessorNoteService {
     private final NoteRepository noteRepository;
     private final PracticeRepository practiceRepository;
     private final AnswerRepository answerRepository;
+    private final FolderRepository folderRepository;
+    private final NoteStudentRepository noteStudentRepository;
 
     private final AmazonS3 amazonS3;
     private final WebClient webClient;
@@ -92,7 +102,37 @@ public class ProfessorNoteService {
         // }
     // }
 
-    // 문제지 조회
+    // 문제지 목록 조회
+    public ResponseEntity<?> getAllNotesByFolder(UserPrincipal userPrincipal, Long folderId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+        DefaultAssert.isTrue(user == folder.getProfessor().getUser(), "사용자가 일치하지 않습니다.");
+
+        List<Note> notes = noteRepository.findAllByFolderOrderByCreatedAtDesc(folder);
+        List<ProfessorNoteListDetailRes> noteListDetailRes = notes.stream()
+                .map(note -> {
+                    int studentSize = noteStudentRepository.countByNoteAndNoteStatus(note, NoteStatus.COMPLETED);
+                    boolean isClosed = LocalDateTime.now().isAfter(note.getEndDate());
+                    return ProfessorNoteListDetailRes.builder()
+                            .noteId(note.getNoteId())
+                            .title(note.getTitle())
+                            .endDate(note.getEndDate())
+                            .practiceSize(practiceRepository.countByNote(note))
+                            .studentSize(studentSize)
+                            .code(note.getCode())
+                            .average(note.getAverage())
+                            .closed(isClosed)
+                            .build();
+                })
+                .toList();
+
+        NoteListRes<ProfessorNoteListDetailRes> noteListRes = NoteListRes.<ProfessorNoteListDetailRes>builder()
+                .folderName(folder.getFolderName())
+                .professor(folder.getProfessor().toString())
+                .noteListDetailRes(noteListDetailRes)
+                .build();
+        return ResponseEntity.ok(noteListRes);
+    }
 
     // 문제지 삭제
     @Transactional

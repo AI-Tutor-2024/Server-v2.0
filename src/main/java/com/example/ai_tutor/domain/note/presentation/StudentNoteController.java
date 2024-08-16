@@ -45,19 +45,19 @@ public class StudentNoteController {
         return studentNoteService.getAllNotes(userPrincipal, folderId);
     }
 
-    @Operation(summary = "학습 단계 업데이트 API", description = "특정 강의 노트의 학습 단계를 업데이트하는 API입니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "학습 단계 업데이트 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
-            @ApiResponse(responseCode = "400", description = "학습 단계 업데이트 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-    })
-    @PatchMapping("/{noteId}")
-    public ResponseEntity<?> updateNoteLevel(
-            @Parameter @CurrentUser UserPrincipal userPrincipal,
-            @PathVariable Long noteId,
-            @RequestBody NoteStepUpdateReq noteStepUpdateReq
-    ) {
-        return studentNoteService.updateNoteStep(userPrincipal, noteId, noteStepUpdateReq);
-    }
+    // @Operation(summary = "학습 단계 업데이트 API", description = "특정 강의 노트의 학습 단계를 업데이트하는 API입니다.")
+    // @ApiResponses(value = {
+    //         @ApiResponse(responseCode = "200", description = "학습 단계 업데이트 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+    //         @ApiResponse(responseCode = "400", description = "학습 단계 업데이트 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    // })
+    // @PatchMapping("/{noteId}")
+    // public ResponseEntity<?> updateNoteLevel(
+    //         @Parameter @CurrentUser UserPrincipal userPrincipal,
+    //         @PathVariable Long noteId,
+    //         @RequestBody NoteStepUpdateReq noteStepUpdateReq
+    // ) {
+    //     return studentNoteService.updateNoteStep(userPrincipal, noteId, noteStepUpdateReq);
+    // }
 
     // @Operation(summary = "1단계 학습 API", description = "텍스트 원문과 요약문을 타임스탬프에 따라 조회하는 API입니다.")
     // @ApiResponses(value = {

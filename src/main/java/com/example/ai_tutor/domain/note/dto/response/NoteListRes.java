@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class NoteListRes {
+public class NoteListRes<T> {
 
     @Schema( type = "String", example ="빅데이터기술특론", description="교수자가 생성한 폴더의 이름입니다.")
     private String folderName;
@@ -21,6 +21,6 @@ public class NoteListRes {
     @Schema( type = "String", example ="하석재", description="교수자의 이름입니다.")
     private String professor;
 
-    @ArraySchema(schema = @Schema( type = "List", example ="NoteListDetailRes를 참고해주세요.", description="노트 목록의 정보입니다."))
-    private List<NoteListDetailRes> noteListDetailRes;
+    @ArraySchema(schema = @Schema(type = "array", description = "노트 목록의 정보입니다. 학생 사용 시 StudentNoteListDetailRes, 교수자 사용 시 ProfessorNoteDetailRes를 확인해주세요.", implementation = Object.class))
+    private List<T> noteListDetailRes;
 }

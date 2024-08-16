@@ -27,14 +27,11 @@ public class Note extends BaseEntity {
     @Column(name="title")
     private String title;
 
-    @Column(name="step")
-    private int step;
-
     // 제한시간
     private LocalDateTime limit;
 
     // 마감시간
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     // code
     private String code;
@@ -44,10 +41,6 @@ public class Note extends BaseEntity {
 
     // 평균
     private double average = 0;
-
-    // 응시 상태
-    @Enumerated(EnumType.STRING)
-    private NoteStatus noteStatus = NoteStatus.INCOMPLETED;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="folder_id")
@@ -61,17 +54,12 @@ public class Note extends BaseEntity {
 //    }
 
     @Builder
-    public Note(Folder folder, String title, int step, LocalDateTime limit, LocalDate endDate, String code, int total){
+    public Note(Folder folder, String title, LocalDateTime limit, LocalDateTime endDate, String code, int total){
         this.folder = folder;
         this.title = title;
-        this.step = step;
         this.limit = limit;
         this.endDate = endDate;
         this.code = code;
         this.total = total;
-    }
-
-    public void updateStep(int step) {
-        this.step = step;
     }
 }
