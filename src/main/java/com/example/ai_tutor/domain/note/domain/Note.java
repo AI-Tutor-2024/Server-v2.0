@@ -28,7 +28,7 @@ public class Note extends BaseEntity {
     private String title;
 
     // 제한시간
-    private LocalDateTime limit;
+    private int limitTime;
 
     // 마감시간
     private LocalDateTime endDate;
@@ -54,10 +54,10 @@ public class Note extends BaseEntity {
 //    }
 
     @Builder
-    public Note(Folder folder, String title, LocalDateTime limit, LocalDateTime endDate, String code, int total){
+    public Note(Folder folder, String title, int limitTime, LocalDateTime endDate, String code, int total){
         this.folder = folder;
         this.title = title;
-        this.limit = limit;
+        this.limitTime = limitTime;
         this.endDate = endDate;
         this.code = code;
         this.total = total;

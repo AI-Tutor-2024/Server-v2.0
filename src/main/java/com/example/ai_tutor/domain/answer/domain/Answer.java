@@ -19,7 +19,7 @@ public class Answer extends BaseEntity {
     @Column(name="answer_id", updatable = false, nullable = false, unique = true)
     private Long answerId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="practice_id")
     private Practice practice;
 

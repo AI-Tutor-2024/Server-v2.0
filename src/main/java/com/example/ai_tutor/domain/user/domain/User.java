@@ -38,16 +38,15 @@ public class User extends BaseEntity {
     private String providerId;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.PROFESSOR;
 
     @Builder
-    public User(String name, String email, Provider provider, String providerId, String password, Role role){
+    public User(String name, String email, Provider provider, String providerId, String password){
         this.name = name;
         this.email = email;
         this.password = password;
         this.provider = provider;
         this.providerId = providerId;
-        this.role = role;
     }
 
     public void updateName(String name) { this.name = name; }
