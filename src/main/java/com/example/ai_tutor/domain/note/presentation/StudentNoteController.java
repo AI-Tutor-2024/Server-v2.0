@@ -25,25 +25,25 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/note/student")
+@RequestMapping("/api/v1/student/note")
 @Tag(name = "Student Note", description = "학생의 강의 노트 관련 API입니다.")
 public class StudentNoteController {
 
     private final StudentNoteService studentNoteService;
 
-    @Operation(summary = "노트 목록 조회 API", description = "강의 노트 목록을 조회하는 API입니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteListRes.class) ) } ),
-            @ApiResponse(responseCode = "400", description = "강의 노트 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-    })
-    @GetMapping("/{folderId}")
-    public ResponseEntity<?> getAllNotes(
-            @Parameter @CurrentUser UserPrincipal userPrincipal,
-            @PathVariable Long folderId
+//    @Operation(summary = "노트 목록 조회 API", description = "강의 노트 목록을 조회하는 API입니다.")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteListRes.class) ) } ),
+//            @ApiResponse(responseCode = "400", description = "강의 노트 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+//    })
+//    @GetMapping("/{folderId}")
+//    public ResponseEntity<?> getAllNotes(
+//            @Parameter @CurrentUser UserPrincipal userPrincipal,
+//            @PathVariable Long folderId
 
-    ) {
-        return studentNoteService.getAllNotes(userPrincipal, folderId);
-    }
+//    ) {
+//        return studentNoteService.getAllNotes(userPrincipal, folderId);
+//    }
 
     // @Operation(summary = "학습 단계 업데이트 API", description = "특정 강의 노트의 학습 단계를 업데이트하는 API입니다.")
     // @ApiResponses(value = {

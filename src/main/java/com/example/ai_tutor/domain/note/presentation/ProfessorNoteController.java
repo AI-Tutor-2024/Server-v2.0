@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/note/professor")
+@RequestMapping("/api/v1/professor/note")
 @Tag(name = "Professor Note", description = "교수자의 강의 노트 관련 API입니다.")
 public class ProfessorNoteController {
 
