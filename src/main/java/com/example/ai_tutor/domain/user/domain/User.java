@@ -4,7 +4,6 @@ import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.practice.domain.Practice;
-import com.example.ai_tutor.domain.text.domain.Text;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
