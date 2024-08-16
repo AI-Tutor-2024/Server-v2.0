@@ -13,14 +13,14 @@ public class HomeUserRes {
     @Schema( type = "String", example ="김융소", description = "사용자의 이름입니다.")
     public String name;
 
-    @Schema( type = "day", example ="01", description="사용자의 학습일수입니다. 2자리 수로 포맷됩니다.")
-    public String day;
+    @Schema( type = "String", example ="PROFESSOR", description="사용자의 역할입니다. ADMIN, STUDENT, PROFESSOR")
+    public String role;
 
     @Builder
-    public HomeUserRes(Long userId, String name, String day) {
+    public HomeUserRes(Long userId, String name, String role) {
         this.userId = userId;
         this.name = name;
-        this.day = day;
+        this.role = role;
     }
 
 }
