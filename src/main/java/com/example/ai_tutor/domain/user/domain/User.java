@@ -4,7 +4,6 @@ import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.practice.domain.Practice;
-import com.example.ai_tutor.domain.text.domain.Text;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,16 +37,15 @@ public class User extends BaseEntity {
     private String providerId;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.PROFESSOR;
 
     @Builder
-    public User(String name, String email, Provider provider, String providerId, String password, Role role){
+    public User(String name, String email, Provider provider, String providerId, String password){
         this.name = name;
         this.email = email;
         this.password = password;
         this.provider = provider;
         this.providerId = providerId;
-        this.role = role;
     }
 
     public void updateName(String name) { this.name = name; }

@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface FolderRepository extends JpaRepository<Folder, Long>{
-    List<Folder> findAllByUser(User user);
+    // List<Folder> findAllByUser(User user);
 }

@@ -18,13 +18,14 @@ public class Student extends BaseEntity {
     @Column(name="student_id", updatable = false, nullable = false, unique = true)
     private Long studentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
-    private User user;
+    private String studentNumber;
+
+    private String name;
 
     @Builder
-    public Student(Long studentId, User user) {
+    public Student(Long studentId, String studentNumber, String name) {
         this.studentId = studentId;
-        this.user = user;
+        this.studentNumber = studentNumber;
+        this.name = name;
     }
 }
