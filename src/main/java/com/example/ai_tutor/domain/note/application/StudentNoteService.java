@@ -11,8 +11,6 @@ import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
 import com.example.ai_tutor.domain.note.dto.response.NoteListDetailRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.note.dto.response.StepOneListRes;
-import com.example.ai_tutor.domain.note.dto.response.StepOneRes;
-import com.example.ai_tutor.domain.text.domain.Text;
 import com.example.ai_tutor.domain.text.domain.repository.TextRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
@@ -23,85 +21,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class NoteService {
+public class StudentNoteService {
+
     private final UserRepository userRepository;
     private final NoteRepository noteRepository;
     private final FolderRepository folderRepository;
-    private final TextRepository textRepository;
-    private final AmazonS3 amazonS3;
-    private final WebClient webClient;
 
-    @Transactional
-    public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq, MultipartFile recordFile) {
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
-
-        String fileName= UUID.randomUUID().toString();
-        try {
-            amazonS3.putObject(new PutObjectRequest("ai-tutor-record", fileName, recordFile.getInputStream(), null));
-        } catch (IOException e) { throw new RuntimeException(e); }
-        
-        String recordUrl = amazonS3.getUrl("ai-tutor-record", fileName).toString();
-        Note note = Note.builder()
-                .title(noteCreateReq.getTitle())
-                //.recordUrl(recordUrl)
-                .step(0)
-                .folder(folder)
-                //.user(user)
-                .build();
-
-        NoteCreateProcessReq noteCreateProcessReq = NoteCreateProcessReq.builder()
-                .userId(user.getUserId())
-                .folderId(folderId)
-                .noteId(note.getNoteId())
-                .recordUrl(recordUrl)
-                .build();
-
-        //post요청으로 user_id(Long), folder_id(Long), note_id(Long), 음성 url(String) 보내기
-        ResponseEntity requestResult = webClient.post()
-                .uri("/start-process")
-                .bodyValue(noteCreateProcessReq)
-                .retrieve()
-                .bodyToMono(ResponseEntity.class)
-                .block();
-
-        //상태코드로 완료 여부 판단
-        if(requestResult.getStatusCode().is2xxSuccessful()){
-            noteRepository.save(note);
-            ApiResponse apiResponse = ApiResponse.builder()
-                    .check(true)
-                    .information("노트 생성 성공")
-                    .build();
-
-            return ResponseEntity.ok(apiResponse);
-        }
-        else{
-            ApiResponse apiResponse = ApiResponse.builder()
-                    .check(false)
-                    .information("노트 생성 실패")
-                    .build();
-
-            return ResponseEntity.badRequest().body(apiResponse);
-        }
-    }
-
+    // 문제지 목록 조회
     @Transactional(readOnly = true)
     public ResponseEntity<?> getAllNotes(UserPrincipal userPrincipal, Long folderId) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -129,26 +67,6 @@ public class NoteService {
     }
 
     @Transactional
-    public ResponseEntity<?> deleteNoteById(UserPrincipal userPrincipal, NoteDeleteReq noteDeleteReq, Long noteId) {
-        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Long folderId = noteDeleteReq.getFolderId();
-
-        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
-        Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
-        DefaultAssert.isTrue(note.getFolder().equals(folder), "해당 노트에 접근할 수 없습니다.");
-
-        noteRepository.delete(note);
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("노트 삭제 성공")
-                .build();
-
-        return ResponseEntity.ok(apiResponse);
-
-    }
-
-    @Transactional
     public ResponseEntity<?> updateNoteStep(UserPrincipal userPrincipal, Long noteId, NoteStepUpdateReq noteStepUpdateReq) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Long folderId = noteStepUpdateReq.getFolderId();
@@ -166,8 +84,8 @@ public class NoteService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> getStepOne(UserPrincipal userPrincipal, Long noteId) {
+//     @Transactional(readOnly = true)
+//     public ResponseEntity<?> getStepOne(UserPrincipal userPrincipal, Long noteId) {
 //        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 //        Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 //        DefaultAssert.isTrue(note.getUser().equals(user), "해당 노트에 접근할 수 없습니다.");
@@ -203,12 +121,12 @@ public class NoteService {
 //                        .build())
 //                .collect(Collectors.toList());
 
-        StepOneListRes stepOneListRes = StepOneListRes.builder()
+//         StepOneListRes stepOneListRes = StepOneListRes.builder()
                 //.stepOneRes(stepOneRes)
-                .build();
+//                 .build();
 
-        return ResponseEntity.ok(stepOneListRes);
+//         return ResponseEntity.ok(stepOneListRes);
 
 
-    }
+//     }
 }
