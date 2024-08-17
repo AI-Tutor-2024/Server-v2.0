@@ -11,5 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @Getter
 public class NoteCreateReq {
+
+
     private String title; //노트 제목
 }

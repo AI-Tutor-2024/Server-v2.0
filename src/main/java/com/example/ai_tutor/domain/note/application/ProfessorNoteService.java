@@ -8,6 +8,7 @@ import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
+import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.note.dto.response.ProfessorNoteListDetailRes;
 import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
@@ -51,7 +52,26 @@ public class ProfessorNoteService {
     private final AmazonS3 amazonS3;
     private final WebClient webClient;
 
+
     // 수업 정보 조회
+    @Transactional
+    public ResponseEntity<?> getFolderInfo(UserPrincipal userPrincipal, Long folderId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+
+        FolderInfoRes folderInfoRes = FolderInfoRes.builder()
+                .folderName(folder.getFolderName())
+                .professor(folder.getProfessor().getUser().getName())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(folderInfoRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
 
     // 노트 생성
     @Transactional
