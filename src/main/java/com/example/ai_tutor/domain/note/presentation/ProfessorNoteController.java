@@ -28,20 +28,19 @@ public class ProfessorNoteController {
 
     private final ProfessorNoteService professorNoteService;
 
-    // @Operation(summary = "새 노트 생성 API", description = "새 강의 노트를 생성하는 API입니다.")
-    // @ApiResponses(value = {
-    //         @ApiResponse(responseCode = "200", description = "강의 노트 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
-    //         @ApiResponse(responseCode = "400", description = "강의 노트 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-    // })
-    // @PostMapping("/{folderId}")
-    // public ResponseEntity<?> createNewNote(
-    //         @Parameter @CurrentUser UserPrincipal userPrincipal,
-    //         @PathVariable Long folderId,
-    //         @RequestBody NoteCreateReq noteCreateReq,
-    //         @RequestParam MultipartFile note
-    // ) {
-    //     return professorNoteService.createNewNote(userPrincipal, folderId, noteCreateReq, note);
-    // }
+    @Operation(summary = "새 노트 생성 API", description = "새 강의 노트를 생성하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "강의 노트 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "강의 노트 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping("/{folderId}")
+    public ResponseEntity<?> createNewNote(
+            @Parameter @CurrentUser UserPrincipal userPrincipal,
+            @PathVariable Long folderId,
+            @RequestBody NoteCreateReq noteCreateReq
+    ) {
+        return professorNoteService.createNewNote(userPrincipal, folderId, noteCreateReq);
+    }
 
     // 노트 목록 조회
     @Operation(summary = "노트 목록 조회 API", description = "강의 노트 목록을 조회하는 API입니다.")

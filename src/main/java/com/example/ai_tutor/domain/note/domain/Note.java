@@ -37,7 +37,7 @@ public class Note extends BaseEntity {
     private String code;
 
     // 총점
-    private int total;
+    // private int total;
 
     // 평균
     private double average = 0;
@@ -54,12 +54,11 @@ public class Note extends BaseEntity {
 //    }
 
     @Builder
-    public Note(Folder folder, String title, int limitTime, LocalDateTime endDate, String code, int total){
+    public Note(Folder folder, String title, int limitTime, LocalDateTime endDate, String code){
         this.folder = folder;
         this.title = title;
         this.limitTime = limitTime;
         this.endDate = endDate;
         this.code = code;
-        this.total = total;
     }
 }
