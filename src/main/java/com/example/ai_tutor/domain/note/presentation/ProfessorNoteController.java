@@ -2,7 +2,6 @@ package com.example.ai_tutor.domain.note.presentation;
 
 import com.example.ai_tutor.domain.note.application.ProfessorNoteService;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
-import com.example.ai_tutor.domain.note.dto.request.NoteDeleteReq;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
