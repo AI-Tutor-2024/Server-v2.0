@@ -3,6 +3,7 @@ package com.example.ai_tutor.domain.practice.presentation;
 import com.example.ai_tutor.domain.practice.application.ProfessorPracticeService;
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdateLimitAndEndReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
@@ -72,6 +73,20 @@ public class ProfessorPracticeController {
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
         return professorPracticeService.getPractices(userPrincipal, noteId);
+    }
+
+    @Operation(summary = "제한 시간, 마감 기간 수정", description = "제한 시간, 마감 기간을 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ProfessorPracticeListRes.class)) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PatchMapping("/{noteId}")
+    public ResponseEntity<?> updateLimitAndEnd(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId,
+            @Parameter(description = "Schemas의 UpdateLimitAndEndReq를 참고해주세요", required = true) @RequestBody UpdateLimitAndEndReq updateLimitAndEndReq
+    ) {
+        return professorPracticeService.updateLimitTimeAndEndDate(userPrincipal, noteId, updateLimitAndEndReq);
     }
 
 }

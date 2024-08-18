@@ -10,6 +10,7 @@ import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdateLimitAndEndReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
@@ -126,12 +127,41 @@ public class ProfessorPracticeService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    private void convertToMilliseconds(int minute, int second, Note note) {
+    private void convertToMilliseconds(Integer minute, Integer second, Note note) {
         int totalMilliseconds = (minute * 60 * 1000) + (second * 1000);
         note.updateLimitTime(totalMilliseconds);
     }
 
     // 제한시간 및 마감 시간 수정
+    @Transactional
+    public ResponseEntity<?> updateLimitTimeAndEndDate(UserPrincipal userPrincipal, Long noteId, UpdateLimitAndEndReq updateLimitAndEndReq) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+
+        // Validation
+        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
+            if (updateLimitAndEndReq.getMinute() < 0 || updateLimitAndEndReq.getSecond() < 0) {
+                throw new IllegalArgumentException("시간과 초는 음수일 수 없습니다.");
+            }
+        }
+        // 마감기간 update
+        if (updateLimitAndEndReq.getEndDate() != null) {
+            note.updateEndDate(updateLimitAndEndReq.getEndDate());
+        }
+        // 제한시간 update
+        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
+            convertToMilliseconds(updateLimitAndEndReq.getMinute(), updateLimitAndEndReq.getSecond(), note);
+        }
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("마감 기간, 제한 시간이 변경되었습니다.")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
 
     // 문제 조회
     public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
