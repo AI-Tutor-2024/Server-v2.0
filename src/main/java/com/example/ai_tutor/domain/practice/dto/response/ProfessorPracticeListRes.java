@@ -1,9 +1,10 @@
-package com.example.ai_tutor.domain.practice.dto.request;
+package com.example.ai_tutor.domain.practice.dto.response;
 
-import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
+import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +14,8 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SavePracticeListReq {
+@Builder
+public class ProfessorPracticeListRes {
 
     // 제한시간
     @Schema( type = "int", example ="60", description="문제의 제한 시간 중 분을 의미합니다.")
@@ -26,6 +28,6 @@ public class SavePracticeListReq {
     @Schema( type = "LocalDateTime", example ="2024-08-16 21:04:51", description="문제의 마감 시간입니다.")
     private LocalDateTime endDate;
 
-    @ArraySchema(schema = @Schema(implementation = SavePracticeReq.class))
-    private List<SavePracticeReq> reqList;
+    @ArraySchema(schema = @Schema(implementation = ProfessorPracticeRes.class))
+    private List<ProfessorPracticeRes> reqList;
 }

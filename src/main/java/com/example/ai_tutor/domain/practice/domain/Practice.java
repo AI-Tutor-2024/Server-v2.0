@@ -37,7 +37,7 @@ public class Practice extends BaseEntity {
     // @Column(name="point")
     // private Integer score;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "choices", joinColumns = @JoinColumn(name = "practice_id"))
     @Column(name = "choice")
     private List<String> choices;    // 객관식의 경우에만 사용

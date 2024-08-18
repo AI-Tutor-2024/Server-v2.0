@@ -12,6 +12,8 @@ import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
+import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
+import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeRes;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
@@ -30,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,7 +131,59 @@ public class ProfessorPracticeService {
         note.updateLimitTime(totalMilliseconds);
     }
 
+    // 제한시간 및 마감 시간 수정
 
+    // 문제 조회
+    public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+        List<Practice> practices = practiceRepository.findByNoteOrderBySequenceAsc(note);
 
+        List<ProfessorPracticeRes> practiceResList = practices.stream()
+                .map(practice -> {
+                        List<String> choices = practice.getPracticeType() == PracticeType.OX ? null : practice.getChoices();
+                        return ProfessorPracticeRes.builder()
+                                .praticeId(practice.getPracticeId())
+                                .practiceNumber(practice.getSequence())
+                                .content(practice.getContent())
+                                .choices(choices)
+                                .result(practice.getResult())
+                                .solution(practice.getSolution())
+                                .practiceType(practice.getPracticeType().toString())
+                                .build();}
+                        )
+                        .toList();
+
+        int[] result = convertToMinutesAndSeconds(note.getLimitTime());
+
+        int minutes = result[0];
+        int seconds = result[1];
+
+        ProfessorPracticeListRes professorPracticeListRes = ProfessorPracticeListRes.builder()
+                .minute(minutes)
+                .second(seconds)
+                .endDate(note.getEndDate())
+                .reqList(practiceResList)
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(professorPracticeListRes)
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    public int[] convertToMinutesAndSeconds(long milliseconds) {
+        // 밀리초를 초로 변환
+        long totalSeconds = milliseconds / 1000;
+        // 초를 분과 초로 변환
+        int minutes = (int) (totalSeconds / 60);
+        int seconds = (int) (totalSeconds % 60);
+
+        // 분과 초를 배열에 담아 반환
+        return new int[] { minutes, seconds };
+    }
 
 }

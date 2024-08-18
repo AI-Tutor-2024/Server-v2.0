@@ -5,6 +5,7 @@ import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
+import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -57,6 +58,20 @@ public class ProfessorPracticeController {
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
         return professorPracticeService.savePractice(userPrincipal, noteId, savePracticeListReq);
+    }
+
+    // 문제 조회
+    @Operation(summary = "문제 조회", description = "생성된 문제, 답안, 해설을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ProfessorPracticeListRes.class)) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/{noteId}")
+    public ResponseEntity<?> findPractices(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+    ) {
+        return professorPracticeService.getPractices(userPrincipal, noteId);
     }
 
 }
