@@ -52,7 +52,7 @@ public class ProfessorPracticeService {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
 
-        // 요약문 (파일 기반으로 생성하는 예시)
+        // 요약문 (파일 기반으로 생성)
         // 요약문 생성 메소드 여기 연결해주세요!
         String summary = "1949년 10월 1일 제정된「국경일에 관한 법률」에 의거, 광복절이 국경일로 제정되었다. 이 날은 경축행사를 전국적으로 거행하는데 중앙경축식은 서울에서, 지방경축행사는 각 시·도 단위별로 거행한다.\n" +
                 "\n" +
@@ -66,15 +66,15 @@ public class ProfessorPracticeService {
         List<CreatePracticeRes> practices = new ArrayList<>();
 
         if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
-            // 문제 개수에 따라 OX 문제와 객관식 문제를 생성
+            // OX문제와 단답형 문제 반반 생성
             int oxCount = practiceSize % 2 == 0 ? practiceSize / 2 : practiceSize / 2 + 1;
-            int multipleCount = practiceSize - oxCount;
+            int shortCount = practiceSize - oxCount;
 
             List<CreatePracticeRes> oxPractices = gptService.generateQuestions(summary, oxCount, "OX", 1);
-            List<CreatePracticeRes> multiplePractices = gptService.generateQuestions(summary, multipleCount, "MULTIPLE", oxCount + 1);
+            List<CreatePracticeRes> shortPractices = gptService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
 
             practices.addAll(oxPractices);
-            practices.addAll(multiplePractices);
+            practices.addAll(shortPractices);
         } else {
             // 지정된 문제 유형에 맞는 문제 생성
             practices = gptService.generateQuestions(summary, practiceSize, createPracticeReq.getType(), 1);
@@ -101,17 +101,17 @@ public class ProfessorPracticeService {
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
-        // 시간 제한을 밀리초로 변환하여 Note 객체에 설정
+        // 제한시간을 밀리초로 변환
         convertToMilliseconds(savePracticeListReq.getMinute(), savePracticeListReq.getSecond(), note);
         note.updateEndDate(savePracticeListReq.getEndDate());
 
         for (SavePracticeReq req : savePracticeListReq.getReqList()) {
-            List<String> choices = Objects.equals(req.getPracticeType(), "OX") ? null : req.getChoices();
+            List<String> additionalRes = Objects.equals(req.getPracticeType(), "OX") ? null : req.getAdditionalResults();
             Practice practice = Practice.builder()
                     .note(note)
                     .sequence(req.getPracticeNumber())
                     .content(req.getContent())
-                    .choices(choices)
+                    .additionalResults(additionalRes)
                     .result(req.getResult())
                     .solution(req.getSolution())
                     .practiceType(PracticeType.valueOf(req.getPracticeType()))
@@ -173,12 +173,12 @@ public class ProfessorPracticeService {
 
         List<ProfessorPracticeRes> practiceResList = practices.stream()
                 .map(practice -> {
-                        List<String> choices = practice.getPracticeType() == PracticeType.OX ? null : practice.getChoices();
+                        List<String> additionalRes = practice.getPracticeType() == PracticeType.OX ? null : practice.getAdditionalResults();
                         return ProfessorPracticeRes.builder()
                                 .praticeId(practice.getPracticeId())
                                 .practiceNumber(practice.getSequence())
                                 .content(practice.getContent())
-                                .choices(choices)
+                                .additionalResults(additionalRes)
                                 .result(practice.getResult())
                                 .solution(practice.getSolution())
                                 .practiceType(practice.getPracticeType().toString())
@@ -211,7 +211,6 @@ public class ProfessorPracticeService {
         // 초를 분과 초로 변환
         int minutes = (int) (totalSeconds / 60);
         int seconds = (int) (totalSeconds % 60);
-
         // 분과 초를 배열에 담아 반환
         return new int[] { minutes, seconds };
     }
