@@ -4,6 +4,7 @@ import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.practice.domain.Practice;
+import com.example.ai_tutor.domain.professor.domain.Professor;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,19 +35,28 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="professor_id")
+    private Professor professor;
+
     private String providerId;
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.PROFESSOR;
 
+
     @Builder
-    public User(String name, String email, Provider provider, String providerId, String password){
+    public User(String name, String email, String password, Provider provider, Professor professor, String providerId, Role role){
         this.name = name;
         this.email = email;
         this.password = password;
         this.provider = provider;
+        this.professor = professor;
         this.providerId = providerId;
+        this.role = role;
     }
+
+    public void updateProfessor(Professor professor) { this.professor = professor; }
 
     public void updateName(String name) { this.name = name; }
 
