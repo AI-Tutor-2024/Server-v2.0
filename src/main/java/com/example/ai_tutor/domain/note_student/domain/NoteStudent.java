@@ -21,7 +21,7 @@ public class NoteStudent extends BaseEntity {
     @Column(name="note_student_id", updatable = false)
     private Long noteStudentId;
 
-    // 학생 점수
+    // 맞은 문제 수
     private int score;
 
     // 응시 상태
@@ -43,5 +43,6 @@ public class NoteStudent extends BaseEntity {
         this.note = note;
         this.student = student;
     }
+
 
 }
