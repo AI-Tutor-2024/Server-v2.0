@@ -1,6 +1,13 @@
 package com.example.ai_tutor.domain.practice.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public enum PracticeType {
-    // 객관식
-    // OX
+
+    OX,
+    MULTIPLE;
+
 }

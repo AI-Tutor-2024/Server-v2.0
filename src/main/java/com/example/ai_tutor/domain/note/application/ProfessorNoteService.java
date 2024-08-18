@@ -7,12 +7,16 @@ import com.example.ai_tutor.domain.answer.domain.repository.AnswerRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
+import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
+import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.note.dto.response.ProfessorNoteListDetailRes;
 import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
 import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
+import com.example.ai_tutor.domain.professor.domain.Professor;
+import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
@@ -43,12 +47,56 @@ public class ProfessorNoteService {
     private final AnswerRepository answerRepository;
     private final FolderRepository folderRepository;
     private final NoteStudentRepository noteStudentRepository;
+    private final ProfessorRepository professorRepository;
 
     private final AmazonS3 amazonS3;
     private final WebClient webClient;
 
+
+    // 수업 정보 조회
+    @Transactional
+    public ResponseEntity<?> getFolderInfo(UserPrincipal userPrincipal, Long folderId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+
+        FolderInfoRes folderInfoRes = FolderInfoRes.builder()
+                .folderName(folder.getFolderName())
+                .professor(folder.getProfessor().getUser().getName())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(folderInfoRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+
+    // 노트 생성
+    @Transactional
+    public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+        Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
+
+        DefaultAssert.isTrue(folder.getProfessor().equals(professor), "해당 폴더에 접근할 수 없습니다.");
+        Note note = Note.builder()
+                 .title(noteCreateReq.getTitle())
+                 .folder(folder)
+                 .build();
+        noteRepository.save(note);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                     .check(true)
+                     .information("노트 생성 성공. note id:" + note.getNoteId())
+                     .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
     // @Transactional
-    // public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq, MultipartFile recordFile) {
+    // public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq, MultipartFile file) {
         // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));

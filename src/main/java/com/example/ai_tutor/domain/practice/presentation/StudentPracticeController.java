@@ -1,6 +1,6 @@
 package com.example.ai_tutor.domain.practice.presentation;
 
-import com.example.ai_tutor.domain.practice.application.PracticeService;
+import com.example.ai_tutor.domain.practice.application.StudentPracticeService;
 import com.example.ai_tutor.domain.practice.dto.request.AnswerReq;
 import com.example.ai_tutor.domain.practice.dto.request.UpdateAnswersReq;
 import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
@@ -28,10 +28,10 @@ import java.util.List;
 @Tag(name = "학습 점검 및 결과", description = "학습 점검 및 결과 관련 API")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/practice")
-public class PracticeController {
+@RequestMapping("/api/v1/student/practice")
+public class StudentPracticeController {
 
-    private final PracticeService practiceService;
+    private final StudentPracticeService studentPracticeService;
 
     // Description : 2단계 학습점검
     @Operation(summary = "문제 조회", description = "2단계 학습 점검 단계 문제를 조회합니다.")
@@ -44,7 +44,7 @@ public class PracticeController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "노트의 Id를 입력해주세요.", required = true) @RequestParam Long noteId,
             @Parameter(description = "문제 번호를 입력해주세요. 기본 값은 1로 지정됩니다.", required = true) @RequestParam(defaultValue = "1") int number) {
-        return practiceService.getQuestion(userPrincipal, noteId, number);
+        return studentPracticeService.getQuestion(userPrincipal, noteId, number);
     }
 
     @Operation(summary = "답변 작성", description = "사용자가 답변을 작성합니다.")
@@ -56,7 +56,7 @@ public class PracticeController {
     public ResponseEntity<?> writeAnswer(
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 AnswerReq를 참고해주세요.", required = true) @Valid @RequestBody AnswerReq answerReq) {
-        return practiceService.registerAnswer(userPrincipal, answerReq);
+        return studentPracticeService.registerAnswer(userPrincipal, answerReq);
     }
 
     // Description : 학습결과 보기
@@ -70,7 +70,7 @@ public class PracticeController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "노트의 Id를 입력해주세요.", required = true) @RequestParam Long noteId
     ) {
-            return practiceService.getQuestionsAndAnswers(userPrincipal, noteId);
+            return studentPracticeService.getQuestionsAndAnswers(userPrincipal, noteId);
     }
 
     @Operation(summary = "나의 답변 수정", description = "학습결과 보기에서 내 답변을 수정합니다.")
@@ -83,7 +83,7 @@ public class PracticeController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 UpdateAnswersReq를 확인해주세요.", required = true) @RequestBody List<UpdateAnswersReq> updateAnswersReqs
             ) {
-        return practiceService.updateMyAnswers(userPrincipal, updateAnswersReqs);
+        return studentPracticeService.updateMyAnswers(userPrincipal, updateAnswersReqs);
     }
 
     @Operation(summary = "튜터 TTS 파일 조회", description = "학습결과 보기에서 튜터 TTS 파일 링크를 조회합니다.")
@@ -96,6 +96,6 @@ public class PracticeController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "문제의 id를 입력해주세요.", required = true) @RequestParam Long practiceId
     ) {
-        return practiceService.getTutorRecord(userPrincipal, practiceId);
+        return studentPracticeService.getTutorRecord(userPrincipal, practiceId);
     }
 }
