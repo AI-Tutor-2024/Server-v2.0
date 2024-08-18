@@ -10,10 +10,8 @@ import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateProcessReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
-import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
-import com.example.ai_tutor.domain.note.dto.response.NoteCodeRes;
-import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
-import com.example.ai_tutor.domain.note.dto.response.ProfessorNoteListDetailRes;
+import com.example.ai_tutor.domain.note.dto.response.*;
+import com.example.ai_tutor.domain.note_student.application.NoteStudentService;
 import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
 import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
@@ -52,6 +50,7 @@ public class ProfessorNoteService {
     private final FolderRepository folderRepository;
     private final NoteStudentRepository noteStudentRepository;
     private final ProfessorRepository professorRepository;
+    private final NoteStudentService noteStudentService;
 
     private final AmazonS3 amazonS3;
     private final WebClient webClient;
@@ -249,6 +248,7 @@ public class ProfessorNoteService {
         return ResponseEntity.ok(apiResponse);
     }
 
+    // 랜덤 코드 생성 (중복 방지)
     private String generateUniqueCode() {
         String code = generateRandomCode();
         while (noteRepository.existsByCode(code)) {
@@ -257,6 +257,7 @@ public class ProfessorNoteService {
         return code;
     }
 
+    // 랜덤 코드 문자열 생성
     private String generateRandomCode() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder code = new StringBuilder(6);
@@ -269,4 +270,32 @@ public class ProfessorNoteService {
         return code.toString();
     }
 
+    public ResponseEntity<?> getNoteResult(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        List<NoteStudent> noteStudentList = noteStudentRepository.findByNoteId(noteId);
+        List<NoteStudent> completedNoteStudentList = noteStudentList.stream()
+                .filter(noteStudent -> noteStudent.getNoteStatus() == NoteStatus.COMPLETED)
+                .toList();
+
+        NoteResultOfAllStudentListRes noteResultOfAllStudentListRes = NoteResultOfAllStudentListRes.builder()
+                .noteResultOfAllStudentDetailRes((NoteResultOfAllStudentDetailRes) completedNoteStudentList.stream()
+                        .map(noteStudent -> NoteResultOfAllStudentDetailRes.builder()
+                                .studentNumber(noteStudent.getStudent().getStudentNumber())
+                                .studentName(noteStudent.getStudent().getName())
+                                .correctCount(noteStudentService.getCorrectCount(noteStudent.getNoteStudentId()))
+                                .totalCount(practiceRepository.countByNoteId(noteId))
+                                .build())
+                        .toList())
+                .build();
+
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(noteResultOfAllStudentListRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
+    }
 }

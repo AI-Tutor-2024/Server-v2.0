@@ -97,4 +97,18 @@ public class ProfessorNoteController {
         return professorNoteService.createRandomCode(userPrincipal, noteId);
     }
 
+    // 문제지를 푼 학생들의 결과 및 정보 조회
+    @Operation(summary = "문제지 결과 조회 API", description = "특정 문제지를 푼 학생들의 결과 및 정보를 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "문제지 결과 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "문제지 결과 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/result/{noteId}")
+    public ResponseEntity<?> getNoteResult(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "결과를 조회하려는 note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+    ) {
+        return professorNoteService.getNoteResult(userPrincipal, noteId);
+    }
+
 }
