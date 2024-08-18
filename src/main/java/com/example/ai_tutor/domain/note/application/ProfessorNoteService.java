@@ -95,62 +95,6 @@ public class ProfessorNoteService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    // @Transactional
-    // public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq, MultipartFile file) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        // Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        // DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
-
-        // String fileName= UUID.randomUUID().toString();
-        // try {
-        //     amazonS3.putObject(new PutObjectRequest("ai-tutor-record", fileName, recordFile.getInputStream(), null));
-        // } catch (IOException e) { throw new RuntimeException(e); }
-
-        // String recordUrl = amazonS3.getUrl("ai-tutor-record", fileName).toString();
-        // Note note = Note.builder()
-        //         .title(noteCreateReq.getTitle())
-                //.recordUrl(recordUrl)
-        //         .step(0)
-        //         .folder(folder)
-                //.user(user)
-        //         .build();
-
-        // NoteCreateProcessReq noteCreateProcessReq = NoteCreateProcessReq.builder()
-        //         .userId(user.getUserId())
-        //         .folderId(folderId)
-        //         .noteId(note.getNoteId())
-        //         .recordUrl(recordUrl)
-        //         .build();
-
-        //post요청으로 user_id(Long), folder_id(Long), note_id(Long), 음성 url(String) 보내기
-        // ResponseEntity requestResult = webClient.post()
-        //         .uri("/start-process")
-        //         .bodyValue(noteCreateProcessReq)
-        //         .retrieve()
-        //         .bodyToMono(ResponseEntity.class)
-        //         .block();
-
-        //상태코드로 완료 여부 판단
-        // if(requestResult.getStatusCode().is2xxSuccessful()){
-        //     noteRepository.save(note);
-        //     ApiResponse apiResponse = ApiResponse.builder()
-        //             .check(true)
-        //             .information("노트 생성 성공")
-        //             .build();
-
-        //     return ResponseEntity.ok(apiResponse);
-        // }
-        // else{
-        //     ApiResponse apiResponse = ApiResponse.builder()
-        //             .check(false)
-        //             .information("노트 생성 실패")
-        //             .build();
-
-        //     return ResponseEntity.badRequest().body(apiResponse);
-        // }
-    // }
-
     // 문제지 목록 조회
     public ResponseEntity<?> getAllNotesByFolder(UserPrincipal userPrincipal, Long folderId) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -165,7 +109,7 @@ public class ProfessorNoteService {
                     return ProfessorNoteListDetailRes.builder()
                             .noteId(note.getNoteId())
                             .title(note.getTitle())
-                            .endDate(note.getEndDate())
+                            .endDate(note.getEndDate().toString())
                             .practiceSize(practiceRepository.countByNote(note))
                             .studentSize(studentSize)
                             .code(note.getCode())
@@ -213,7 +157,6 @@ public class ProfessorNoteService {
                 .build();
 
         return ResponseEntity.ok(apiResponse);
-
     }
 
 }
