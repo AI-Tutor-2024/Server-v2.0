@@ -35,8 +35,8 @@ public class FolderController {
     })
     @PostMapping("/")
     public ResponseEntity<?> createNewFolder(
-            @Parameter @CurrentUser UserPrincipal userPrincipal,
-            @RequestBody FolderCreateReq folderCreateReq
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Schemas의 FolderCreateReq를 참고해주세요", required = true) @RequestBody FolderCreateReq folderCreateReq
             ) {
         return folderService.createNewFolder(userPrincipal, folderCreateReq);
     }
@@ -49,7 +49,7 @@ public class FolderController {
     })
     @GetMapping("/")
     public ResponseEntity<?> getAllFolders(
-            @Parameter @CurrentUser UserPrincipal userPrincipal
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
     ) {
         return folderService.getAllFolders(userPrincipal);
     }
@@ -61,7 +61,7 @@ public class FolderController {
     })
     @GetMapping("/names")
     public ResponseEntity<?> getFolderNames(
-            @Parameter @CurrentUser UserPrincipal userPrincipal
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
         ) {
         return folderService.getFolderNames(userPrincipal);
     }
@@ -73,9 +73,9 @@ public class FolderController {
     })
     @PatchMapping("/{folderId}")
     public ResponseEntity<?> updateFolder(
-            @Parameter @CurrentUser UserPrincipal userPrincipal,
-            @PathVariable Long folderId,
-            @RequestBody FolderCreateReq folderCreateReq
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId,
+            @Parameter(description = "Schemas의 FolderCreateReq를 참고해주세요", required = true) @RequestBody FolderCreateReq folderCreateReq
     ) {
         return folderService.updateFolder(userPrincipal, folderId, folderCreateReq);
     }
@@ -87,8 +87,8 @@ public class FolderController {
     })
     @DeleteMapping("/{folderId}")
     public ResponseEntity<?> deleteFolder(
-            @Parameter @CurrentUser UserPrincipal userPrincipal,
-            @PathVariable Long folderId
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId
     ) {
         return folderService.deleteFolder(userPrincipal, folderId);
     }
