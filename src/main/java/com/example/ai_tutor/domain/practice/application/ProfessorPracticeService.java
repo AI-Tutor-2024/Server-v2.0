@@ -4,13 +4,19 @@ import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.chatgpt.application.GptService;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
+import com.example.ai_tutor.domain.practice.domain.Practice;
+import com.example.ai_tutor.domain.practice.domain.PracticeType;
+import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
+import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
+import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +38,8 @@ public class ProfessorPracticeService {
 
     private final UserRepository userRepository;
     private final NoteRepository noteRepository;
-    private ProfessorRepository professorRepository;
+    private final ProfessorRepository professorRepository;
+    private final PracticeRepository practiceRepository;
 
     private final GptService gptService;
 
@@ -79,6 +87,46 @@ public class ProfessorPracticeService {
         return ResponseEntity.ok(apiResponse);
     }
 
+    // 문제 저장
+    @Transactional
+    public ResponseEntity<?> savePractice(UserPrincipal userPrincipal, Long noteId, SavePracticeListReq savePracticeListReq) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Professor professor = professorRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("교수를 찾을 수 없습니다."));
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+
+        // 시간 제한을 밀리초로 변환하여 Note 객체에 설정
+        convertToMilliseconds(savePracticeListReq.getMinute(), savePracticeListReq.getSecond(), note);
+        note.updateEndDate(savePracticeListReq.getEndDate());
+
+        for (SavePracticeReq req : savePracticeListReq.getReqList()) {
+            List<String> choices = Objects.equals(req.getPracticeType(), "OX") ? null : req.getChoices();
+            Practice practice = Practice.builder()
+                    .note(note)
+                    .sequence(req.getPracticeNumber())
+                    .content(req.getContent())
+                    .choices(choices)
+                    .result(req.getResult())
+                    .solution(req.getSolution())
+                    .practiceType(PracticeType.valueOf(req.getPracticeType()))
+                    .build();
+            practiceRepository.save(practice);
+        }
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("문제가 저장되었습니다.")
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    private void convertToMilliseconds(int minute, int second, Note note) {
+        int totalMilliseconds = (minute * 60 * 1000) + (second * 1000);
+        note.updateLimitTime(totalMilliseconds);
+    }
 
 
 

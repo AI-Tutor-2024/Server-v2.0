@@ -61,4 +61,12 @@ public class Note extends BaseEntity {
         this.endDate = endDate;
         this.code = code;
     }
+
+    public void updateLimitTime(int limitTime) {
+        this.limitTime = limitTime;
+    }
+
+    public void updateEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
+    }
 }

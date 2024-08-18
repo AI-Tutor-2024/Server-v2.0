@@ -51,11 +51,14 @@ public class Practice extends BaseEntity {
     private Note note;
 
     @Builder
-    public Practice(Note note, String content,  String solution, Integer sequence){
+    public Practice(Note note, String content,  String solution, Integer sequence, String result, List<String> choices, PracticeType practiceType){
         this.note = note;
         this.content = content;
         this.solution = solution;
         this.sequence = sequence;
+        this.result = result;
+        this.choices = choices;
+        this.practiceType = practiceType;
     }
 
     // public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }

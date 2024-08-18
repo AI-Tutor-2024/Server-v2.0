@@ -2,11 +2,13 @@ package com.example.ai_tutor.domain.practice.presentation;
 
 import com.example.ai_tutor.domain.practice.application.ProfessorPracticeService;
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
+import com.example.ai_tutor.global.payload.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,4 +43,20 @@ public class ProfessorPracticeController {
     ) throws JsonProcessingException {
         return professorPracticeService.generatePractice(userPrincipal, createPracticeReq);
     }
+
+    // 문제 저장
+    @Operation(summary = "문제 저장", description = "생성된 문제를 저장합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class)) } ),
+            @ApiResponse(responseCode = "400", description = "생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping("/{noteId}")
+    public ResponseEntity<?> savePractice(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Schemas의 SavePracticeListReq를 참고해주세요", required = true) @RequestBody SavePracticeListReq savePracticeListReq,
+            @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+    ) {
+        return professorPracticeService.savePractice(userPrincipal, noteId, savePracticeListReq);
+    }
+
 }
