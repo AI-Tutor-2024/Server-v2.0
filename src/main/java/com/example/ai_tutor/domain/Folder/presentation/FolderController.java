@@ -41,29 +41,30 @@ public class FolderController {
         return folderService.createNewFolder(userPrincipal, folderCreateReq);
     }
 
-//    @Operation(summary = "폴더 목록 조회 API", description = "폴더 목록을 조회하는 API입니다.")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "폴더 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderListRes.class) ) } ),
-//            @ApiResponse(responseCode = "400", description = "폴더 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-//    })
-//    @GetMapping("/")
-//    public ResponseEntity<?> getAllFolders(
-//            @Parameter @CurrentUser UserPrincipal userPrincipal
-//    ) {
-//        return folderService.getAllFolders(userPrincipal);
-//    }
+    // 교수자 - 폴더 목록 조회
+    @Operation(summary = "폴더 목록 조회 API", description = "폴더 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "폴더 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderListRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "폴더 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/")
+    public ResponseEntity<?> getAllFolders(
+            @Parameter @CurrentUser UserPrincipal userPrincipal
+    ) {
+        return folderService.getAllFolders(userPrincipal);
+    }
 
-//    @Operation(summary = "폴더 이름 목록 조회 API", description = "폴더 이름 목록을 조회하는 API입니다.")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "폴더 이름 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderNameListRes.class) ) } ),
-//            @ApiResponse(responseCode = "400", description = "폴더 이름 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-//    })
-//    @GetMapping("/names")
-//    public ResponseEntity<?> getFolderNames(
-//            @Parameter @CurrentUser UserPrincipal userPrincipal
-//        ) {
-//        return folderService.getFolderNames(userPrincipal);
-//    }
+    @Operation(summary = "폴더 이름 목록 조회 API", description = "폴더 이름 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "폴더 이름 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderNameListRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "폴더 이름 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/names")
+    public ResponseEntity<?> getFolderNames(
+            @Parameter @CurrentUser UserPrincipal userPrincipal
+        ) {
+        return folderService.getFolderNames(userPrincipal);
+    }
 
     @Operation(summary = "폴더 정보 수정 API", description = "폴더 정보(강좌명/교수자명)를 수정하는 API입니다.")
     @ApiResponses(value = {
