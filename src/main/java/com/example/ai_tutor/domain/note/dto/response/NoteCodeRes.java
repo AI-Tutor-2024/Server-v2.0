@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class NoteCodeRes {
-    @Schema( type = "Long", example = "6DF1GH", description = "학생이 노트에 접속하기 위한 코드입니다.")
+    @Schema( type = "String", example = "6DF1GH", description = "학생이 노트에 접속하기 위한 코드입니다.")
     private String code;
 }
