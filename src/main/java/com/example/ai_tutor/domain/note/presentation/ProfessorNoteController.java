@@ -3,6 +3,7 @@ package com.example.ai_tutor.domain.note.presentation;
 import com.example.ai_tutor.domain.note.application.ProfessorNoteService;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
+import com.example.ai_tutor.domain.note.dto.response.NoteCodeRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
@@ -81,6 +82,19 @@ public class ProfessorNoteController {
             @Parameter(description = "삭제하려는 note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
         return professorNoteService.deleteNoteById(userPrincipal, noteId);
+    }
+
+    @Operation(summary = "문제 랜덤 코드 생성 API", description = "특정 문제지의 고유한 랜덤 코드를 생성하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "문제 랜덤 코드 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteCodeRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "문제 랜덤 코드 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @PostMapping("/code/{noteId}")
+    public ResponseEntity<?> createRandomCode(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "code를 생성하려는 note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+    ) {
+        return professorNoteService.createRandomCode(userPrincipal, noteId);
     }
 
 }

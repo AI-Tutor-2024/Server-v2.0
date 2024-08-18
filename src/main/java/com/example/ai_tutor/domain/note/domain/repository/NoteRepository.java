@@ -11,5 +11,5 @@ import java.util.List;
 public interface NoteRepository extends JpaRepository<Note, Long> {
     List<Note> findAllByFolderOrderByCreatedAtDesc(Folder folder);
 
-    List<Note> findAllByFolder(Folder folder);
+    boolean existsByCode(String code);
 }
