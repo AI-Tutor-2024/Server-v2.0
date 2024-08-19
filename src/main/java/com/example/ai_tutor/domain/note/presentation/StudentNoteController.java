@@ -3,19 +3,19 @@ package com.example.ai_tutor.domain.note.presentation;
 import com.example.ai_tutor.domain.note.application.StudentNoteService;
 
 import com.example.ai_tutor.domain.note.dto.request.NoteAccessReq;
-import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
-import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
 import com.example.ai_tutor.domain.note.dto.response.NoteAccessRes;
-import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
-import com.example.ai_tutor.domain.note.dto.response.StepOneListRes;
-import com.example.ai_tutor.global.config.security.token.CurrentUser;
-import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
-import com.example.ai_tutor.global.payload.Message;
 
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
