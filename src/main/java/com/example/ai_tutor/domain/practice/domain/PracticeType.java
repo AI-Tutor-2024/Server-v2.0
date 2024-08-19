@@ -8,6 +8,6 @@ import lombok.Getter;
 public enum PracticeType {
 
     OX,
-    MULTIPLE;
+    SHORT;
 
 }

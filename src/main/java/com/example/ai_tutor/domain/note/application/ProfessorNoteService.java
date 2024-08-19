@@ -98,6 +98,7 @@ public class ProfessorNoteService {
         return ResponseEntity.ok(apiResponse);
     }
 
+
 //
 //    // 녹음본이 아닌 영상을 업로드하는 방식으로 수정
 //     @Transactional
@@ -171,7 +172,7 @@ public class ProfessorNoteService {
                     return ProfessorNoteListDetailRes.builder()
                             .noteId(note.getNoteId())
                             .title(note.getTitle())
-                            .endDate(note.getEndDate())
+                            .endDate(note.getEndDate().toString())
                             .practiceSize(practiceRepository.countByNote(note))
                             .studentSize(studentSize)
                             .code(note.getCode())
@@ -219,7 +220,6 @@ public class ProfessorNoteService {
                 .build();
 
         return ResponseEntity.ok(apiResponse);
-
     }
 
 

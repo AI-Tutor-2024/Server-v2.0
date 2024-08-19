@@ -34,7 +34,6 @@ public class AuthService {
 
     private final CustomTokenProviderService customTokenProviderService;
     private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
 
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
