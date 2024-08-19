@@ -14,6 +14,4 @@ public interface NoteStudentRepository extends JpaRepository<NoteStudent, Long> 
     int countByNoteAndNoteStatus(Note note, NoteStatus noteStatus);
 
     List<NoteStudent> findByNote(Note note);
-
-    List<NoteStudent> findByNoteId(Long noteId);
 }

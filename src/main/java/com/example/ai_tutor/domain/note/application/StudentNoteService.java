@@ -1,20 +1,18 @@
 package com.example.ai_tutor.domain.note.application;
 
 import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
+import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 
 import com.example.ai_tutor.domain.note.dto.request.NoteAccessReq;
-import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
 import com.example.ai_tutor.domain.note.dto.response.NoteAccessRes;
-import com.example.ai_tutor.domain.note.dto.response.StudentNoteListDetailRes;
-import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
-import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
 
 import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
 import com.example.ai_tutor.domain.student.domain.repository.StudentRepository;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
