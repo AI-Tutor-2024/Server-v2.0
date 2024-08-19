@@ -5,6 +5,8 @@ import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.Folder.dto.request.FolderCreateReq;
 import com.example.ai_tutor.domain.Folder.dto.response.FolderListRes;
 import com.example.ai_tutor.domain.Folder.dto.response.FolderNameListRes;
+import com.example.ai_tutor.domain.professor.domain.Professor;
+import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
@@ -23,22 +25,38 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FolderService {
+
     private final FolderRepository folderRepository;
     private final UserRepository userRepository;
+    private final ProfessorRepository professorRepository;
 
+
+    // 교수자 - 폴더 생성
     @Transactional
     public ResponseEntity<?> createNewFolder(UserPrincipal userPrincipal, FolderCreateReq folderCreateReq) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
         String folderName = folderCreateReq.getFolderName();
-        String professor = folderCreateReq.getProfessor();
+        String professorName = folderCreateReq.getProfessorName();
+
+        Professor professor = user.getProfessor();
+        if(Objects.isNull(professor)){
+            professor = Professor.builder()
+                    .professorName(user.getName())
+                    .user(user)
+                    .build();
+            professorRepository.save(professor);
+            user.updateProfessor(professor);
+        }
 
         Folder folder = Folder.builder()
                 .folderName(folderName)
-                //.professor(professor)
-                //.user(user)
+                .professor(professor)
+                .professorName(professorName)
                 .build();
 
         folderRepository.save(folder);
+
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
                 .information("폴더 생성 성공")
@@ -48,45 +66,49 @@ public class FolderService {
 
     }
 
-//    public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal){
-//        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        // List<Folder> folders = folderRepository.findAllByUser(user);
-//        List<FolderNameListRes> folderRes = folders.stream()
-//                .map(folder -> FolderNameListRes.builder()
-//                        .folderId(folder.getFolderId())
-//                        .folderName(folder.getFolderName())
-//                        .build(
-//                ))
-//                .toList();
+    // 폴더 이름 목록 조회
+    public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal){
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Professor professor = user.getProfessor();
+        List<Folder> folders = professor.getFolders();
+        List<FolderNameListRes> folderRes = folders.stream()
+                .map(folder -> FolderNameListRes.builder()
+                        .folderId(folder.getFolderId())
+                        .folderName(folder.getFolderName())
+                        .build(
+                ))
+                .toList();
 
-//        ApiResponse apiResponse = ApiResponse.builder()
-//                .check(true)
-//                .information(folderRes)
-//                .build();
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(folderRes)
+                .build();
 
-//        return ResponseEntity.ok(apiResponse);
-//    }
+        return ResponseEntity.ok(apiResponse);
+    }
 
-//    @Transactional(readOnly = true)
-//    public ResponseEntity<?> getAllFolders(UserPrincipal userPrincipal) {
-//        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-//        List<Folder> folders = folderRepository.findAllByUser(user);
-//        List<FolderListRes> folderRes = folders.stream()
-//                .map(folder -> FolderListRes.builder()
-//                        .folderId(folder.getFolderId())
-//                        .folderName(folder.getFolderName())
-//                        //.professor(folder.getProfessor())
-//                        .build(
-//                        ))
-//                .toList();
+    // 폴더 목록 조회 (폴더명, 교수자명 포함)
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getAllFolders(UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Professor professor = user.getProfessor();
+        List<Folder> folders = professor.getFolders();
+        List<FolderListRes> folderRes = folders.stream()
+                .map(folder -> FolderListRes.builder()
+                        .folderId(folder.getFolderId())
+                        .folderName(folder.getFolderName())
+                        .professor(folder.getProfessorName())
+                        .build(
+                        ))
+                .toList();
 
-//        ApiResponse apiResponse = ApiResponse.builder()
-//                .check(true)
-//                .information(folderRes)
-//                .build();
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(folderRes)
+                .build();
 
-//        return ResponseEntity.ok(apiResponse);
-//    }
+        return ResponseEntity.ok(apiResponse);
+    }
 
     @Transactional
     public ResponseEntity<?> updateFolder(UserPrincipal userPrincipal, Long folderId, FolderCreateReq folderCreateReq) {
@@ -94,7 +116,7 @@ public class FolderService {
         Folder folder=folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
        // DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
-        // folder.updateFolder(folderCreateReq.getFolderName(), folderCreateReq.getProfessor());
+        folder.updateFolder(folderCreateReq.getFolderName(), folderCreateReq.getProfessorName());
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
@@ -108,7 +130,6 @@ public class FolderService {
     public ResponseEntity<?> deleteFolder(UserPrincipal userPrincipal, Long folderId) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder=folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-        //DefaultAssert.isTrue(folder.getUser().equals(user), "해당 폴더에 접근할 수 없습니다.");
 
         folderRepository.delete(folder);
         ApiResponse apiResponse = ApiResponse.builder()

@@ -69,4 +69,6 @@ public class Note extends BaseEntity {
     public void updateEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
+
+    public void updateCode(String code) {this.code = code;}
 }

@@ -19,4 +19,6 @@ public interface PracticeRepository extends JpaRepository<Practice, Long> {
     int countByNote(Note note);
 
     List<Practice> findByNoteOrderBySequenceAsc(Note note);
+
+    int countByNoteId(Long noteId);
 }

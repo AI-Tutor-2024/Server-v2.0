@@ -2,6 +2,14 @@ package com.example.ai_tutor.domain.note.application;
 
 import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
+
+import com.example.ai_tutor.domain.note.dto.request.NoteAccessReq;
+import com.example.ai_tutor.domain.note.dto.request.NoteStepUpdateReq;
+import com.example.ai_tutor.domain.note.dto.response.NoteAccessRes;
+import com.example.ai_tutor.domain.note.dto.response.StudentNoteListDetailRes;
+import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
+import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
+
 import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
 import com.example.ai_tutor.domain.student.domain.repository.StudentRepository;
@@ -9,6 +17,12 @@ import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +35,24 @@ public class StudentNoteService {
     private final FolderRepository folderRepository;
     private final PracticeRepository practiceRepository;
     private final NoteStudentRepository noteStudentRepository;
+
+    public ResponseEntity<?> accessNoteByCode(NoteAccessReq noteAccessReq) {
+
+        Note note = (Note) noteRepository.findByCode(noteAccessReq.getCode()).orElseThrow(() -> new IllegalArgumentException("문제지를 찾을 수 없습니다."));
+        boolean isClosed = LocalDateTime.now().isAfter(note.getEndDate());
+
+        if (isClosed) {
+            return ResponseEntity.badRequest().body("문제지 접근 기간이 만료되었습니다.");
+        }
+        else{
+            // 문제지 id를 반환
+            NoteAccessRes noteAccessRes = NoteAccessRes.builder()
+                    .noteId(note.getNoteId())
+                    .build();
+
+            return ResponseEntity.ok(noteAccessRes);
+        }
+    }
 
     // 문제지 목록 조회
 //    public ResponseEntity<?> getAllNotes(UserPrincipal userPrincipal, Long folderId) {

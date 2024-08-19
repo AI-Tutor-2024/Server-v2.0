@@ -1,16 +1,17 @@
 package com.example.ai_tutor.domain.note.application;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.answer.domain.repository.AnswerRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
+import com.example.ai_tutor.domain.note.dto.request.NoteCreateProcessReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
-import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
-import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
-import com.example.ai_tutor.domain.note.dto.response.ProfessorNoteListDetailRes;
+import com.example.ai_tutor.domain.note.dto.response.*;
+import com.example.ai_tutor.domain.note_student.application.NoteStudentService;
 import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
 import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
@@ -32,6 +33,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +50,7 @@ public class ProfessorNoteService {
     private final FolderRepository folderRepository;
     private final NoteStudentRepository noteStudentRepository;
     private final ProfessorRepository professorRepository;
+    private final NoteStudentService noteStudentService;
 
     private final AmazonS3 amazonS3;
     private final WebClient webClient;
@@ -94,6 +97,66 @@ public class ProfessorNoteService {
 
         return ResponseEntity.ok(apiResponse);
     }
+
+
+//
+//    // 녹음본이 아닌 영상을 업로드하는 방식으로 수정
+//     @Transactional
+//     public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq, MultipartFile file) {
+//         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//
+//         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+//         DefaultAssert.isTrue(user == folder.getProfessor().getUser(), "사용자가 일치하지 않습니다.");
+//
+//         String fileName= UUID.randomUUID().toString();
+//         try {
+//             // S3에 파일 업로드
+//             amazonS3.putObject(new PutObjectRequest("ai-tutor-record", fileName, file.getInputStream(), null));
+//         } catch (IOException e) { throw new RuntimeException(e); }
+//
+////         String recordUrl = amazonS3.getUrl("ai-tutor-record", fileName).toString();
+////         Note note = Note.builder()
+////                 .title(noteCreateReq.getTitle())
+////                 .
+////                 .step(0)
+////                 .folder(folder)
+////                .user(user)
+////                 .build();
+//         // 요약문 추출
+////         NoteCreateProcessReq noteCreateProcessReq = NoteCreateProcessReq.builder()
+////                 .userId(user.getUserId())
+////                 .folderId(folderId)
+////                 .noteId(note.getNoteId())
+////                 .recordUrl(recordUrl)
+////                 .build();
+//
+//         // post요청으로 user_id(Long), folder_id(Long), note_id(Long), 음성 url(String) 보내기
+//         ResponseEntity requestResult = webClient.post()
+//                 .uri("/start-process")
+//                 .bodyValue(noteCreateProcessReq)
+//                 .retrieve()
+//                 .bodyToMono(ResponseEntity.class)
+//                 .block();
+//
+//        // 상태코드로 완료 여부 판단
+//         if(requestResult.getStatusCode().is2xxSuccessful()){
+//             // noteRepository.save(note);
+//             ApiResponse apiResponse = ApiResponse.builder()
+//                     .check(true)
+//                     .information("노트 생성 성공")
+//                     .build();
+//
+//             return ResponseEntity.ok(apiResponse);
+//         }
+//         else{
+//             ApiResponse apiResponse = ApiResponse.builder()
+//                     .check(false)
+//                     .information("노트 생성 실패")
+//                     .build();
+//
+//             return ResponseEntity.badRequest().body(apiResponse);
+//         }
+//     }
 
     // 문제지 목록 조회
     public ResponseEntity<?> getAllNotesByFolder(UserPrincipal userPrincipal, Long folderId) {
@@ -159,4 +222,80 @@ public class ProfessorNoteService {
         return ResponseEntity.ok(apiResponse);
     }
 
+
+    // 문제지 랜덤 코드 생성
+    @Transactional
+    public ResponseEntity<?> createRandomCode(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+
+        // 코드 생성 시 영문자와 숫자만 포함
+        String code = generateUniqueCode();
+
+        note.updateCode(code);
+
+        NoteCodeRes noteCodeRes = NoteCodeRes.builder()
+                .code(note.getCode())
+                .build();
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(noteCodeRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // 랜덤 코드 생성 (중복 방지)
+    private String generateUniqueCode() {
+        String code = generateRandomCode();
+        while (noteRepository.existsByCode(code)) {
+            code = generateRandomCode();
+        }
+        return code;
+    }
+
+    // 랜덤 코드 문자열 생성
+    private String generateRandomCode() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder code = new StringBuilder(6);
+        Random random = new Random();
+
+        for (int i = 0; i < 6; i++) {
+            code.append(characters.charAt(random.nextInt(characters.length())));
+        }
+
+        return code.toString();
+    }
+
+    public ResponseEntity<?> getNoteResult(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        List<NoteStudent> noteStudentList = noteStudentRepository.findByNoteId(noteId);
+        List<NoteStudent> completedNoteStudentList = noteStudentList.stream()
+                .filter(noteStudent -> noteStudent.getNoteStatus() == NoteStatus.COMPLETED)
+                .toList();
+
+        NoteResultOfAllStudentListRes noteResultOfAllStudentListRes = NoteResultOfAllStudentListRes.builder()
+                .noteResultOfAllStudentDetailRes((NoteResultOfAllStudentDetailRes) completedNoteStudentList.stream()
+                        .map(noteStudent -> NoteResultOfAllStudentDetailRes.builder()
+                                .studentNumber(noteStudent.getStudent().getStudentNumber())
+                                .studentName(noteStudent.getStudent().getName())
+                                .correctCount(noteStudentService.getCorrectCount(noteStudent.getNoteStudentId()))
+                                .totalCount(practiceRepository.countByNoteId(noteId))
+                                .build())
+                        .toList())
+                .build();
+
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(noteResultOfAllStudentListRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
+    }
 }
