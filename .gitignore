@@ -41,4 +41,5 @@ out/
 /src/main/resources/oauth2/**
 /src/main/resources/s3/**
 /src/main/resources/chatgpt/**
+/src/main/resources/webclient/**
 

@@ -38,9 +38,9 @@ public class Practice extends BaseEntity {
     // private Integer score;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "choices", joinColumns = @JoinColumn(name = "practice_id"))
-    @Column(name = "choice")
-    private List<String> choices;    // 객관식의 경우에만 사용
+    @CollectionTable(name = "additional_results", joinColumns = @JoinColumn(name = "practice_id"))
+    @Column(name = "additional_answer")
+    private List<String> additionalResults;    // 객관식의 경우에만 사용
 
     @Enumerated(EnumType.STRING)
     @Column(name = "practice_type")
@@ -51,13 +51,13 @@ public class Practice extends BaseEntity {
     private Note note;
 
     @Builder
-    public Practice(Note note, String content,  String solution, Integer sequence, String result, List<String> choices, PracticeType practiceType){
+    public Practice(Note note, String content,  String solution, Integer sequence, String result, List<String> additionalResults, PracticeType practiceType){
         this.note = note;
         this.content = content;
         this.solution = solution;
         this.sequence = sequence;
         this.result = result;
-        this.choices = choices;
+        this.additionalResults = additionalResults;
         this.practiceType = practiceType;
     }
 

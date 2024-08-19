@@ -26,11 +26,7 @@ public class GptService {
         // GPT API 호출
         JsonNode response = callChatGpt(prompt);
         // 응답 파싱
-        if (type.equals("OX")) {
-            practiceResList = parseOxResponse(response, num);
-        } else {
-            practiceResList = parseMultipleChoiceResponse(response, num);
-        }
+        practiceResList = parseResponse(response, num, type);
         return practiceResList;
     }
 
@@ -53,23 +49,15 @@ public class GptService {
                         size, summary
                 );
 
-            case "MULTIPLE":
+            case "SHORT":
                 return String.format(
-                        "다음 요약문을 바탕으로 객관식 문제를 %d개 생성해주세요: %s\n" +
+                        "다음 요약문을 바탕으로 단답형 문제를 %d개 생성해주세요: %s\n" +
                                 "다음 형식으로 문제와 선택지, 정답, 해설을 포함하여 주세요: \n\n" +
-                                "다음은 객관식 문제와 해설입니다. 각 문제에 대한 네 가지 선택지, 정답, 해설을 포함하여, 문제 번호와 함께 제공해 주세요. 출력 시 반드시 서두를 제외하고 문제와 선택지, 정답, 해설만 포함시켜 주세요.\n\n" +
+                                "다음은 단답형 문제와 해설입니다. 각 문제에 대한 정답과 해설을 포함하여, 문제 번호와 함께 제공해 주세요. 출력 시 반드시 서두를 제외하고 문제와 정답, 해설만 포함시켜 주세요.\n\n" +
                                 "문제 1: [문제 내용]\n" +
-                                "A. [선택지 A]\n" +
-                                "B. [선택지 B]\n" +
-                                "C. [선택지 C]\n" +
-                                "D. [선택지 D]\n" +
                                 "정답: [정답]\n" +
                                 "해설: [해설]\n\n" +
                                 "문제 2: [문제 내용]\n" +
-                                "A. [선택지 A]\n" +
-                                "B. [선택지 B]\n" +
-                                "C. [선택지 C]\n" +
-                                "D. [선택지 D]\n" +
                                 "정답: [정답]\n" +
                                 "해설: [해설]\n\n" +
                                 "... (계속)",
@@ -112,21 +100,21 @@ public class GptService {
         return objectMapper.readTree(response.getBody());
     }
 
-    private List<CreatePracticeRes> parseOxResponse(JsonNode response, int startPracticeNumber) {
+    private List<CreatePracticeRes> parseResponse(JsonNode response, int startPracticeNumber, String practiceType) {
         List<CreatePracticeRes> practiceResList = new ArrayList<>();
 
         // GPT 응답에서 질문, 답변, 해설 추출
         String textResponse = response.path("choices").get(0).path("message").path("content").asText().trim();
-        //System.out.println("Full Text Response: " + textResponse); // 디버깅
+        // System.out.println("Full Text Response: " + textResponse); 전체 응답 확인
 
-        // 문제를 구분하는 정규 표현식 패턴 (문제 번호 및 내용 구분)
-        String[] problems = textResponse.split("(?=문제 \\d+:)"); // 문제의 시작을 기준으로 분리
+        // 문제 번호 및 내용 구분
+        String[] problems = textResponse.split("(?=문제 \\d+:)");
 
-        System.out.println("Number of Problems: " + problems.length); // 디버깅
+        // System.out.println("Number of Problems: " + problems.length); 문제 개수 확인
 
         for (String problem : problems) {
             if (problem.trim().isEmpty()) continue;
-            System.out.println("Problem Segment: " + problem); // 디버깅
+            // System.out.println("Problem Segment: " + problem); 문제 확인
 
             // 문제, 정답, 해설 파싱
             String problemPrefix = "문제 ";
@@ -136,10 +124,11 @@ public class GptService {
             int startIndexProblem = problem.indexOf(problemPrefix);
             int endIndexAnswer = problem.indexOf(answerPrefix);
 
-            if (startIndexProblem == -1 || endIndexAnswer == -1 || startIndexProblem >= endIndexAnswer) {
-                System.out.println("Missing Prefixes or Invalid Indices: Problem Index = " + startIndexProblem + ", Answer Index = " + endIndexAnswer); // 디버깅
-                continue;
-            }
+            // 인덱스 예외 확인
+            // if (startIndexProblem == -1 || endIndexAnswer == -1 || startIndexProblem >= endIndexAnswer) {
+            //     System.out.println("Missing Prefixes or Invalid Indices: Problem Index = " + startIndexProblem + ", Answer Index = " + endIndexAnswer); // 디버깅
+            //     continue;
+            // }
 
             startIndexProblem += problemPrefix.length();
             String content = problem.substring(startIndexProblem, endIndexAnswer).trim();
@@ -160,96 +149,11 @@ public class GptService {
             practiceResList.add(CreatePracticeRes.builder()
                     .practiceNumber(startPracticeNumber++)
                     .content(content)
-                    .choices(new ArrayList<>())  // OX 문제는 선택지가 없음
                     .result(result)
                     .solution(solution)
-                    .practiceType("OX")
+                    .practiceType(practiceType)
                     .build());
         }
         return practiceResList;
     }
-
-
-    private List<CreatePracticeRes> parseMultipleChoiceResponse(JsonNode response, int startPracticeNumber) {
-        List<CreatePracticeRes> practiceResList = new ArrayList<>();
-
-        // GPT 응답에서 질문, 답변, 해설 추출
-        String textResponse = response.path("choices").get(0).path("message").path("content").asText().trim();
-        // System.out.println("Full Text Response: " + textResponse); // 디버깅
-
-        // 문제를 구분하는 정규 표현식 패턴
-        String[] problems = textResponse.split("(?=문제 \\d+:)");
-
-        System.out.println("Number of Problems: " + problems.length); // 디버깅
-
-        for (String problem : problems) {
-            if (problem.trim().isEmpty()) continue;
-            System.out.println("Problem Segment: " + problem); // 디버깅
-
-            // 문제, 정답, 해설 파싱
-            String problemPrefix = "문제 ";
-            String answerPrefix = "정답:";
-            String explanationPrefix = "해설:";
-
-            int startIndexProblem = problem.indexOf(problemPrefix);
-            int endIndexAnswer = problem.indexOf(answerPrefix);
-
-            if (startIndexProblem == -1 || endIndexAnswer == -1 || startIndexProblem >= endIndexAnswer) {
-                System.out.println("Missing Prefixes or Invalid Indices: Problem Index = " + startIndexProblem + ", Answer Index = " + endIndexAnswer); // 디버깅
-                continue;
-            }
-
-            startIndexProblem += problemPrefix.length();
-            String contentWithChoices = problem.substring(startIndexProblem, endIndexAnswer).trim();
-
-            int startIndexAnswer = endIndexAnswer + answerPrefix.length();
-            int endIndexExplanation = problem.indexOf(explanationPrefix);
-
-            if (endIndexExplanation == -1) {
-                endIndexExplanation = problem.length();
-            }
-
-            String result = problem.substring(startIndexAnswer, endIndexExplanation).trim();
-            String solution = problem.substring(endIndexExplanation + explanationPrefix.length()).trim();
-
-            // 디버깅 출력
-            System.out.println("Parsed Content: " + contentWithChoices); // 디버깅
-            System.out.println("Parsed Result: " + result); // 디버깅
-            System.out.println("Parsed Solution: " + solution); // 디버깅
-
-            // 객관식 선택지 추출
-            List<String> choices = new ArrayList<>();
-            String[] lines = contentWithChoices.split("\\n");
-            for (String line : lines) {
-                line = line.trim();
-                if (line.startsWith("A.") || line.startsWith("B.") || line.startsWith("C.") || line.startsWith("D.")) {
-                    choices.add(line);
-                }
-            }
-
-            // 문제 번호와 콜론 제거 및 문제 내용 추출
-            String content = contentWithChoices.replaceAll("^(\\d+: )", "").trim();
-            int endOfQuestionIndex = content.indexOf("\n");
-            content = (endOfQuestionIndex == -1) ? content : content.substring(0, endOfQuestionIndex).trim();
-
-            // CreatePracticeRes 객체 생성 및 리스트에 추가
-            practiceResList.add(CreatePracticeRes.builder()
-                    .practiceNumber(startPracticeNumber++)
-                    .content(content)
-                    .choices(choices)
-                    .result(result)
-                    .solution(solution)
-                    .practiceType("MULTIPLE")
-                    .build());
-        }
-
-        return practiceResList;
-    }
-
-
-
-
-
-
-
 }
