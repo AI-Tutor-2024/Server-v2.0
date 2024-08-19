@@ -3,16 +3,13 @@ package com.example.ai_tutor.domain.note.domain;
 
 import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
-import com.example.ai_tutor.domain.common.Status;
-import com.example.ai_tutor.domain.summary.domain.Summary;
-import com.example.ai_tutor.domain.text.domain.Text;
-import com.example.ai_tutor.domain.tutor.domain.Tutor;
-import com.example.ai_tutor.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,65 +18,57 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public class Note extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="note_id", updatable = false)
     private Long noteId;
 
-    @Column(name="length")
-    private int length;
-
     @Column(name="title")
     private String title;
 
-    @Column(name="step")
-    private int step;
+    // 제한시간
+    private long limitTime;
 
-    @Column(name="record_url")
-    private String recordUrl;
+    // 마감시간
+    private LocalDateTime endDate;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name="note_status")
-//    private NoteStatus noteStatus=NoteStatus.IN_PROGRESS;
+    // code
+    private String code;
+
+    // 총점
+    // private int total;
+
+    // 평균
+    private double average = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="folder_id")
     private Folder folder;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
-    private User user;
-
-    @OneToMany(mappedBy = "note")
-    private List<Text> texts= new ArrayList<>();
-
-    // 원본 텍스트
-    @Lob
-    @Column(name="original_text", columnDefinition = "TEXT")
-    private String originalText;
-
-    // @OneToMany(mappedBy = "note")
+       // @OneToMany(mappedBy = "note")
     // private List<Note> notes= new ArrayList<>();
-
-    @OneToMany(mappedBy = "note")
-    private List<Summary> summaries= new ArrayList<>();
 
 //    public void updateStatus(NoteStatus noteStatus) {
 //        this.noteStatus = noteStatus;
 //    }
 
     @Builder
-    public Note(User user, Folder folder, String title, int length, int step, String recordUrl, String originalText){
-        this.user = user;
+    public Note(Folder folder, String title, long limitTime, LocalDateTime endDate, String code){
         this.folder = folder;
         this.title = title;
-        this.length = length;
-        this.step = step;
-        this.recordUrl = recordUrl;
-        this.originalText = originalText;
+        this.limitTime = limitTime;
+        this.endDate = endDate;
+        this.code = code;
     }
 
-    public void updateStep(int step) {
-        this.step = step;
+    public void updateLimitTime(int limitTime) {
+        this.limitTime = limitTime;
     }
+
+    public void updateEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
+    }
+
+    public void updateCode(String code) {this.code = code;}
 }

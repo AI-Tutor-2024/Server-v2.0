@@ -9,53 +9,57 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name= "Practice")
 @NoArgsConstructor
 @Getter
 public class Practice extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="practice_id", updatable = false, nullable = false)
     private Long practiceId;
 
     @Column(name="content")
-    private String content;
+    private String content;   // 문제
 
-    @Column(name="user_answer")
-    private String userAnswer;
+    @Column(name="solution")
+    private String solution;  // 해설
 
-    @Column(name="tutor_answer")
-    private String tutorAnswer;
+    @Column(name="sequence")
+    private Integer sequence; // 문제 번호
 
-    @Column(name="tutor_record_url")
-    private String tutorRecordUrl;
+    @Column(name="result")
+    private String result;    // 정답
 
-    //@Column(name="sequence")
-    //private Integer sequence;
+    // @Column(name="point")
+    // private Integer score;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "additional_results", joinColumns = @JoinColumn(name = "practice_id"))
+    @Column(name = "additional_answer")
+    private List<String> additionalResults;    // 객관식의 경우에만 사용
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "practice_type")
+    private PracticeType practiceType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="note_id")
     private Note note;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="folder_id")
-    private Folder folder;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id")
-    private User user;
-
     @Builder
-    public Practice(User user, Folder folder, Note note, String content, String userAnswer, String tutorAnswer, String tutorRecordUrl){
-        this.user = user;
-        this.folder = folder;
+    public Practice(Note note, String content,  String solution, Integer sequence, String result, List<String> additionalResults, PracticeType practiceType){
         this.note = note;
         this.content = content;
-        this.userAnswer = userAnswer;
-        this.tutorAnswer = tutorAnswer;
-        this.tutorRecordUrl = tutorRecordUrl;
+        this.solution = solution;
+        this.sequence = sequence;
+        this.result = result;
+        this.additionalResults = additionalResults;
+        this.practiceType = practiceType;
     }
 
-    public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
+    // public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
 }

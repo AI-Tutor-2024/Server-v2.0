@@ -13,4 +13,12 @@ public interface PracticeRepository extends JpaRepository<Practice, Long> {
     //Practice findByNoteAndSequence(Note note, int number);
 
     List<Practice> findAllByNoteOrderByPracticeId(Note note);
+
+    List<Practice> findByNote(Note note);
+
+    int countByNote(Note note);
+
+    List<Practice> findByNoteOrderBySequenceAsc(Note note);
+
+    int countByNoteId(Long noteId);
 }
