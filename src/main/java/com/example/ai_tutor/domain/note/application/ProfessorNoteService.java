@@ -272,20 +272,25 @@ public class ProfessorNoteService {
 
     public ResponseEntity<?> getNoteResult(UserPrincipal userPrincipal, Long noteId) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
-        List<NoteStudent> noteStudentList = noteStudentRepository.findByNoteId(noteId);
+        List<NoteStudent> noteStudentList = noteStudentRepository.findByNote(note);
         List<NoteStudent> completedNoteStudentList = noteStudentList.stream()
                 .filter(noteStudent -> noteStudent.getNoteStatus() == NoteStatus.COMPLETED)
                 .toList();
 
         NoteResultOfAllStudentListRes noteResultOfAllStudentListRes = NoteResultOfAllStudentListRes.builder()
                 .noteResultOfAllStudentDetailRes((NoteResultOfAllStudentDetailRes) completedNoteStudentList.stream()
-                        .map(noteStudent -> NoteResultOfAllStudentDetailRes.builder()
-                                .studentNumber(noteStudent.getStudent().getStudentNumber())
-                                .studentName(noteStudent.getStudent().getName())
-                                .correctCount(noteStudentService.getCorrectCount(noteStudent.getNoteStudentId()))
-                                .totalCount(practiceRepository.countByNoteId(noteId))
-                                .build())
+                        .map(noteStudent -> {
+                            Note findNote = noteRepository.findById(noteId)
+                                    .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+                            return NoteResultOfAllStudentDetailRes.builder()
+                                    .studentNumber(noteStudent.getStudent().getStudentNumber())
+                                    .studentName(noteStudent.getStudent().getName())
+                                    .correctCount(noteStudentService.getCorrectCount(noteStudent.getNoteStudentId()))
+                                    .totalCount(practiceRepository.countByNote(findNote))
+                                    .build();
+                        })
                         .toList())
                 .build();
 
