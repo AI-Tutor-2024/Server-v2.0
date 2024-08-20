@@ -17,6 +17,7 @@ import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRe
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeRes;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
+import com.example.ai_tutor.domain.summary.application.SummaryService;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,20 +48,23 @@ public class ProfessorPracticeService {
     private final PracticeRepository practiceRepository;
 
     private final GptService gptService;
+    private final SummaryService summaryService;
 
     // 문제 생성
-    public ResponseEntity<?> generatePractice(UserPrincipal userPrincipal, CreatePracticeReq createPracticeReq) throws JsonProcessingException {
+    public ResponseEntity<?> generatePractice(UserPrincipal userPrincipal, CreatePracticeReq createPracticeReq, MultipartFile file) throws IOException {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
 
         // 요약문 (파일 기반으로 생성)
         // 요약문 생성 메소드 여기 연결해주세요!
-        String summary = "1949년 10월 1일 제정된「국경일에 관한 법률」에 의거, 광복절이 국경일로 제정되었다. 이 날은 경축행사를 전국적으로 거행하는데 중앙경축식은 서울에서, 지방경축행사는 각 시·도 단위별로 거행한다.\n" +
-                "\n" +
-                "이 날의 의의를 고양하고자 전국의 모든 가정은 국기를 달아 경축하며, 정부는 이 날 저녁에 각계각층의 인사와 외교사절을 초청하여 경축연회를 베푼다.\n" +
-                "\n" +
-                "광복회원을 위한 우대조치의 하나로, 광복회원 및 동반가족에 대하여 전국의 철도·시내버스 및 수도권전철의 무임승차와 고궁 및 공원에 무료입장할 수 있도록 하고 있다.\n" +
-                "[네이버 지식백과] 광복절 [光復節] (한국민족문화대백과, 한국학중앙연구원)";
+        String summary = summaryService.createSummary(userPrincipal, file);
+
+//        String summary = "1949년 10월 1일 제정된「국경일에 관한 법률」에 의거, 광복절이 국경일로 제정되었다. 이 날은 경축행사를 전국적으로 거행하는데 중앙경축식은 서울에서, 지방경축행사는 각 시·도 단위별로 거행한다.\n" +
+//                "\n" +
+//                "이 날의 의의를 고양하고자 전국의 모든 가정은 국기를 달아 경축하며, 정부는 이 날 저녁에 각계각층의 인사와 외교사절을 초청하여 경축연회를 베푼다.\n" +
+//                "\n" +
+//                "광복회원을 위한 우대조치의 하나로, 광복회원 및 동반가족에 대하여 전국의 철도·시내버스 및 수도권전철의 무임승차와 고궁 및 공원에 무료입장할 수 있도록 하고 있다.\n" +
+//                "[네이버 지식백과] 광복절 [光復節] (한국민족문화대백과, 한국학중앙연구원)";
 
         // 문제 개수 및 유형
         int practiceSize = createPracticeReq.getPracticeSize();
