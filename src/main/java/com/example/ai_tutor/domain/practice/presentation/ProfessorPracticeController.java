@@ -45,7 +45,7 @@ public class ProfessorPracticeController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestPart CreatePracticeReq createPracticeReq,
             @Parameter(description = "Multipart form-data", required = true) @RequestPart MultipartFile file
-    ) throws IOException {
+    ) throws IOException, JsonProcessingException {
         return professorPracticeService.generatePractice(userPrincipal, createPracticeReq, file);
     }
 

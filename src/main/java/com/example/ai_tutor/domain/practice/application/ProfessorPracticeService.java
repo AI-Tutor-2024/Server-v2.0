@@ -51,7 +51,7 @@ public class ProfessorPracticeService {
     private final SummaryService summaryService;
 
     // 문제 생성
-    public ResponseEntity<?> generatePractice(UserPrincipal userPrincipal, CreatePracticeReq createPracticeReq, MultipartFile file) throws IOException {
+    public ResponseEntity<?> generatePractice(UserPrincipal userPrincipal, CreatePracticeReq createPracticeReq, MultipartFile file) throws IOException, JsonProcessingException {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
 
