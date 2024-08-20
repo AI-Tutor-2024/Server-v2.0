@@ -43,7 +43,7 @@ public class ProfessorPracticeController {
     @PostMapping("")
     public ResponseEntity<?> generatePractice(
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestBody CreatePracticeReq createPracticeReq,
+            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestPart CreatePracticeReq createPracticeReq,
             @Parameter(description = "Multipart form-data", required = true) @RequestPart MultipartFile file
     ) throws IOException {
         return professorPracticeService.generatePractice(userPrincipal, createPracticeReq, file);
