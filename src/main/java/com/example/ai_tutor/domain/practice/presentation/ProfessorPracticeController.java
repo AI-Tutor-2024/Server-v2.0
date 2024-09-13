@@ -23,6 +23,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Tag(name = "[교수자] 문제지", description = "문제지 생성 및 수정 API")
 @RequiredArgsConstructor
@@ -40,10 +43,10 @@ public class ProfessorPracticeController {
     @PostMapping("")
     public ResponseEntity<?> generatePractice(
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestBody CreatePracticeReq createPracticeReq
-            // @Parameter(description = "Multipart form-data", required = true) @RequestPart MultipartFile file
-    ) throws JsonProcessingException {
-        return professorPracticeService.generatePractice(userPrincipal, createPracticeReq);
+            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestPart CreatePracticeReq createPracticeReq,
+            @Parameter(description = "Multipart form-data", required = true) @RequestPart MultipartFile file
+    ) throws IOException, JsonProcessingException {
+        return professorPracticeService.generatePractice(userPrincipal, createPracticeReq, file);
     }
 
     // 문제 저장

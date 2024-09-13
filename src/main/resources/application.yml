@@ -15,9 +15,10 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-
-
-# 오류 처리
+  servlet:
+    multipart:
+      maxFileSize: 30MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB # 요청 하나의 최대 크기
 server:
   error:
     include-exception: true
@@ -25,3 +26,5 @@ server:
 
   #port 설정
   port: 8080
+
+
