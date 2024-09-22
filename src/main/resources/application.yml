@@ -17,8 +17,8 @@ spring:
       matching-strategy: ant_path_matcher
   servlet:
     multipart:
-      maxFileSize: 30MB # 파일 하나의 최대 크기
-      maxRequestSize: 30MB # 요청 하나의 최대 크기
+      maxFileSize: 500MB # 파일 하나의 최대 크기
+      maxRequestSize: 500MB # 요청 하나의 최대 크기
 server:
   error:
     include-exception: true
