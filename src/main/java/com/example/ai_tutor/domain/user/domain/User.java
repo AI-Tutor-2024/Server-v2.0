@@ -53,7 +53,7 @@ public class User extends BaseEntity {
         this.provider = provider;
         this.professor = professor;
         this.providerId = providerId;
-        this.role = role;
+        this.role = Role.PROFESSOR;
     }
 
     public void updateProfessor(Professor professor) { this.professor = professor; }
