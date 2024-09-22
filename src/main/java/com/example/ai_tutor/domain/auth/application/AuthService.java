@@ -7,6 +7,8 @@ import com.example.ai_tutor.domain.auth.domain.repository.TokenRepository;
 import com.example.ai_tutor.domain.auth.dto.AuthRes;
 import com.example.ai_tutor.domain.auth.dto.RefreshTokenReq;
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
+import com.example.ai_tutor.domain.professor.domain.Professor;
+import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
@@ -37,6 +39,7 @@ public class AuthService {
 
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
+    private final ProfessorRepository professorRepository;
 
     @Transactional
     public ResponseEntity<?> refresh(RefreshTokenReq tokenRefreshRequest){
@@ -125,6 +128,16 @@ public class AuthService {
                 .userEmail(tokenMapping.getUserEmail())
                 .build();
         tokenRepository.save(token);
+
+        // 교수자 생성
+        if(user.getProfessor() == null){
+            Professor professor = Professor.builder()
+                    .professorName(user.getName())
+                    .user(user)
+                    .build();
+            professorRepository.save(professor);
+            user.updateProfessor(professor);
+        }
 
         AuthRes authResponse = AuthRes.builder()
                 .accessToken(tokenMapping.getAccessToken())
