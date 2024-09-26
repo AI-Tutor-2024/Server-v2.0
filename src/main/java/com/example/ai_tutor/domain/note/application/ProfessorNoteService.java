@@ -90,9 +90,13 @@ public class ProfessorNoteService {
                  .build();
         noteRepository.save(note);
 
+        NoteAccessRes noteAccessRes = NoteAccessRes.builder()
+                .noteId(note.getNoteId())
+                .build();
+
         ApiResponse apiResponse = ApiResponse.builder()
                      .check(true)
-                     .information("노트 생성 성공. note id:" + note.getNoteId())
+                     .information(noteAccessRes)
                      .build();
 
         return ResponseEntity.ok(apiResponse);
