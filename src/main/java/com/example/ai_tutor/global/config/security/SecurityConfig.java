@@ -77,7 +77,8 @@ public class SecurityConfig {
                         .requestMatchers("/login/**","/auth/**", "/oauth2/**", "/api/v1/student/**")
                         .permitAll()
                         .anyRequest()
-                        .authenticated())
+                        .permitAll())
+                        //.authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(authorization -> authorization
                                 .baseUri("/oauth2/authorize")
