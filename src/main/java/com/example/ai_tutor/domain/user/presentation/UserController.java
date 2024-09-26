@@ -27,7 +27,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "사용자 정보 조회", description = "홈 화면에서 사용자의 정보(이름, 학습일수)를 조회합니다.")
+    @Operation(summary = "사용자 정보 조회", description = "홈 화면에서 사용자의 정보(이름)을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = HomeUserRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
