@@ -175,11 +175,12 @@ public class ProfessorNoteService {
         List<ProfessorNoteListDetailRes> noteListDetailRes = notes.stream()
                 .map(note -> {
                     int studentSize = noteStudentRepository.countByNoteAndNoteStatus(note, NoteStatus.COMPLETED);
-                    boolean isClosed = LocalDateTime.now().isAfter(note.getEndDate());
+                    LocalDateTime endDate = note.getEndDate();
+                    boolean isClosed = endDate != null && LocalDateTime.now().isAfter(endDate);
                     return ProfessorNoteListDetailRes.builder()
                             .noteId(note.getNoteId())
                             .title(note.getTitle())
-                            .endDate(note.getEndDate().toString())
+                            .endDate(endDate != null ? endDate.toString() : null)
                             .practiceSize(practiceRepository.countByNote(note))
                             .studentSize(studentSize)
                             .code(note.getCode())
