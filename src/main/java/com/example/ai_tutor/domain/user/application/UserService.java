@@ -22,8 +22,9 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public ResponseEntity<?> getHomeUserInfo(UserPrincipal userPrincipal) {
-        User user = validUserById(userPrincipal.getId());
+    public ResponseEntity<?> getHomeUserInfo() {
+        //User user = validUserById(userPrincipal.getId());
+        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         HomeUserRes homeUserRes = HomeUserRes.builder()
                 .userId(user.getUserId())

@@ -34,7 +34,8 @@ public class UserController {
     })
     @GetMapping()
     public ResponseEntity<?> getUserInfo(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
-        return userService.getHomeUserInfo(userPrincipal);
+            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
+    ) {
+        return userService.getHomeUserInfo();
     }
 }
