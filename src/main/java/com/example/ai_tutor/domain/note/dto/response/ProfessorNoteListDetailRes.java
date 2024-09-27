@@ -1,5 +1,6 @@
 package com.example.ai_tutor.domain.note.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +21,10 @@ public class ProfessorNoteListDetailRes {
 
     @Schema( type = "String", example ="빅데이터기술특론 1주차", description="교수자가 생성한 노트의 이름입니다.")
     private String title; //노트 제목
+
+    @Schema(type = "LocalDate", example = "2024-04-26", description = "가입 일자입니다.")
+    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING)
+    private LocalDate createdAt;
 
     //@Schema( type = "String", example ="2024-08-11 16:18:58.688107", description="문제 풀이 기한입니다.")
     //private String endDate;
