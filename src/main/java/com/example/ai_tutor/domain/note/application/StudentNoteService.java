@@ -37,19 +37,19 @@ public class StudentNoteService {
     public ResponseEntity<?> accessNoteByCode(NoteAccessReq noteAccessReq) {
 
         Note note = (Note) noteRepository.findByCode(noteAccessReq.getCode()).orElseThrow(() -> new IllegalArgumentException("문제지를 찾을 수 없습니다."));
-        boolean isClosed = LocalDateTime.now().isAfter(note.getEndDate());
+        //boolean isClosed = LocalDateTime.now().isAfter(note.getEndDate());
 
-        if (isClosed) {
-            return ResponseEntity.badRequest().body("문제지 접근 기간이 만료되었습니다.");
-        }
-        else{
+        //if (isClosed) {
+        //    return ResponseEntity.badRequest().body("문제지 접근 기간이 만료되었습니다.");
+        //}
+        //else{
             // 문제지 id를 반환
             NoteAccessRes noteAccessRes = NoteAccessRes.builder()
                     .noteId(note.getNoteId())
                     .build();
 
             return ResponseEntity.ok(noteAccessRes);
-        }
+        //}
     }
 
     // 문제지 목록 조회
