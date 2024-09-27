@@ -56,9 +56,11 @@ public class ProfessorPracticeService {
         Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
 
         // 요약문 (파일 기반으로 생성)
+        // TODO: createPractice.getRequestment()로 요구사항 입력
         String summary = summaryService.createSummary(userPrincipal, file);
 
         // 문제 개수 및 유형
+        // TODO: createPractice.getKeywords()로 키워드 입력
         int practiceSize = createPracticeReq.getPracticeSize();
         List<CreatePracticeRes> practices = new ArrayList<>();
 
