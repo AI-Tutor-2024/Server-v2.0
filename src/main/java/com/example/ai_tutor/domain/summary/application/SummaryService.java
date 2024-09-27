@@ -23,9 +23,8 @@ public class SummaryService {
     private final UserRepository userRepository;
     private final WebClient webClient;
 
-    public String createSummary(UserPrincipal userPrincipal, MultipartFile file) throws IOException {
-        User user = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public String createSummary(MultipartFile file) throws IOException {
+        //User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         // Create MultipartBodyBuilder
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("file", new ByteArrayResource(file.getBytes()))

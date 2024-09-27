@@ -42,11 +42,11 @@ public class ProfessorPracticeController {
     })
     @PostMapping("")
     public ResponseEntity<?> generatePractice(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestPart CreatePracticeReq createPracticeReq,
             @Parameter(description = "Multipart form-data", required = true) @RequestPart MultipartFile file
     ) throws IOException, JsonProcessingException {
-        return professorPracticeService.generatePractice(userPrincipal, createPracticeReq, file);
+        return professorPracticeService.generatePractice(createPracticeReq, file);
     }
 
     // 문제 저장
@@ -57,11 +57,11 @@ public class ProfessorPracticeController {
     })
     @PostMapping("/{noteId}")
     public ResponseEntity<?> savePractice(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 SavePracticeListReq를 참고해주세요", required = true) @RequestBody SavePracticeListReq savePracticeListReq,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
-        return professorPracticeService.savePractice(userPrincipal, noteId, savePracticeListReq);
+        return professorPracticeService.savePractice(noteId, savePracticeListReq);
     }
 
     // 문제 조회
@@ -72,10 +72,10 @@ public class ProfessorPracticeController {
     })
     @GetMapping("/{noteId}")
     public ResponseEntity<?> findPractices(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
-        return professorPracticeService.getPractices(userPrincipal, noteId);
+        return professorPracticeService.getPractices(noteId);
     }
 
     @Operation(summary = "제한 시간, 마감 기간 수정", description = "제한 시간, 마감 기간을 수정합니다.")
@@ -85,11 +85,11 @@ public class ProfessorPracticeController {
     })
     @PatchMapping("/{noteId}")
     public ResponseEntity<?> updateLimitAndEnd(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId,
             @Parameter(description = "Schemas의 UpdateLimitAndEndReq를 참고해주세요", required = true) @RequestBody UpdateLimitAndEndReq updateLimitAndEndReq
     ) {
-        return professorPracticeService.updateLimitTimeAndEndDate(userPrincipal, noteId, updateLimitAndEndReq);
+        return professorPracticeService.updateLimitTimeAndEndDate(noteId, updateLimitAndEndReq);
     }
 
 }
