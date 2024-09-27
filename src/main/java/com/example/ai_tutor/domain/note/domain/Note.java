@@ -28,10 +28,10 @@ public class Note extends BaseEntity {
     private String title;
 
     // 제한시간
-    private long limitTime;
+    //private long limitTime;
 
     // 마감시간
-    private LocalDateTime endDate;
+    //private LocalDateTime endDate;
 
     // code
     private String code;
@@ -40,7 +40,7 @@ public class Note extends BaseEntity {
     // private int total;
 
     // 평균
-    private double average = 0;
+    //private double average = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="folder_id")
@@ -54,20 +54,12 @@ public class Note extends BaseEntity {
 //    }
 
     @Builder
-    public Note(Folder folder, String title, long limitTime, LocalDateTime endDate, String code){
+    public Note(Folder folder, String title, String code){
         this.folder = folder;
         this.title = title;
-        this.limitTime = limitTime;
-        this.endDate = endDate;
+        //this.limitTime = limitTime;
+        //this.endDate = endDate;
         this.code = code;
-    }
-
-    public void updateLimitTime(int limitTime) {
-        this.limitTime = limitTime;
-    }
-
-    public void updateEndDate(LocalDateTime endDate) {
-        this.endDate = endDate;
     }
 
     public void updateCode(String code) {this.code = code;}

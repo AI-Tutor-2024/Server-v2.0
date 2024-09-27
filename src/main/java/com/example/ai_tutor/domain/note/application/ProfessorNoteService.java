@@ -174,18 +174,18 @@ public class ProfessorNoteService {
         List<Note> notes = noteRepository.findAllByFolderOrderByCreatedAtDesc(folder);
         List<ProfessorNoteListDetailRes> noteListDetailRes = notes.stream()
                 .map(note -> {
-                    int studentSize = noteStudentRepository.countByNoteAndNoteStatus(note, NoteStatus.COMPLETED);
-                    LocalDateTime endDate = note.getEndDate();
-                    boolean isClosed = endDate != null && LocalDateTime.now().isAfter(endDate);
+                    // int studentSize = noteStudentRepository.countByNoteAndNoteStatus(note, NoteStatus.COMPLETED);
+                    // LocalDateTime endDate = note.getEndDate();
+                    // boolean isClosed = endDate != null && LocalDateTime.now().isAfter(endDate);
                     return ProfessorNoteListDetailRes.builder()
                             .noteId(note.getNoteId())
                             .title(note.getTitle())
-                            .endDate(endDate != null ? endDate.toString() : null)
+                            //.endDate(endDate != null ? endDate.toString() : null)
                             .practiceSize(practiceRepository.countByNote(note))
-                            .studentSize(studentSize)
+                            //.studentSize(studentSize)
                             .code(note.getCode())
-                            .average(note.getAverage())
-                            .closed(isClosed)
+                            //.average(note.getAverage())
+                            //.closed(isClosed)
                             .build();
                 })
                 .toList();
