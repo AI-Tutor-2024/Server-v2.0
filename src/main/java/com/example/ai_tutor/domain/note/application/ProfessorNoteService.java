@@ -180,6 +180,7 @@ public class ProfessorNoteService {
                     return ProfessorNoteListDetailRes.builder()
                             .noteId(note.getNoteId())
                             .title(note.getTitle())
+                            .createdAt(note.getCreatedAt().toLocalDate())
                             //.endDate(endDate != null ? endDate.toString() : null)
                             .practiceSize(practiceRepository.countByNote(note))
                             //.studentSize(studentSize)
