@@ -81,6 +81,7 @@ public class ProfessorPracticeService {
 
         CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
                 .practiceResList(practices)
+                .summary(summary)
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
