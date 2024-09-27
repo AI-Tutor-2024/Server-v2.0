@@ -93,7 +93,7 @@ public class ProfessorPracticeService {
 
     // 문제 저장
     @Transactional
-    public ResponseEntity<?> savePractice(Long noteId, SavePracticeListReq savePracticeListReq) {
+    public ResponseEntity<?> savePractice(Long noteId, List<SavePracticeReq> savePracticeReqs) {
        // User user = userRepository.findById(userPrincipal.getId())
         //.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -104,10 +104,10 @@ public class ProfessorPracticeService {
                 .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         // 제한시간을 밀리초로 변환
-        convertToMilliseconds(savePracticeListReq.getMinute(), savePracticeListReq.getSecond(), note);
-        note.updateEndDate(savePracticeListReq.getEndDate());
+        // convertToMilliseconds(savePracticeListReq.getMinute(), savePracticeListReq.getSecond(), note);
+        //note.updateEndDate(savePracticeListReq.getEndDate());
 
-        for (SavePracticeReq req : savePracticeListReq.getReqList()) {
+        for (SavePracticeReq req : savePracticeReqs) {
             List<String> additionalRes = Objects.equals(req.getPracticeType(), "OX") ? null : req.getAdditionalResults();
             Practice practice = Practice.builder()
                     .note(note)
@@ -129,40 +129,40 @@ public class ProfessorPracticeService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    private void convertToMilliseconds(Integer minute, Integer second, Note note) {
-        int totalMilliseconds = (minute * 60 * 1000) + (second * 1000);
-        note.updateLimitTime(totalMilliseconds);
-    }
+    //private void convertToMilliseconds(Integer minute, Integer second, Note note) {
+    //    int totalMilliseconds = (minute * 60 * 1000) + (second * 1000);
+    //    note.updateLimitTime(totalMilliseconds);
+    //}
 
     // 제한시간 및 마감 시간 수정
-    @Transactional
-    public ResponseEntity<?> updateLimitTimeAndEndDate(Long noteId, UpdateLimitAndEndReq updateLimitAndEndReq) {
+//    @Transactional
+//    public ResponseEntity<?> updateLimitTimeAndEndDate(Long noteId, UpdateLimitAndEndReq updateLimitAndEndReq) {
         //User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+//        Note note = noteRepository.findById(noteId)
+//                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         // Validation
-        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
-            if (updateLimitAndEndReq.getMinute() < 0 || updateLimitAndEndReq.getSecond() < 0) {
-                throw new IllegalArgumentException("시간과 초는 음수일 수 없습니다.");
-            }
-        }
-        // 마감기간 update
-        if (updateLimitAndEndReq.getEndDate() != null) {
-            note.updateEndDate(updateLimitAndEndReq.getEndDate());
-        }
+//        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
+//            if (updateLimitAndEndReq.getMinute() < 0 || updateLimitAndEndReq.getSecond() < 0) {
+//                throw new IllegalArgumentException("시간과 초는 음수일 수 없습니다.");
+//            }
+//        }
+//        // 마감기간 update
+//        if (updateLimitAndEndReq.getEndDate() != null) {
+//            note.updateEndDate(updateLimitAndEndReq.getEndDate());
+//        }
         // 제한시간 update
-        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
-            convertToMilliseconds(updateLimitAndEndReq.getMinute(), updateLimitAndEndReq.getSecond(), note);
-        }
+//        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
+//            convertToMilliseconds(updateLimitAndEndReq.getMinute(), updateLimitAndEndReq.getSecond(), note);
+//        }
+//
+//        ApiResponse apiResponse = ApiResponse.builder()
+//                .check(true)
+//                .information("마감 기간, 제한 시간이 변경되었습니다.")
+//                .build();
 
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("마감 기간, 제한 시간이 변경되었습니다.")
-                .build();
-
-        return ResponseEntity.ok(apiResponse);
-    }
+//        return ResponseEntity.ok(apiResponse);
+//    }
 
     // 문제 조회
     public ResponseEntity<?> getPractices(Long noteId) {
@@ -186,21 +186,21 @@ public class ProfessorPracticeService {
                         )
                         .toList();
 
-        int[] result = convertToMinutesAndSeconds(note.getLimitTime());
+        //int[] result = convertToMinutesAndSeconds(note.getLimitTime());
 
-        int minutes = result[0];
-        int seconds = result[1];
+        //int minutes = result[0];
+        //int seconds = result[1];
 
-        ProfessorPracticeListRes professorPracticeListRes = ProfessorPracticeListRes.builder()
-                .minute(minutes)
-                .second(seconds)
-                .endDate(note.getEndDate())
-                .reqList(practiceResList)
-                .build();
+        //ProfessorPracticeListRes professorPracticeListRes = ProfessorPracticeListRes.builder()
+        //        .minute(minutes)
+        //        .second(seconds)
+        //        .endDate(note.getEndDate())
+        //        .reqList(practiceResList)
+        //        .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(professorPracticeListRes)
+                .information(practiceResList)
                 .build();
         return ResponseEntity.ok(apiResponse);
     }
