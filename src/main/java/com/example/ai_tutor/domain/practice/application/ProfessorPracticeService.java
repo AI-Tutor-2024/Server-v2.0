@@ -53,15 +53,19 @@ public class ProfessorPracticeService {
     // 문제 생성
     public ResponseEntity<?> generatePractice(CreatePracticeReq createPracticeReq, MultipartFile file) throws IOException, JsonProcessingException {
         // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+//        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 요약문 (파일 기반으로 생성)
         // TODO: createPractice.getRequestment()로 요구사항 입력
-        String summary = summaryService.createSummary(file);
+        String summary = summaryService.createSummary(file, createPracticeReq.getKeywords(), createPracticeReq.getRequirement());
 
         // 문제 개수 및 유형
         // TODO: createPractice.getKeywords()로 키워드 입력
         int practiceSize = createPracticeReq.getPracticeSize();
+
+        // 문제 개수가 0이면 기본값 10으로 설정
+        if (practiceSize <= 0) {practiceSize = 10;}
+
         List<CreatePracticeRes> practices = new ArrayList<>();
 
         if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
