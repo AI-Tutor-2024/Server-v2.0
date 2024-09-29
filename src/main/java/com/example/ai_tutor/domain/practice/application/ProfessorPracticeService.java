@@ -62,6 +62,10 @@ public class ProfessorPracticeService {
         // 문제 개수 및 유형
         // TODO: createPractice.getKeywords()로 키워드 입력
         int practiceSize = createPracticeReq.getPracticeSize();
+
+        // 문제 개수가 0이면 기본값 10으로 설정
+        if (practiceSize <= 0) {practiceSize = 10;}
+
         List<CreatePracticeRes> practices = new ArrayList<>();
 
         if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
