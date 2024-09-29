@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GptService {
 
     @Value("${chatgpt.api-key}")
@@ -114,7 +116,7 @@ public class GptService {
 
         for (String problem : problems) {
             if (problem.trim().isEmpty()) continue;
-            // System.out.println("Problem Segment: " + problem); 문제 확인
+            log.info("Problem Segment: {}", problem); // 문제 확인
 
             // 문제, 정답, 해설 파싱
             String problemPrefix = "문제 ";
@@ -124,11 +126,11 @@ public class GptService {
             int startIndexProblem = problem.indexOf(problemPrefix);
             int endIndexAnswer = problem.indexOf(answerPrefix);
 
-            // 인덱스 예외 확인
-            // if (startIndexProblem == -1 || endIndexAnswer == -1 || startIndexProblem >= endIndexAnswer) {
-            //     System.out.println("Missing Prefixes or Invalid Indices: Problem Index = " + startIndexProblem + ", Answer Index = " + endIndexAnswer); // 디버깅
-            //     continue;
-            // }
+//             인덱스 예외 확인
+             if (startIndexProblem == -1 || endIndexAnswer == -1 || startIndexProblem >= endIndexAnswer) {
+                 log.info("Missing Prefixes or Invalid Indices: Problem Index = " + startIndexProblem + ", Answer Index = " + endIndexAnswer); // 디버깅
+                 continue;
+             }
 
             startIndexProblem += problemPrefix.length();
             String content = problem.substring(startIndexProblem, endIndexAnswer).trim();
