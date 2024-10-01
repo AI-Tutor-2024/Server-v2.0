@@ -41,6 +41,11 @@ dependencies {
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 
+    // OPENAPI
+    dependencies {
+        implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
+    }
+
     // GPT
     implementation 'io.github.flashvayne:chatgpt-spring-boot-starter:1.0.4'
 

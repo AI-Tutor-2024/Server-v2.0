@@ -17,10 +17,13 @@ spring:
     ansi:
       enabled: always
   mvc:
-    pathmatch:
+    path match:
       matching-strategy: ant_path_matcher
+    async:
+      request-timeout: 180000  # 180초 (단위: 밀리초)
 
 
+---
 # 오류 처리
 server:
   error:
@@ -29,3 +32,11 @@ server:
 
   #port 설정
   port: 8080
+
+---
+springdoc:
+  swagger-ui:
+    path: /api/v1/docs
+    url: /openapi.json
+  api-docs:
+    path: /api/v1/api-docs
