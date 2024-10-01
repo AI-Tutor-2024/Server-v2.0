@@ -9,16 +9,22 @@ logging:
 
 # console 색상
 spring:
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB  # 전체 요청의 최대 크기 (여러 파일 포함 가능)
   output:
     ansi:
       enabled: always
   mvc:
-    pathmatch:
+    path match:
       matching-strategy: ant_path_matcher
-  servlet:
-    multipart:
-      maxFileSize: 500MB # 파일 하나의 최대 크기
-      maxRequestSize: 500MB # 요청 하나의 최대 크기
+    async:
+      request-timeout: 180000  # 180초 (단위: 밀리초)
+
+
+---
+# 오류 처리
 server:
   error:
     include-exception: true
@@ -27,4 +33,10 @@ server:
   #port 설정
   port: 8080
 
-
+---
+springdoc:
+  swagger-ui:
+    path: /api/v1/docs
+    url: /openapi.json
+  api-docs:
+    path: /api/v1/api-docs
