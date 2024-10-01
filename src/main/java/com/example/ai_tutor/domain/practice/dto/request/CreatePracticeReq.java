@@ -21,7 +21,7 @@ public class CreatePracticeReq {
     @Schema(type = "String", example ="OX", description="생성할 문제의 유형입니다. OX(OX문제), MULTIPLE(객관식), BOTH(혼합)")
     private String type;
 
-    @Schema(type = "String[]", example ="네트워크, 강의, OSI", description="문제 생성 시 강조할 키워드입니다.")
+    @Schema(type = "String", example ="네트워크, 강의, OSI", description="문제 생성 시 강조할 키워드입니다.")
     private String keywords;
 
     // 요구사항

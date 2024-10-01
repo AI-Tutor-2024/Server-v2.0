@@ -33,10 +33,26 @@ public class ProfessorPracticeController {
 
     private final ProfessorPracticeService professorPracticeService;
 
+    @Operation(
+            summary = "Practice 문제 생성",
+            description = "CreatePracticeReq를 참고하여 문제를 생성하고 파일을 업로드합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Practice 문제 생성 성공",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 오류",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class)))
+            }
+    )
     @PostMapping("")
     public Mono<ResponseEntity<com.example.ai_tutor.global.payload.ApiResponse>> generatePractice(
-            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestPart CreatePracticeReq createPracticeReq,
-            @Parameter(description = "Multipart form-data", required = true) @RequestPart MultipartFile file
+            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true)
+            @RequestPart CreatePracticeReq createPracticeReq,
+
+            @Parameter(description = "Multipart form-data", required = true,
+                    schema = @Schema(type = "string", format = "binary"))
+            @RequestPart MultipartFile file
     ) {
         return professorPracticeService.generatePractice(createPracticeReq, file)
                 .map(apiResponse -> ResponseEntity.ok((com.example.ai_tutor.global.payload.ApiResponse) apiResponse));  // ApiResponse를 ResponseEntity로 감싸서 반환
