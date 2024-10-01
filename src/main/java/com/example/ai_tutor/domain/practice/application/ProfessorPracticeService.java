@@ -1,43 +1,36 @@
 package com.example.ai_tutor.domain.practice.application;
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
-import com.example.ai_tutor.domain.chatgpt.application.GptService;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.practice.domain.PracticeType;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
-import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
-import com.example.ai_tutor.domain.practice.dto.request.UpdateLimitAndEndReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
-import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeRes;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.summary.application.SummaryService;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
-import com.example.ai_tutor.global.DefaultAssert;
-import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProfessorPracticeService {
@@ -46,54 +39,70 @@ public class ProfessorPracticeService {
     private final NoteRepository noteRepository;
     private final ProfessorRepository professorRepository;
     private final PracticeRepository practiceRepository;
-
-    private final GptService gptService;
+    private final QuizGeneratorService quizGeneratorService;
     private final SummaryService summaryService;
 
     // 문제 생성
-    public ResponseEntity<?> generatePractice(CreatePracticeReq createPracticeReq, MultipartFile file) throws IOException, JsonProcessingException {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-//        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public Mono<ApiResponse> generatePractice(CreatePracticeReq createPracticeReq, MultipartFile file) {
+        return summaryService.processSttAndSummary(file, createPracticeReq.getKeywords(), createPracticeReq.getRequirement())
+                .flatMap(summary -> {
+                    // 문제 개수 및 유형 설정
+                    int practiceSize = createPracticeReq.getPracticeSize() > 0 ? createPracticeReq.getPracticeSize() : 10;
 
-        // 요약문 (파일 기반으로 생성)
-        // TODO: createPractice.getRequestment()로 요구사항 입력
-        String summary = summaryService.createSummary(file, createPracticeReq.getKeywords(), createPracticeReq.getRequirement());
+                    if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
+                        // OX문제와 단답형 문제 반반 생성
+                        int oxCount = (practiceSize % 2 == 0) ? practiceSize / 2 : practiceSize / 2 + 1;
+                        int shortCount = practiceSize - oxCount;
 
-        // 문제 개수 및 유형
-        // TODO: createPractice.getKeywords()로 키워드 입력
-        int practiceSize = createPracticeReq.getPracticeSize();
+                        // OX 문제와 단답형 문제를 비동기적으로 병렬 처리
+                        Mono<List<CreatePracticeRes>> oxPracticesMono = quizGeneratorService.generateQuestions(summary, oxCount, "OX", 1);
+                        Mono<List<CreatePracticeRes>> shortPracticesMono = quizGeneratorService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
 
-        // 문제 개수가 0이면 기본값 10으로 설정
-        if (practiceSize <= 0) {practiceSize = 10;}
+                        // zip을 이용해 두 결과를 병렬 처리하고 결합
+                        return Mono.zip(oxPracticesMono, shortPracticesMono)
+                                .map(tuple -> {
+                                    List<CreatePracticeRes> combinedList = new ArrayList<>();
+                                    combinedList.addAll(tuple.getT1()); // OX 문제
+                                    combinedList.addAll(tuple.getT2()); // 단답형 문제
+                                    return combinedList;
+                                })
+                                .map(practices -> {
+                                    CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
+                                            .practiceResList(practices)
+                                            .summary(summary)
+                                            .build();
 
-        List<CreatePracticeRes> practices = new ArrayList<>();
+                                    return ApiResponse.builder()
+                                            .check(true)
+                                            .information(createPracticeListRes)
+                                            .build();
+                                });
+                    } else {
+                        // 지정된 문제 유형에 맞는 문제 생성 (OX 또는 SHORT 중 하나)
+                        return quizGeneratorService.generateQuestions(summary, practiceSize, createPracticeReq.getType(), 1)
+                                .map(practices -> {
+                                    CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
+                                            .practiceResList(practices)
+                                            .summary(summary)
+                                            .build();
 
-        if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
-            // OX문제와 단답형 문제 반반 생성
-            int oxCount = practiceSize % 2 == 0 ? practiceSize / 2 : practiceSize / 2 + 1;
-            int shortCount = practiceSize - oxCount;
-
-            List<CreatePracticeRes> oxPractices = gptService.generateQuestions(summary, oxCount, "OX", 1);
-            List<CreatePracticeRes> shortPractices = gptService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
-
-            practices.addAll(oxPractices);
-            practices.addAll(shortPractices);
-        } else {
-            // 지정된 문제 유형에 맞는 문제 생성
-            practices = gptService.generateQuestions(summary, practiceSize, createPracticeReq.getType(), 1);
-        }
-
-        CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
-                .practiceResList(practices)
-                .summary(summary)
-                .build();
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(createPracticeListRes)
-                .build();
-        return ResponseEntity.ok(apiResponse);
+                                    return ApiResponse.builder()
+                                            .check(true)
+                                            .information(createPracticeListRes)
+                                            .build();
+                                });
+                    }
+                })
+                .onErrorResume(error -> {
+                    log.error("문제 생성 중 오류 발생", error);
+                    return Mono.just(ApiResponse.builder()
+                            .check(false)
+                            .information("문제 생성 실패")
+                            .build());
+                });
     }
+
+
 
     // 문제 저장
     @Transactional
