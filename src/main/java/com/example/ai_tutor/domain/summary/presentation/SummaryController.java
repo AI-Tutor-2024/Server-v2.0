@@ -41,14 +41,20 @@ public class SummaryController {
 
 
 
-    @Operation(summary = "파일 및 키워드를 기반으로 요약 생성", description = "파일, 키워드 목록 및 요구사항을 기반으로 요약을 생성합니다.")
+
+    @Operation(
+            summary = "파일 및 키워드를 기반으로 요약 생성",
+            description = "파일, 키워드 목록 및 요구사항을 기반으로 요약을 생성합니다."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "요약 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)) }),
-            @ApiResponse(responseCode = "400", description = "요약 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)) })
+            @ApiResponse(responseCode = "200", description = "요약 생성 성공",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)) }),
+            @ApiResponse(responseCode = "400", description = "요약 생성 실패",
+                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)) })
     })
     @PostMapping(value = "/get-summary", consumes = "multipart/form-data")
     public Mono<ResponseEntity<String>> getSummary(
-            @RequestPart("file") MultipartFile file,  // 파일을 처리하는 부분은 그대로 유지
+            @RequestPart("file") MultipartFile file,  // 파일 파라미터
             @RequestPart(value = "request", required = false) SummaryReq summaryReq) throws IOException {
 
         // summaryReq가 null일 때 기본 처리
