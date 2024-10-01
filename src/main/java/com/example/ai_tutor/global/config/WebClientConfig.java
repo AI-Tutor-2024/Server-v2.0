@@ -3,31 +3,27 @@ package com.example.ai_tutor.global.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ReactorResourceFactory;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfig {
 
-    @Value("${openapi.chatgpt.url}")
-    private String gptUrl;
-
-    @Value("${openapi.clova.url}")
-    private String clovaUrl;
+    @Value("${webclient.base-url}")
+    private String baseUrl;
 
     @Bean
-    public WebClient gptWebClient() {
-        return createWebClient(gptUrl);
+    public ReactorResourceFactory resourceFactory() {
+        ReactorResourceFactory factory = new ReactorResourceFactory();
+        factory.setUseGlobalResources(false);
+        return factory;
     }
 
     @Bean
-    public WebClient clovaWebClient() {
-        return createWebClient(clovaUrl);
-    }
-
-    private WebClient createWebClient(String baseUrl) {
+    public WebClient webClient(){
         return WebClient.builder()
                 .baseUrl(baseUrl)
                 .build();
     }
-}
 
+}

@@ -4,7 +4,12 @@ import com.example.ai_tutor.domain.practice.application.ProfessorPracticeService
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdateLimitAndEndReq;
+import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
+import com.example.ai_tutor.global.config.security.token.CurrentUser;
+import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,31 +37,19 @@ public class ProfessorPracticeController {
 
     private final ProfessorPracticeService professorPracticeService;
 
-    @Operation(
-            summary = "Practice 문제 생성",
-            description = "CreatePracticeReq를 참고하여 문제를 생성하고 파일을 업로드합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Practice 문제 생성 성공",
-                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
-                    @ApiResponse(responseCode = "400", description = "잘못된 요청",
-                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
-                    @ApiResponse(responseCode = "500", description = "서버 오류",
-                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class)))
-            }
-    )
+    @Operation(summary = "문제 생성", description = "파일, 문제 유형 및 개수를 기반으로 문제를 생성합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "생성 성공", content = { @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CreatePracticeRes.class))) } ),
+            @ApiResponse(responseCode = "400", description = "생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
     @PostMapping("")
-    public Mono<ResponseEntity<com.example.ai_tutor.global.payload.ApiResponse>> generatePractice(
-            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true)
-            @RequestPart CreatePracticeReq createPracticeReq,
-
-            @Parameter(description = "Multipart form-data", required = true,
-                    schema = @Schema(type = "string", format = "binary"))
-            @RequestPart MultipartFile file
-    ) {
-        return professorPracticeService.generatePractice(createPracticeReq, file)
-                .map(apiResponse -> ResponseEntity.ok((com.example.ai_tutor.global.payload.ApiResponse) apiResponse));  // ApiResponse를 ResponseEntity로 감싸서 반환
+    public ResponseEntity<?> generatePractice(
+            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true) @RequestPart CreatePracticeReq createPracticeReq,
+            @Parameter(description = "Multipart form-data", required = true) @RequestPart MultipartFile file
+    ) throws IOException, JsonProcessingException {
+        return professorPracticeService.generatePractice(createPracticeReq, file);
     }
-
 
     // 문제 저장
     @Operation(summary = "문제 저장", description = "생성된 문제를 저장합니다.")

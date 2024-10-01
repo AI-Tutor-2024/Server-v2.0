@@ -11,10 +11,8 @@ import java.util.List;
 @Getter
 public class SummaryReq {
 
-    @Schema(type = "String", example = "원하는 중요 키워드를 입력하세요.", description = "키워드 문자열입니다.")
-    private String keywords;
+    @Schema(type = "Array", example = "[\"keyword1\", \"keyword2\", \"keyword3\"]", description = "요약을 위한 키워드 목록입니다.")
+    private List<String> keywords;
 
-    @Schema(type = "String", example = "중요한 점들을 강조해주세요.", description = "요약 시 강조할 요구사항입니다.")
-    private String requirement;
+    private String requirements;
 }
-

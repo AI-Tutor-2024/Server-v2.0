@@ -53,6 +53,8 @@ public class ProfessorNoteService {
     private final NoteStudentService noteStudentService;
 
     private final AmazonS3 amazonS3;
+    private final WebClient webClient;
+
 
     // 수업 정보 조회
     @Transactional
