@@ -1,9 +1,7 @@
-package com.example.ai_tutor.domain.summary.dto.response;
+package com.example.ai_tutor.domain.summary.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-
-import java.util.List;
 
 @Builder
 @AllArgsConstructor
