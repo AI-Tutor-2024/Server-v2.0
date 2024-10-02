@@ -1,9 +1,7 @@
 package com.example.ai_tutor.domain.summary.presentation;
 
 import com.example.ai_tutor.domain.summary.application.SummaryService;
-import com.example.ai_tutor.domain.summary.dto.response.SummaryReq;
-import com.example.ai_tutor.global.config.security.token.CurrentUser;
-import com.example.ai_tutor.global.config.security.token.UserPrincipal;
+import com.example.ai_tutor.domain.summary.dto.request.SummaryReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.List;
 
 @Tag(name = "요약문", description = "요약문 관련 API")
 @RequiredArgsConstructor
