@@ -1,7 +1,11 @@
 package com.example.ai_tutor.domain.summary.application;
 
+import com.example.ai_tutor.domain.note.domain.Note;
+import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.openAPI.application.ClovaService;
 import com.example.ai_tutor.domain.openAPI.application.GptService;
+import com.example.ai_tutor.domain.summary.domain.Summary;
+import com.example.ai_tutor.domain.summary.domain.repository.SummaryRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +22,13 @@ public class SummaryService {
 
     private final ClovaService clovaService;
     private final GptService gptService;
+    private final SummaryRepository summaryRepository;
+    private final NoteRepository noteRepository;
 
-    public Mono<String> processSttAndSummary(MultipartFile file, String keywords, String requirement) {
+    public Mono<String> processSttAndSummary(MultipartFile file, String keywords, String requirement, Long noteId) {
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new RuntimeException("해당 노트를 찾을 수 없습니다."));
+
         return clovaService.processSpeechToText(file)  // Clova STT 처리
                 .flatMap(response -> {
                     // STT 결과에서 텍스트 추출
@@ -34,7 +43,15 @@ public class SummaryService {
                                 // GPT 응답에서 요약 추출
                                 JsonNode choices = gptResponse.get("choices");
                                 if (choices != null && choices.isArray() && !choices.isEmpty()) {
-                                    sink.next(choices.get(0).get("message").get("content").asText());  // 요약 텍스트 반환
+                                    String summaryText = choices.get(0).get("message").get("content").asText();
+
+                                    // Note 엔터티에 요약 저장
+                                    Summary summary = Summary.builder()
+                                            .content(summaryText)
+                                            .note(note)
+                                            .build();
+                                    summaryRepository.save(summary);
+                                    sink.next(summaryText);  // 요약 텍스트 반환
                                 } else {
                                     sink.error(new RuntimeException("GPT 응답에서 선택지를 찾을 수 없습니다."));
                                 }

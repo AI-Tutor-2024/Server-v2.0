@@ -45,8 +45,9 @@ public class ProfessorPracticeController {
                             content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class)))
             }
     )
-    @PostMapping("")
+    @PostMapping("/{noteId}/new")
     public Mono<ResponseEntity<com.example.ai_tutor.global.payload.ApiResponse>> generatePractice(
+            @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId,
             @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true)
             @RequestPart CreatePracticeReq createPracticeReq,
 
@@ -54,7 +55,7 @@ public class ProfessorPracticeController {
                     schema = @Schema(type = "string", format = "binary"))
             @RequestPart MultipartFile file
     ) {
-        return professorPracticeService.generatePractice(createPracticeReq, file)
+        return professorPracticeService.generatePractice(createPracticeReq, file, noteId)
                 .map(apiResponse -> ResponseEntity.ok((com.example.ai_tutor.global.payload.ApiResponse) apiResponse));  // ApiResponse를 ResponseEntity로 감싸서 반환
     }
 

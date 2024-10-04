@@ -3,6 +3,7 @@ package com.example.ai_tutor.domain.note.domain;
 
 import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
+import com.example.ai_tutor.domain.summary.domain.Summary;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,6 +46,10 @@ public class Note extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="folder_id")
     private Folder folder;
+
+    @OneToOne(mappedBy = "note")
+    private Summary summary;
+
 
        // @OneToMany(mappedBy = "note")
     // private List<Note> notes= new ArrayList<>();

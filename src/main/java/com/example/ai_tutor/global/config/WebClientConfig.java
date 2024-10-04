@@ -27,7 +27,9 @@ public class WebClientConfig {
     private WebClient createWebClient(String baseUrl) {
         return WebClient.builder()
                 .baseUrl(baseUrl)
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(1000 * 1024 * 1024)) // 1000MB로 설정
                 .build();
     }
 }
-

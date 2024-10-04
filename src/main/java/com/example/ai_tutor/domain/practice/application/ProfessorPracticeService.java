@@ -43,8 +43,8 @@ public class ProfessorPracticeService {
     private final SummaryService summaryService;
 
     // 문제 생성
-    public Mono<ApiResponse> generatePractice(CreatePracticeReq createPracticeReq, MultipartFile file) {
-        return summaryService.processSttAndSummary(file, createPracticeReq.getKeywords(), createPracticeReq.getRequirement())
+    public Mono<ApiResponse> generatePractice(CreatePracticeReq createPracticeReq, MultipartFile file, Long noteId) {
+        return summaryService.processSttAndSummary(file, createPracticeReq.getKeywords(), createPracticeReq.getRequirement(), noteId)
                 .flatMap(summary -> {
                     // 문제 개수 및 유형 설정
                     int practiceSize = createPracticeReq.getPracticeSize() > 0 ? createPracticeReq.getPracticeSize() : 10;
@@ -101,6 +101,7 @@ public class ProfessorPracticeService {
                             .build());
                 });
     }
+
 
 
 
