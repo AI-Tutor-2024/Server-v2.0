@@ -6,14 +6,17 @@ import com.example.ai_tutor.domain.openAPI.application.ClovaService;
 import com.example.ai_tutor.domain.openAPI.application.GptService;
 import com.example.ai_tutor.domain.summary.domain.Summary;
 import com.example.ai_tutor.domain.summary.domain.repository.SummaryRepository;
+import com.example.ai_tutor.domain.summary.dto.response.SummaryRes;
+import com.example.ai_tutor.domain.user.domain.User;
+import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
+import com.example.ai_tutor.global.payload.ApiResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class SummaryService {
     private final GptService gptService;
     private final SummaryRepository summaryRepository;
     private final NoteRepository noteRepository;
+    private final UserRepository userRepository;
 
     public Mono<String> processSttAndSummary(MultipartFile file, String keywords, String requirement, Long noteId) {
         Note note = noteRepository.findById(noteId)
@@ -116,4 +120,23 @@ public class SummaryService {
         providing clarity and focus in the summary.
         """;
 
+    public ResponseEntity<?> getSummary(Long noteId) {
+        User user = userRepository.findById(1L)
+                .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new RuntimeException("해당 노트를 찾을 수 없습니다."));
+        // 요약 조회 로직 구현
+        Summary summary = (Summary) summaryRepository.findByNote(note)
+                .orElseThrow(() -> new RuntimeException("해당 노트의 요약을 찾을 수 없습니다."));
+        SummaryRes sttRes = SummaryRes.builder()
+                .summary(summary.getContent())
+                .build();
+
+        ApiResponse response = ApiResponse.builder()
+                .check(true)
+                .information(sttRes)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 }
