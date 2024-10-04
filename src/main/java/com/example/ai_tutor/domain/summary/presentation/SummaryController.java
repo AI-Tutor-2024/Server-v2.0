@@ -38,35 +38,35 @@ public class SummaryController {
 
 
 
-
-    @Operation(
-            summary = "파일 및 키워드를 기반으로 요약 생성",
-            description = "파일, 키워드 목록 및 요구사항을 기반으로 요약을 생성합니다."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "요약 생성 성공",
-                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)) }),
-            @ApiResponse(responseCode = "400", description = "요약 생성 실패",
-                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)) })
-    })
-    @PostMapping(value = "/get-summary", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<String>> getSummary(
-            @RequestPart("file") MultipartFile file,  // 파일 파라미터
-            @RequestPart(value = "request", required = false) SummaryReq summaryReq) throws IOException {
-
-        // summaryReq가 null일 때 기본 처리
-        String keywords = summaryReq != null ? summaryReq.getKeywords() : "";  // 기본값 빈 리스트
-        String requirement = summaryReq != null ? summaryReq.getRequirement() : "";  // 기본값 빈 문자열
-
-        // SummaryService의 processSttAndSummary 메서드 호출
-        return summaryService.processSttAndSummary(file, keywords, requirement)
-                .map(summary -> ResponseEntity.ok().body(summary))  // 성공 시 200 응답 반환
-                .onErrorResume(error -> {
-                    // 에러가 발생하면 로그를 남기고 400 응답을 반환
-                    log.error("요약 생성 중 오류 발생: {}", error.getMessage());
-                    return Mono.just(ResponseEntity.badRequest().body("요약 생성 실패: " + error.getMessage()));
-                });
-    }
+//
+//    @Operation(
+//            summary = "파일 및 키워드를 기반으로 요약 생성",
+//            description = "파일, 키워드 목록 및 요구사항을 기반으로 요약을 생성합니다."
+//    )
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "요약 생성 성공",
+//                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)) }),
+//            @ApiResponse(responseCode = "400", description = "요약 생성 실패",
+//                    content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)) })
+//    })
+//    @PostMapping(value = "/get-summary", consumes = "multipart/form-data")
+//    public Mono<ResponseEntity<String>> getSummary(
+//            @RequestPart("file") MultipartFile file,  // 파일 파라미터
+//            @RequestPart(value = "request", required = false) SummaryReq summaryReq) throws IOException {
+//
+//        // summaryReq가 null일 때 기본 처리
+//        String keywords = summaryReq != null ? summaryReq.getKeywords() : "";  // 기본값 빈 리스트
+//        String requirement = summaryReq != null ? summaryReq.getRequirement() : "";  // 기본값 빈 문자열
+//
+//        // SummaryService의 processSttAndSummary 메서드 호출
+//        return summaryService.processSttAndSummary(file, keywords, requirement)
+//                .map(summary -> ResponseEntity.ok().body(summary))  // 성공 시 200 응답 반환
+//                .onErrorResume(error -> {
+//                    // 에러가 발생하면 로그를 남기고 400 응답을 반환
+//                    log.error("요약 생성 중 오류 발생: {}", error.getMessage());
+//                    return Mono.just(ResponseEntity.badRequest().body("요약 생성 실패: " + error.getMessage()));
+//                });
+//    }
 
 
 

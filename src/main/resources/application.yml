@@ -20,7 +20,7 @@ spring:
     path match:
       matching-strategy: ant_path_matcher
     async:
-      request-timeout: 180000  # 180초 (단위: 밀리초)
+      request-timeout: 3000000  # 300초 (단위: 밀리초)
 
 
 ---
