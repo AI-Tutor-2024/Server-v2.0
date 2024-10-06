@@ -47,7 +47,7 @@ public class Note extends BaseEntity {
     @JoinColumn(name="folder_id")
     private Folder folder;
 
-    @OneToOne(mappedBy = "note")
+    @OneToOne(mappedBy = "note", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Summary summary;
 
 
