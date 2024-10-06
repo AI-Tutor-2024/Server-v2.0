@@ -1,11 +1,15 @@
 package com.example.ai_tutor.domain.Folder.domain;
 
 import com.example.ai_tutor.domain.common.BaseEntity;
+import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="Folder")
@@ -27,6 +31,9 @@ public class Folder extends BaseEntity {
 
     @Column(name="professor_name")
     private String professorName;
+
+    @OneToMany(mappedBy = "folder", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Note> notes = new ArrayList<>();
 
     // @ManyToOne(fetch = FetchType.LAZY)
     // @JoinColumn(name="student_id")
