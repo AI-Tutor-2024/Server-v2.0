@@ -11,8 +11,8 @@ logging:
 spring:
   servlet:
     multipart:
-      max-file-size: 1GB
-      max-request-size: 1GB  # 전체 요청의 최대 크기 (여러 파일 포함 가능)
+      max-file-size: 2GB
+      max-request-size: 2GB  # 전체 요청의 최대 크기 (여러 파일 포함 가능)
   output:
     ansi:
       enabled: always
