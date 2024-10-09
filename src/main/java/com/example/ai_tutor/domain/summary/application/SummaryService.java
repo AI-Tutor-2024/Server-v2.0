@@ -114,7 +114,8 @@ public class SummaryService {
         Keep the summary logically structured so that each idea flows from one to the next.
         
         The tone should be formal and objective, accurately reflecting the core content of the lecture.
-        The final summary should be written in Korean, with each sentence ending in '다' or '이다.'
+        In the request, if there is a stipulation about the style, write it in words that correspond to the content, otherwise basically end in '~다.' and '~이다.'. 
+        If the requirement and baseprompt require different parts, write it according to the requirement first.
         
         As the professor, your role is to guide students in understanding the key points of your lecture,
         providing clarity and focus in the summary.
