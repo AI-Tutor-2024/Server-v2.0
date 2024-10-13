@@ -805,13 +805,34 @@
       "SavePracticeReq": {
         "type": "object",
         "properties": {
-          "question": {
-            "type": "string",
-            "description": "문제 내용"
+          "practiceNumber": {
+            "type": "integer",
+            "example": 1,
+            "description": "문제의 번호입니다."
           },
-          "answer": {
+          "content": {
+            "type": "string",
+            "example": "광복절의 중앙경축식은 매년 서울에서만 거행된다.",
+            "description": "문제의 내용"
+          },
+          "additianalResults": {
+            "type": "string",
+            "example": "[Answer, ANSWER, answer, 정답]",
+            "description": "문제의 추가 답안"
+          },
+          "result": {
             "type": "string",
             "description": "문제의 정답"
+          },
+            "solution": {
+                "type": "string",
+                "example": "요약문에 따르면 중앙경축식은 서울에서 거행되고, 지방경축행사는 각 시·도 단위별로 거행된다.",
+                "description": "문제의 해설"
+            },
+          "practiceType": {
+            "type": "string",
+            "example": "OX",
+            "description": "문제의 타입입니다. OX, SHORT"
           }
         }
       },
