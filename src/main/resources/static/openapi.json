@@ -513,45 +513,6 @@
         }
       }
     },
-    "/professor/summary/get-summary": {
-      "post": {
-        "tags": ["Summary"],
-        "summary": "파일 및 키워드를 기반으로 요약 생성",
-        "description": "파일, 키워드 목록 및 요구사항을 기반으로 요약을 생성합니다.",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/SummaryReq"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "요약 생성 성공",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "요약 생성 성공 메시지 또는 요약된 내용"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "요약 생성 실패",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/professor/summary/{noteId}":{
         "get": {
             "tags": ["Summary"],
