@@ -697,7 +697,7 @@
             "description": "노트 제목"
           }
         },
-        "required": ["noteName"]
+        "required": ["title"]
       },
       "NoteListRes": {
         "type": "object",
