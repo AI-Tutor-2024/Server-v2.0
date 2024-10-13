@@ -378,7 +378,7 @@
         }
       }
     },
-    "/professor/practice": {
+    "/professor/practice/{noteId}/new": {
       "post": {
         "tags": ["Practice"],
         "summary": "문제 생성",
