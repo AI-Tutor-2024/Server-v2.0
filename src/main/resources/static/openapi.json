@@ -513,45 +513,6 @@
         }
       }
     },
-    "/professor/summary/get-summary": {
-      "post": {
-        "tags": ["Summary"],
-        "summary": "파일 및 키워드를 기반으로 요약 생성",
-        "description": "파일, 키워드 목록 및 요구사항을 기반으로 요약을 생성합니다.",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/SummaryReq"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "요약 생성 성공",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "example": "요약 생성 성공 메시지 또는 요약된 내용"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "요약 생성 실패",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/professor/summary/{noteId}":{
         "get": {
             "tags": ["Summary"],
@@ -697,7 +658,7 @@
             "description": "노트 제목"
           }
         },
-        "required": ["noteName"]
+        "required": ["title"]
       },
       "NoteListRes": {
         "type": "object",
@@ -844,13 +805,34 @@
       "SavePracticeReq": {
         "type": "object",
         "properties": {
-          "question": {
-            "type": "string",
-            "description": "문제 내용"
+          "practiceNumber": {
+            "type": "integer",
+            "example": 1,
+            "description": "문제의 번호입니다."
           },
-          "answer": {
+          "content": {
+            "type": "string",
+            "example": "광복절의 중앙경축식은 매년 서울에서만 거행된다.",
+            "description": "문제의 내용"
+          },
+          "additianalResults": {
+            "type": "string",
+            "example": "[Answer, ANSWER, answer, 정답]",
+            "description": "문제의 추가 답안"
+          },
+          "result": {
             "type": "string",
             "description": "문제의 정답"
+          },
+            "solution": {
+                "type": "string",
+                "example": "요약문에 따르면 중앙경축식은 서울에서 거행되고, 지방경축행사는 각 시·도 단위별로 거행된다.",
+                "description": "문제의 해설"
+            },
+          "practiceType": {
+            "type": "string",
+            "example": "OX",
+            "description": "문제의 타입입니다. OX, SHORT"
           }
         }
       },
