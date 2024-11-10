@@ -815,9 +815,9 @@
             "example": "광복절의 중앙경축식은 매년 서울에서만 거행된다.",
             "description": "문제의 내용"
           },
-          "additianalResults": {
-            "type": "string",
-            "example": "[Answer, ANSWER, answer, 정답]",
+          "additionalResults": {
+            "type": "array",
+            "example": ["Answer", "ANSWER", "answer", "정답"],
             "description": "문제의 추가 답안"
           },
           "result": {

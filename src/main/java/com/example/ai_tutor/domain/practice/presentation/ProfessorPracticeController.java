@@ -63,16 +63,13 @@ public class ProfessorPracticeController {
 
 
     // 문제 저장
-    @Operation(summary = "문제 저장", description = "생성된 문제를 저장합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class)) } ),
-            @ApiResponse(responseCode = "400", description = "생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
-    })
     @PostMapping("/{noteId}")
     public ResponseEntity<?> savePractice(
+
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 SavePracticeListReq를 참고해주세요", required = true) @RequestBody List<SavePracticeReq> savePracticeReqs,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+
     ) {
         return professorPracticeService.savePractice(userPrincipal, noteId, savePracticeReqs);
     }
