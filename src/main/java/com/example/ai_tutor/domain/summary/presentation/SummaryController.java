@@ -37,7 +37,7 @@ public class SummaryController {
             @CurrentUser UserPrincipal userPrincipal,
             @PathVariable Long noteId
     ) {
-        return summaryService.getSummary(noteId);
+        return summaryService.getSummary(userPrincipal, noteId);
     }
 
 
