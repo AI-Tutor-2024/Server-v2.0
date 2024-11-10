@@ -54,9 +54,9 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-s3'
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
-//    // fastAPI
-//    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-//    implementation 'io.netty:netty-resolver-dns-native-macos:4.1.68.Final'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'io.netty:netty-all:4.1.68.Final'  // 명시적으로 Netty 버전 설정
+    implementation 'io.netty:netty-resolver-dns-native-macos:4.1.68.Final'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
