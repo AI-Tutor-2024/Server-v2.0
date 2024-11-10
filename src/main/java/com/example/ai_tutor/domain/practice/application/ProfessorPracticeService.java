@@ -15,6 +15,7 @@ import com.example.ai_tutor.domain.professor.domain.repository.ProfessorReposito
 import com.example.ai_tutor.domain.summary.application.SummaryService;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
+import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,10 +108,10 @@ public class ProfessorPracticeService {
 
     // 문제 저장
     @Transactional
-    public ResponseEntity<?> savePractice(Long noteId, List<SavePracticeReq> savePracticeReqs) {
-       // User user = userRepository.findById(userPrincipal.getId())
-        //.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> savePractice(UserPrincipal userPrincipal, Long noteId, List<SavePracticeReq> savePracticeReqs) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         Professor professor = professorRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalArgumentException("교수를 찾을 수 없습니다."));
@@ -179,8 +180,8 @@ public class ProfessorPracticeService {
 //    }
 
     // 문제 조회
-    public ResponseEntity<?> getPractices(Long noteId) {
-        //User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
         List<Practice> practices = practiceRepository.findByNoteOrderBySequenceAsc(note);
