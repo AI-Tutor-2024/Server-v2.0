@@ -56,9 +56,9 @@ public class ProfessorNoteService {
 
     // 수업 정보 조회
     @Transactional
-    public ResponseEntity<?> getFolderInfo(   Long folderId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> getFolderInfo(UserPrincipal userPrincipal, Long folderId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
         FolderInfoRes folderInfoRes = FolderInfoRes.builder()
@@ -77,9 +77,9 @@ public class ProfessorNoteService {
 
     // 노트 생성
     @Transactional
-    public ResponseEntity<?> createNewNote(   Long folderId, NoteCreateReq noteCreateReq) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
 
@@ -163,9 +163,9 @@ public class ProfessorNoteService {
 //     }
 
     // 문제지 목록 조회
-    public ResponseEntity<?> getAllNotesByFolder(   Long folderId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> getAllNotesByFolder(UserPrincipal userPrincipal, Long folderId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         DefaultAssert.isTrue(user == folder.getProfessor().getUser(), "사용자가 일치하지 않습니다.");
 
@@ -199,9 +199,9 @@ public class ProfessorNoteService {
 
     // 문제지 삭제
     @Transactional
-    public ResponseEntity<?> deleteNoteById(   Long noteId) {
-        //User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> deleteNoteById(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         Folder folder = note.getFolder();
@@ -233,10 +233,10 @@ public class ProfessorNoteService {
 
     // 문제지 랜덤 코드 생성
     @Transactional
-    public ResponseEntity<?> createRandomCode(   Long noteId) {
-       // User user = userRepository.findById(userPrincipal.getId())
-         //       .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> createRandomCode(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        // User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
@@ -279,8 +279,8 @@ public class ProfessorNoteService {
         return code.toString();
     }
 
-    public ResponseEntity<?> getNoteResult(   Long noteId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<?> getNoteResult(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         List<NoteStudent> noteStudentList = noteStudentRepository.findByNote(note);
