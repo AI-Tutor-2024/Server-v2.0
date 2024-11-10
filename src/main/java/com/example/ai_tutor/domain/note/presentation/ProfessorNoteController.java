@@ -38,11 +38,11 @@ public class ProfessorNoteController {
     })
     @PostMapping("/{folderId}")
     public ResponseEntity<?> createNewNote(
-           // @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId,
             @Parameter(description = "Schemas의 NoteCreateReq를 참고해주세요", required = true) @RequestBody NoteCreateReq noteCreateReq
     ) {
-        return professorNoteService.createNewNote(  folderId, noteCreateReq);
+        return professorNoteService.createNewNote(userPrincipal, folderId, noteCreateReq);
     }
 
     @Operation(summary = "폴더 정보 조회 API", description = "노트를 생성하기 전 해당 노트의 폴더 - 강의명과 교수자명을 조회하는 API입니다.")
@@ -52,10 +52,10 @@ public class ProfessorNoteController {
     })
     @GetMapping("/{folderId}/info")
     public ResponseEntity<?> getFolderInfoBeforeCreatingNote(
-            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId
     ) {
-        return professorNoteService.getFolderInfo(  folderId);
+        return professorNoteService.getFolderInfo(userPrincipal, folderId);
     }
 
     // 노트 목록 조회
@@ -66,11 +66,11 @@ public class ProfessorNoteController {
     })
     @GetMapping("/{folderId}")
     public ResponseEntity<?> getAllNotes(
-            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId
 
     ) {
-        return professorNoteService.getAllNotesByFolder(  folderId);
+        return professorNoteService.getAllNotesByFolder(userPrincipal, folderId);
     }
 
     @Operation(summary = "노트 삭제 API", description = "특정 강의 노트를 삭제하는 API입니다.")
@@ -83,7 +83,7 @@ public class ProfessorNoteController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "삭제하려는 note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
-        return professorNoteService.deleteNoteById(  noteId);
+        return professorNoteService.deleteNoteById(userPrincipal, noteId);
     }
 
     @Operation(summary = "문제 랜덤 코드 생성 API", description = "특정 문제지의 고유한 랜덤 코드를 생성하는 API입니다.")
@@ -96,7 +96,7 @@ public class ProfessorNoteController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "code를 생성하려는 note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
-        return professorNoteService.createRandomCode(  noteId);
+        return professorNoteService.createRandomCode(userPrincipal, noteId);
     }
 
     // 문제지를 푼 학생들의 결과 및 정보 조회
@@ -110,7 +110,7 @@ public class ProfessorNoteController {
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "결과를 조회하려는 note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
-        return professorNoteService.getNoteResult(  noteId);
+        return professorNoteService.getNoteResult(userPrincipal, noteId);
     }
 
 }

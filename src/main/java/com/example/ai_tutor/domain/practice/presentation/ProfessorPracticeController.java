@@ -5,6 +5,8 @@ import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
+import com.example.ai_tutor.global.config.security.token.CurrentUser;
+import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -63,11 +65,13 @@ public class ProfessorPracticeController {
     // 문제 저장
     @PostMapping("/{noteId}")
     public ResponseEntity<?> savePractice(
-            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(required = true) @RequestBody List<SavePracticeReq> savePracticeReqs,
-            @Parameter(required = true) @PathVariable Long noteId
+
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Schemas의 SavePracticeListReq를 참고해주세요", required = true) @RequestBody List<SavePracticeReq> savePracticeReqs,
+            @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+
     ) {
-        return professorPracticeService.savePractice(noteId, savePracticeReqs);
+        return professorPracticeService.savePractice(userPrincipal, noteId, savePracticeReqs);
     }
 
     // 문제 조회
@@ -78,10 +82,10 @@ public class ProfessorPracticeController {
     })
     @GetMapping("/{noteId}")
     public ResponseEntity<?> findPractices(
-            //@Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
-        return professorPracticeService.getPractices(noteId);
+        return professorPracticeService.getPractices(userPrincipal, noteId);
     }
 
 //    @Operation(summary = "제한 시간, 마감 기간 수정", description = "제한 시간, 마감 기간을 수정합니다.")

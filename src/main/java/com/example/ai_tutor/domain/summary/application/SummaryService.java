@@ -9,6 +9,7 @@ import com.example.ai_tutor.domain.summary.domain.repository.SummaryRepository;
 import com.example.ai_tutor.domain.summary.dto.response.SummaryRes;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
+import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -120,8 +121,8 @@ public class SummaryService {
         providing clarity and focus in the summary.
         """;
 
-    public ResponseEntity<?> getSummary(Long noteId) {
-        User user = userRepository.findById(1L)
+    public ResponseEntity<?> getSummary(UserPrincipal userPrincipal, Long noteId) {
+        User user = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new RuntimeException("해당 노트를 찾을 수 없습니다."));
