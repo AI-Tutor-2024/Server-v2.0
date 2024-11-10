@@ -816,8 +816,8 @@
             "description": "문제의 내용"
           },
           "additianalResults": {
-            "type": "string",
-            "example": "[Answer, ANSWER, answer, 정답]",
+            "type": "array",
+            "example": ["Answer", "ANSWER", "answer", "정답"],
             "description": "문제의 추가 답안"
           },
           "result": {
