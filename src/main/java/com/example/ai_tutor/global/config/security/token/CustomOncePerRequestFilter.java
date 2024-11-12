@@ -21,6 +21,10 @@ public class CustomOncePerRequestFilter extends OncePerRequestFilter {
     @Autowired
     private CustomTokenProviderService customTokenProviderService;
 
+    public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
+    public static final String BEARER_TOKEN_PREFIX = "Bearer ";
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = getJwtFromRequest(request);
@@ -35,10 +39,9 @@ public class CustomOncePerRequestFilter extends OncePerRequestFilter {
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")) {
-            log.info("bearerToken = {}", bearerToken.substring(7, bearerToken.length()));
-            return bearerToken.substring(7, bearerToken.length());
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER_NAME);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_TOKEN_PREFIX)) {
+            return bearerToken.substring(BEARER_TOKEN_PREFIX.length());
         }
         return null;
     }
