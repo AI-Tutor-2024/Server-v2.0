@@ -9,9 +9,11 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.cloud.aws.cache.config.annotation.CacheClusterConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name="User")
@@ -22,6 +24,9 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="user_id", updatable = false, nullable = false, unique = true)
     private Long userId;
+
+    @Column(name="uuid")
+    private UUID userUUID;
 
     @Column(name="name")
     private String name;

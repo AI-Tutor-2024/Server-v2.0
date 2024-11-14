@@ -1,10 +1,9 @@
 package com.example.ai_tutor.global;
 
-import com.example.ai_tutor.global.error.DefaultAuthenticationException;
-import com.example.ai_tutor.global.error.DefaultException;
+import com.example.ai_tutor.global.exception.DefaultAuthenticationException;
+import com.example.ai_tutor.global.exception.DefaultException;
 import com.example.ai_tutor.global.payload.ErrorCode;
 import org.springframework.util.Assert;
-import org.springframework.validation.Errors;
 
 import java.util.List;
 import java.util.Optional;

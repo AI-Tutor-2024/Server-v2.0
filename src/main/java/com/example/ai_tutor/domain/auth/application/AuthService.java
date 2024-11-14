@@ -13,7 +13,7 @@ import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
-import com.example.ai_tutor.global.error.DefaultException;
+import com.example.ai_tutor.global.exception.DefaultException;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import com.example.ai_tutor.global.payload.ErrorCode;
 import com.example.ai_tutor.global.payload.Message;
@@ -23,7 +23,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +35,6 @@ public class AuthService {
 
     private final CustomTokenProviderService customTokenProviderService;
     private final AuthenticationManager authenticationManager;
-
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final ProfessorRepository professorRepository;
@@ -59,7 +57,7 @@ public class AuthService {
         if(expirationTime > 0){
             tokenMapping = customTokenProviderService.refreshToken(authentication, token.getRefreshToken());
         }else{
-            tokenMapping = customTokenProviderService.createToken(authentication);
+            tokenMapping = customTokenProviderService.generateAccessToken(authentication);
         }
 
         Token updateToken = token.updateRefreshToken(tokenMapping.getRefreshToken());
@@ -122,7 +120,7 @@ public class AuthService {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
+        TokenMapping tokenMapping = customTokenProviderService.generateAccessToken(authentication);
         Token token = Token.builder()
                 .refreshToken(tokenMapping.getRefreshToken())
                 .userEmail(tokenMapping.getUserEmail())

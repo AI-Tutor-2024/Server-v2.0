@@ -39,7 +39,7 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
 
         String targetUrl = determineTargetUrl(request, response, authentication);
 
-        TokenMapping token = customTokenProviderService.createToken(authentication);
+        TokenMapping token = customTokenProviderService.generateAccessToken(authentication);
         CustomCookie.addCookie(response, "Authorization", "Bearer_" + token.getAccessToken(), (int) oAuth2Config.getAuth().getAccessTokenExpirationMsec());
         CustomCookie.addCookie(response, "Refresh_Token", "Bearer_" + token.getRefreshToken(), (int) oAuth2Config.getAuth().getRefreshTokenExpirationMsec());
 
@@ -54,7 +54,7 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
 
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
-        TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
+        TokenMapping tokenMapping = customTokenProviderService.generateAccessToken(authentication);
         Token token = Token.builder()
                 .userEmail(tokenMapping.getUserEmail())
                 .refreshToken(tokenMapping.getRefreshToken())

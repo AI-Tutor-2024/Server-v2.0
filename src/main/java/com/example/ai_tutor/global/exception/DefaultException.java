@@ -1,4 +1,4 @@
-package com.example.ai_tutor.global.error;
+package com.example.ai_tutor.global.exception;
 
 
 import com.example.ai_tutor.global.payload.ErrorCode;
