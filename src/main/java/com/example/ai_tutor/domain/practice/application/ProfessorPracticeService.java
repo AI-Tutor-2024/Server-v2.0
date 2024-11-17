@@ -19,7 +19,6 @@ import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,51 +46,12 @@ public class ProfessorPracticeService {
     public Mono<ApiResponse> generatePractice(CreatePracticeReq createPracticeReq, MultipartFile file, Long noteId) {
         return summaryService.processSttAndSummary(file, createPracticeReq.getKeywords(), createPracticeReq.getRequirement(), noteId)
                 .flatMap(summary -> {
-                    // 문제 개수 및 유형 설정
-                    int practiceSize = createPracticeReq.getPracticeSize() > 0 ? createPracticeReq.getPracticeSize() : 10;
+                    int practiceSize = determinePracticeSize(createPracticeReq.getPracticeSize());
 
                     if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
-                        // OX문제와 단답형 문제 반반 생성
-                        int oxCount = (practiceSize % 2 == 0) ? practiceSize / 2 : practiceSize / 2 + 1;
-                        int shortCount = practiceSize - oxCount;
-
-                        // OX 문제와 단답형 문제를 비동기적으로 병렬 처리
-                        Mono<List<CreatePracticeRes>> oxPracticesMono = quizGeneratorService.generateQuestions(summary, oxCount, "OX", 1);
-                        Mono<List<CreatePracticeRes>> shortPracticesMono = quizGeneratorService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
-
-                        // zip을 이용해 두 결과를 병렬 처리하고 결합
-                        return Mono.zip(oxPracticesMono, shortPracticesMono)
-                                .map(tuple -> {
-                                    List<CreatePracticeRes> combinedList = new ArrayList<>();
-                                    combinedList.addAll(tuple.getT1()); // OX 문제
-                                    combinedList.addAll(tuple.getT2()); // 단답형 문제
-                                    return combinedList;
-                                })
-                                .map(practices -> {
-                                    CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
-                                            .practiceResList(practices)
-                                            .summary(summary)
-                                            .build();
-
-                                    return ApiResponse.builder()
-                                            .check(true)
-                                            .information(createPracticeListRes)
-                                            .build();
-                                });
+                        return generateBothTypesOfQuestions(summary, practiceSize);
                     } else {
-                        // 지정된 문제 유형에 맞는 문제 생성 (OX 또는 SHORT 중 하나)
-                        return quizGeneratorService.generateQuestions(summary, practiceSize, createPracticeReq.getType(), 1)
-                                .map(practices -> {
-                                    CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
-                                            .practiceResList(practices)
-                                            .summary(summary)
-                                            .build();
-
-                                    return ApiResponse.builder()
-                                            .check(true)
-                                            .information(createPracticeListRes)
-                                            .build();
-                                });
+                        return generateSingleTypeOfQuestions(summary, practiceSize, createPracticeReq.getType());
                     }
                 })
                 .onErrorResume(error -> {
@@ -103,6 +63,57 @@ public class ProfessorPracticeService {
                 });
     }
 
+
+    // BOTH 타입의 문제 생성
+    private Mono<ApiResponse> generateBothTypesOfQuestions(String summary, int practiceSize) {
+        int oxCount = calculateOxCount(practiceSize);
+        int shortCount = practiceSize - oxCount;
+
+        Mono<List<CreatePracticeRes>> oxPracticesMono = quizGeneratorService.generateQuestions(summary, oxCount, "OX", 1);
+        Mono<List<CreatePracticeRes>> shortPracticesMono = quizGeneratorService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
+
+        return Mono.zip(oxPracticesMono, shortPracticesMono)
+                .map(tuple -> combineQuestionLists(tuple.getT1(), tuple.getT2(), summary));
+    }
+
+    // 단일 타입의 문제 생성
+    private Mono<ApiResponse> generateSingleTypeOfQuestions(String summary, int practiceSize, String type) {
+        return quizGeneratorService.generateQuestions(summary, practiceSize, type, 1)
+                .map(practices -> buildApiResponse(practices, summary));
+    }
+
+    // 문제 생성 시 문제 수 설정
+    // 기본 값 10으로 고정
+    private int determinePracticeSize(int requestedSize) {
+        return requestedSize > 0 ? requestedSize : 10;
+    }
+
+    // OX 문제 수 계산
+    private int calculateOxCount(int practiceSize) {
+        return (practiceSize % 2 == 0) ? practiceSize / 2 : practiceSize / 2 + 1;
+    }
+
+    // 문제 리스트 결합 (문제 타입이 BOTH인 경우 쓰임)
+    private ApiResponse combineQuestionLists(List<CreatePracticeRes> oxQuestions, List<CreatePracticeRes> shortQuestions, String summary) {
+        List<CreatePracticeRes> combinedList = new ArrayList<>();
+        combinedList.addAll(oxQuestions);
+        combinedList.addAll(shortQuestions);
+
+        return buildApiResponse(combinedList, summary);
+    }
+
+    // 문제 생성 결과 반환
+    private ApiResponse buildApiResponse(List<CreatePracticeRes> practices, String summary) {
+        CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
+                .practiceResList(practices)
+                .summary(summary)
+                .build();
+
+        return ApiResponse.builder()
+                .check(true)
+                .information(createPracticeListRes)
+                .build();
+    }
 
 
 
@@ -144,41 +155,6 @@ public class ProfessorPracticeService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    //private void convertToMilliseconds(Integer minute, Integer second, Note note) {
-    //    int totalMilliseconds = (minute * 60 * 1000) + (second * 1000);
-    //    note.updateLimitTime(totalMilliseconds);
-    //}
-
-    // 제한시간 및 마감 시간 수정
-//    @Transactional
-//    public ResponseEntity<?> updateLimitTimeAndEndDate(Long noteId, UpdateLimitAndEndReq updateLimitAndEndReq) {
-        //User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-//        Note note = noteRepository.findById(noteId)
-//                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
-
-        // Validation
-//        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
-//            if (updateLimitAndEndReq.getMinute() < 0 || updateLimitAndEndReq.getSecond() < 0) {
-//                throw new IllegalArgumentException("시간과 초는 음수일 수 없습니다.");
-//            }
-//        }
-//        // 마감기간 update
-//        if (updateLimitAndEndReq.getEndDate() != null) {
-//            note.updateEndDate(updateLimitAndEndReq.getEndDate());
-//        }
-        // 제한시간 update
-//        if (updateLimitAndEndReq.getMinute() != null && updateLimitAndEndReq.getSecond() != null) {
-//            convertToMilliseconds(updateLimitAndEndReq.getMinute(), updateLimitAndEndReq.getSecond(), note);
-//        }
-//
-//        ApiResponse apiResponse = ApiResponse.builder()
-//                .check(true)
-//                .information("마감 기간, 제한 시간이 변경되었습니다.")
-//                .build();
-
-//        return ResponseEntity.ok(apiResponse);
-//    }
-
     // 문제 조회
     public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
         User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -200,18 +176,6 @@ public class ProfessorPracticeService {
                                 .build();}
                         )
                         .toList();
-
-        //int[] result = convertToMinutesAndSeconds(note.getLimitTime());
-
-        //int minutes = result[0];
-        //int seconds = result[1];
-
-        //ProfessorPracticeListRes professorPracticeListRes = ProfessorPracticeListRes.builder()
-        //        .minute(minutes)
-        //        .second(seconds)
-        //        .endDate(note.getEndDate())
-        //        .reqList(practiceResList)
-        //        .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
