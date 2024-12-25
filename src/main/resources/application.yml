@@ -40,3 +40,23 @@ springdoc:
     url: /openapi.json
   api-docs:
     path: /api/v1/api-docs
+
+---
+# actuaotr 설정 + shutdown 엔드포인트 활성화
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        exclude: "env, beans"
+  endpoint:
+    health:
+      show-details: always
+  #      show-components: always # 세부정보 빼고 알려줌
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: true
