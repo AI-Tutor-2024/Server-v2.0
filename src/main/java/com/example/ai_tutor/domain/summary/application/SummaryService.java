@@ -122,10 +122,13 @@ public class SummaryService {
         """;
 
     public ResponseEntity<?> getSummary(UserPrincipal userPrincipal, Long noteId) {
-        User user = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+//        User user = userRepository.findById(userPrincipal.getId())
+//                .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+
+        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new RuntimeException("해당 노트를 찾을 수 없습니다."));
+
         // 요약 조회 로직 구현
         Summary summary = (Summary) summaryRepository.findByNote(note)
                 .orElseThrow(() -> new RuntimeException("해당 노트의 요약을 찾을 수 없습니다."));
