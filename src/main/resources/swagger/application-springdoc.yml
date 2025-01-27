@@ -1,0 +1,12 @@
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui
+    urls:
+      - name: Default Swagger UI
+        url: /v3/api-docs
+      - name: Custom OpenAPI Docs
+        url: /openapi.json
+
+
