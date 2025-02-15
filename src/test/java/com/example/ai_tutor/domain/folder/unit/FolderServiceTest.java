@@ -1,6 +1,5 @@
 package com.example.ai_tutor.domain.folder.unit;
 
-import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
 import com.example.ai_tutor.domain.professor.domain.Professor;
@@ -25,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -35,9 +33,6 @@ public class FolderServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private ProfessorRepository professorRepository; // 추가: 교수 객체 저장을 위해 필요
 
     @Mock
     private FolderRepository folderRepository;
@@ -72,51 +67,17 @@ public class FolderServiceTest {
 
         // 4. UserPrincipal Mock 객체 생성
         mockUserPrincipal = UserPrincipal.create(mockUser);
+
+        // 5. Mock 객체 stubbing -> 실제 DB 조회 없이
+        // userRepository.findById(1L) 호출 시 mockUser 객체 반환 (User, Professor, Folder)
+
+        // stubbing이 없으면, userRepository.findById(1L)에서 null을 반환하게 됨
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
     }
 
     @Nested
     @DisplayName("폴더 생성")
-    class CreateNewFolder {  // 내부 클래스는 static 추가
-
-        @InjectMocks
-        private FolderService folderService;
-
-        @Mock
-        private UserRepository userRepository;
-
-        private UserPrincipal mockUserPrincipal;
-        private User mockUser;
-        private Professor mockProfessor;
-
-        // 테스트 전 Mock 객체 생성
-        @BeforeEach
-        void setUp() {
-            // 1. Mock User 생성
-            mockUser = User.builder()
-                    .name("테스트 교수")
-                    .email("test@ai-tutor.com")
-                    .password("password")
-                    .provider(Provider.valueOf("google"))
-                    .providerId("google_12345")
-                    .role(Role.PROFESSOR)
-                    .build();
-
-            // 2. Mock Professor 생성
-            mockProfessor = Professor.builder()
-                    .professorName(mockUser.getName())
-                    .user(mockUser)
-                    .build();
-
-            // 3. 유저와 교수 연관관계 설정
-            mockUser.updateProfessor(mockProfessor);
-            mockUserPrincipal = UserPrincipal.create(mockUser);
-
-            // 4. Mock 객체 stubbing -> 실제 DB 조회 없이
-            // userRepository.findById(1L) 호출 시 mockUser 객체 반환 (User, Professor, Folder)
-
-            // stubbing이 없으면, userRepository.findById(1L)에서 null을 반환하게 됨
-            when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
-        }
+    class CreateNewFolder {  // 내부 클래스는 static이어야 하나, JUnit5부터는 static이 아니어도 됨
 
         @Test
         @DisplayName("성공적으로 폴더를 생성해야 한다")
