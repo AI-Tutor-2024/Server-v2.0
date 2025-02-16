@@ -1,4 +1,4 @@
-package com.example.ai_tutor.domain.Folder.domain;
+package com.example.ai_tutor.domain.folder.domain;
 
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
