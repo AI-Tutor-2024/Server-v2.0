@@ -19,7 +19,7 @@ public class Summary extends BaseEntity {
     private Long summaryId;
 
     @Lob
-    @Column(name="content", columnDefinition = "MEDIUMTEXT")
+    @Column(name="content")
     private String content;
 
     @OneToOne(fetch = FetchType.LAZY)
