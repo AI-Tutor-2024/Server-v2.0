@@ -35,14 +35,14 @@ public class JwtTestUtil {
                 .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
 
-        log.info("✅ 만료된 JWT 생성 완료: {}", token);
+        log.info("만료된 JWT 생성 완료: {}", token);
         return token;
     }
 
     @Value("${app.auth.token-secret}")
     public void setSecretKey(String secretKey) {
         SECRET_KEY = secretKey;
-        log.info("✅ JWTTestUtil - SECRET_KEY 초기화 완료: {}", SECRET_KEY);
+        log.info("JWTTestUtil - SECRET_KEY 초기화 완료: {}", SECRET_KEY);
     }
 
     public static String generateJwtToken(Long userId) {
@@ -61,8 +61,8 @@ public class JwtTestUtil {
                 .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
 
-        log.info("✅ JWT 생성 완료: {}", token);
-        log.info("🔍 getUserIdFromToken() - subject 값: {}", subject);
+        log.info("JWT 생성 완료: {}", token);
+        log.info("getUserIdFromToken() - subject 값: {}", subject);
         return token;
     }
 

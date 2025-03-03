@@ -50,7 +50,7 @@ public class FolderControllerTest extends BaseIntegrationTest {
         @Test
         @DisplayName("성공적으로 폴더를 생성해야 한다")
         void createNewFolderSuccess() throws Exception {
-            log.info("🔄 createNewFolderSuccess() 테스트 시작...");
+            log.info("createNewFolderSuccess() 테스트 시작...");
             // Given
             // 폴더 생성 요청 객체 생성
             FolderCreateReq folderCreateReq = FolderCreateReq.builder()

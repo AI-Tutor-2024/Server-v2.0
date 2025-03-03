@@ -1,4 +1,4 @@
-package com.example.ai_tutor.domain.auth.integration;
+package com.example.ai_tutor.domain.auth.service;
 import com.example.ai_tutor.domain.auth.application.CustomTokenProviderService;
 import com.example.ai_tutor.domain.auth.application.CustomUserDetailsService;
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
@@ -9,15 +9,20 @@ import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AuthService Test")
 class CustomTokenProviderServiceTest {
 
     @InjectMocks
@@ -35,7 +40,7 @@ class CustomTokenProviderServiceTest {
     @Mock
     private UserDetails userDetails;
 
-    private Long testUserId = 1L;  // ✅ 테스트 User ID
+    private Long testUserId = 1L;  // 테스트 User ID
     private String accessToken;
     private String refreshToken;
 
@@ -61,8 +66,8 @@ class CustomTokenProviderServiceTest {
         assertNotNull(tokenMapping.getAccessToken());
         assertNotNull(tokenMapping.getRefreshToken());
 
-        System.out.println("🔑 Access Token: " + tokenMapping.getAccessToken());
-        System.out.println("🔑 Refresh Token: " + tokenMapping.getRefreshToken());
+        System.out.println("Access Token: " + tokenMapping.getAccessToken());
+        System.out.println("Refresh Token: " + tokenMapping.getRefreshToken());
     }
 
     @Test
@@ -84,7 +89,7 @@ class CustomTokenProviderServiceTest {
     @Test
     @DisplayName("만료된 JWT 토큰 검증 실패")
     void testValidateToken_Expired() {
-        // ✅ 인위적으로 만료된 토큰 생성
+        // 인위적으로 만료된 토큰 생성
         String expiredToken = JwtTestUtil.generateExpiredJwtToken(testUserId);
         assertThrows(ExpiredJwtException.class, () -> tokenProvider.validateToken(expiredToken));
     }
@@ -92,7 +97,7 @@ class CustomTokenProviderServiceTest {
     @Test
     @DisplayName("잘못된 서명 JWT 토큰 검증 실패")
     void testValidateToken_InvalidSignature() {
-        // ✅ 잘못된 SecretKey로 만든 토큰
+        // 잘못된 SecretKey로 만든 토큰
         String invalidToken = JwtTestUtil.generateJwtToken(9999L); // 올바르지 않은 userId 사용
         assertThrows(SignatureException.class, () -> tokenProvider.validateToken(invalidToken));
     }
