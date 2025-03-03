@@ -1,11 +1,9 @@
-package com.example.ai_tutor.domain.folder.unit;
+package com.example.ai_tutor.domain.folder.application;
 
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
 import com.example.ai_tutor.domain.professor.domain.Professor;
-import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.Provider;
-import com.example.ai_tutor.domain.user.domain.Role;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
@@ -53,7 +51,6 @@ public class FolderServiceTest {
                 .password("password")
                 .provider(Provider.valueOf("google"))
                 .providerId("google_12345")
-                .role(Role.PROFESSOR)
                 .build();
 
         // 2. Mock Professor 생성
@@ -68,7 +65,7 @@ public class FolderServiceTest {
         // 4. UserPrincipal Mock 객체 생성
         mockUserPrincipal = UserPrincipal.create(mockUser);
 
-        // 5. Mock 객체 stubbing -> 실제 DB 조회 없이
+        // 5. Mock 객체 stubbing -> 실제 DB 조회 없이 테스트 가능
         // userRepository.findById(1L) 호출 시 mockUser 객체 반환 (User, Professor, Folder)
 
         // stubbing이 없으면, userRepository.findById(1L)에서 null을 반환하게 됨
