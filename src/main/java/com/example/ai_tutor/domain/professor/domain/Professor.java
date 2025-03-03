@@ -1,6 +1,6 @@
 package com.example.ai_tutor.domain.professor.domain;
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
+import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.user.domain.User;
 import jakarta.persistence.*;

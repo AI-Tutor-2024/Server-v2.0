@@ -1,18 +1,13 @@
 package com.example.ai_tutor.domain.note.domain;
 
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
+import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.summary.domain.Summary;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name="Note")

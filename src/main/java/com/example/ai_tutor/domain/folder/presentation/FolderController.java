@@ -1,9 +1,9 @@
-package com.example.ai_tutor.domain.Folder.presentation;
+package com.example.ai_tutor.domain.folder.presentation;
 
-import com.example.ai_tutor.domain.Folder.application.FolderService;
-import com.example.ai_tutor.domain.Folder.dto.request.FolderCreateReq;
-import com.example.ai_tutor.domain.Folder.dto.response.FolderListRes;
-import com.example.ai_tutor.domain.Folder.dto.response.FolderNameListRes;
+import com.example.ai_tutor.domain.folder.application.FolderService;
+import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
+import com.example.ai_tutor.domain.folder.dto.response.FolderListRes;
+import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;

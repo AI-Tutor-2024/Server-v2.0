@@ -1,15 +1,14 @@
-package com.example.ai_tutor.domain.Folder.application;
+package com.example.ai_tutor.domain.folder.application;
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
-import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
-import com.example.ai_tutor.domain.Folder.dto.request.FolderCreateReq;
-import com.example.ai_tutor.domain.Folder.dto.response.FolderListRes;
-import com.example.ai_tutor.domain.Folder.dto.response.FolderNameListRes;
+import com.example.ai_tutor.domain.folder.domain.Folder;
+import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
+import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
+import com.example.ai_tutor.domain.folder.dto.response.FolderListRes;
+import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
-import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 

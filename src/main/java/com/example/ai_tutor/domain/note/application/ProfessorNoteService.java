@@ -1,14 +1,12 @@
 package com.example.ai_tutor.domain.note.application;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.example.ai_tutor.domain.Folder.domain.Folder;
-import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
+import com.example.ai_tutor.domain.folder.domain.Folder;
+import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.answer.domain.repository.AnswerRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
-import com.example.ai_tutor.domain.note.dto.request.NoteCreateProcessReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
 import com.example.ai_tutor.domain.note.dto.response.*;
 import com.example.ai_tutor.domain.note_student.application.NoteStudentService;
@@ -27,16 +25,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Random;
-import java.util.UUID;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
