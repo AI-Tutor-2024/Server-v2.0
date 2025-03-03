@@ -120,14 +120,9 @@ public class ProfessorPracticeService {
     // 문제 저장
     @Transactional
     public ResponseEntity<?> savePractice(UserPrincipal userPrincipal, Long noteId, List<SavePracticeReq> savePracticeReqs) {
-        // User user = userRepository.findById(userPrincipal.getId())
-        //         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        Professor professor = professorRepository.findByUser(user)
-                .orElseThrow(() -> new IllegalArgumentException("교수를 찾을 수 없습니다."));
-        Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+        User user = validateUser(userPrincipal);
+        Professor professor = validateProfessor(userPrincipal);
+        Note note = validateNote(noteId);
 
         // 제한시간을 밀리초로 변환
         // convertToMilliseconds(savePracticeListReq.getMinute(), savePracticeListReq.getSecond(), note);
@@ -157,9 +152,8 @@ public class ProfessorPracticeService {
 
     // 문제 조회
     public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+        validateUser(userPrincipal);
+        Note note = validateNote(noteId);
         List<Practice> practices = practiceRepository.findByNoteOrderBySequenceAsc(note);
 
         List<ProfessorPracticeRes> practiceResList = practices.stream()
@@ -194,4 +188,19 @@ public class ProfessorPracticeService {
         return new int[] { minutes, seconds };
     }
 
+    private User validateUser(UserPrincipal userPrincipal){
+        return userRepository.findById(userPrincipal.getId()).orElseThrow(()
+                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
+    private Professor validateProfessor(UserPrincipal userPrincipal){
+        return professorRepository.findByUser(userRepository.findById(userPrincipal.getId()).orElseThrow(()
+                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."))).orElseThrow(()
+                -> new IllegalArgumentException("교수를 찾을 수 없습니다."));
+    }
+
+    private Note validateNote(Long noteId){
+        return noteRepository.findById(noteId).orElseThrow(()
+                -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+    }
 }

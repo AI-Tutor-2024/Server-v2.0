@@ -8,6 +8,8 @@ import com.example.ai_tutor.domain.practice.dto.request.AnswerReq;
 import com.example.ai_tutor.domain.practice.dto.request.UpdateAnswersReq;
 import com.example.ai_tutor.domain.practice.dto.response.PracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.PracticeResultsRes;
+import com.example.ai_tutor.domain.user.domain.User;
+import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class StudentPracticeService {
 
+    private final UserRepository userRepository;
     private final PracticeRepository practiceRepository;
     private final NoteRepository noteRepository;
 
@@ -35,13 +39,10 @@ public class StudentPracticeService {
 
     // 문제 조회(1개씩)
     public ResponseEntity<?> getQuestion(UserPrincipal userPrincipal, Long noteId, int number) {
-        Optional<Note> noteOptional = noteRepository.findById(noteId);
-        DefaultAssert.isTrue(noteOptional.isPresent(), "해당 노트가 존재하지 않습니다.");
-        Note note = noteOptional.get();
-        // 본인 노트 아니면 예외
-        // DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
-        // user 추가할지?
-        List<Practice> practices = practiceRepository.findAllByNoteOrderByPracticeId(note);
+        validateUser(userPrincipal);
+        Note note = validateNote(noteId);
+
+        List<Practice> practices = getAllPracticesInNote(noteId);
         Practice practice = practices.get(number - 1);
 
         PracticeRes practiceRes = PracticeRes.builder()
@@ -59,12 +60,12 @@ public class StudentPracticeService {
         return ResponseEntity.ok(apiResponse);
     }
 
+
     // 사용자의 답변 작성(저장)
     @Transactional
     public ResponseEntity<?> registerAnswer(UserPrincipal userPrincipal, AnswerReq answerReq) {
-        Optional<Practice> practiceOptional = practiceRepository.findById(answerReq.practiceId);
-        DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
-        Practice practice = practiceOptional.get();
+        validateUser(userPrincipal);
+        Practice practice = validatePractice(answerReq.getPracticeId());
 
         // 사용자 검증
         // DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
@@ -80,13 +81,10 @@ public class StudentPracticeService {
 
     // 문제 조회 및 내 답변, 튜터 답변 조회
     public ResponseEntity<?> getQuestionsAndAnswers(UserPrincipal userPrincipal, Long noteId) {
-        Optional<Note> noteOptional = noteRepository.findById(noteId);
-        DefaultAssert.isTrue(noteOptional.isPresent(), "해당 노트가 존재하지 않습니다.");
-        Note note = noteOptional.get();
+        validateUser(userPrincipal);
+        Note note = validateNote(noteId);
 
-        //DefaultAssert.isTrue(Objects.equals(note.getUser().getUserId(), userPrincipal.getId()), "잘못된 접근입니다.");
-
-        List<Practice> practices = practiceRepository.findAllByNoteOrderByPracticeId(note);
+        List<Practice> practices = getAllPracticesInNote(noteId);
         AtomicInteger sequence = new AtomicInteger(1);
 
         List<PracticeResultsRes> practiceResultsRes = practices.stream()
@@ -114,9 +112,8 @@ public class StudentPracticeService {
     @Transactional
     public ResponseEntity<?> updateMyAnswers(UserPrincipal userPrincipal, List<UpdateAnswersReq> updateAnswersReqs) {
         for (UpdateAnswersReq req : updateAnswersReqs) {
-            Optional<Practice> practiceOptional = practiceRepository.findById(req.practiceId);
-            DefaultAssert.isTrue(practiceOptional.isPresent(), "해당 문제가 존재하지 않습니다.");
-            Practice practice = practiceOptional.get();
+            validateUser(userPrincipal);
+            Practice practice = validatePractice(req.getPracticeId());
 
              // DefaultAssert.isTrue(Objects.equals(practice.getUser().getUserId(), userPrincipal.getId()), "사용자가 소유한 노트가 아닙니다.");
             // 새 답변을 입력한 경우만 업데이트
@@ -130,5 +127,27 @@ public class StudentPracticeService {
                 .build();
         return ResponseEntity.ok(apiResponse);
     }
+
+
+    private User validateUser(UserPrincipal userPrincipal){
+        return userRepository.findById(userPrincipal.getId()).orElseThrow(()
+                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
+    private Note validateNote(Long noteId){
+        // 노트가 존재하지 않으면 예외
+        return noteRepository.findById(noteId).orElseThrow(()
+                -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+    }
+
+    private List<Practice> getAllPracticesInNote(Long noteId){
+        return practiceRepository.findAllByNoteOrderByPracticeId(validateNote(noteId));
+    }
+
+    private Practice validatePractice(Long practiceId){
+        return practiceRepository.findById(practiceId).orElseThrow(()
+                -> new IllegalArgumentException("문제를 찾을 수 없습니다."));
+    }
+
 
 }
