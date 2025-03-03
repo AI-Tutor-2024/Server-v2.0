@@ -7,8 +7,7 @@ import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.auth.OAuth2UserInfo;
 import com.example.ai_tutor.global.config.security.auth.OAuth2UserInfoFactory;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -26,7 +25,7 @@ import java.util.Optional;
 public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
@@ -60,7 +59,7 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
         User user = User.builder()
                 .name(oAuth2UserInfo.getName())
                 .email(oAuth2UserInfo.getEmail())
-                .password(encodePassword(oAuth2UserInfo.getId()))
+                .password(passwordEncoder.encode(oAuth2UserInfo.getId()))
                 .provider(Provider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))
                 .providerId(oAuth2UserInfo.getId())
                 .build();
@@ -73,10 +72,10 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
         return userRepository.save(user);
     }
 
-    private String encodePassword(String password) {
-        // PasswordEncoder를 사용하여 비밀번호 인코딩
-        return passwordEncoder.encode(password);
-    }
+//    private String encodePassword(String password) {
+//        // PasswordEncoder를 사용하여 비밀번호 인코딩
+//        return passwordEncoder.encode(password);
+//    }
 
     // 중복된 빈 등록으로 인한 오류 발생 -> 주석 처리
 //    // PasswordEncoder를 Bean으로 등록하여 사용할 수 있도록 설정
