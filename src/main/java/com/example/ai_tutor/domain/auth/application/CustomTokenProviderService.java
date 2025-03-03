@@ -8,6 +8,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.Authentication;
@@ -116,20 +117,41 @@ public class CustomTokenProviderService {
 
     public boolean validateToken(String token) {
         try {
-            //log.info("bearerToken = {} \n oAuth2Config.getAuth()={}", token, oAuth2Config.getAuth().getTokenSecret());
-            Jwts.parserBuilder().setSigningKey(oAuth2Config.getAuth().getTokenSecret()).build().parseClaimsJws(token);
+            log.info("JWT 검증 시작 - 토큰: {}", token);
+
+            String secretKey = oAuth2Config.getAuth().getTokenSecret();
+            if (secretKey == null || secretKey.isEmpty()) {
+                log.error("JWT 서명 검증 실패 - Secret Key가 설정되지 않았음");
+                return false;
+            }
+
+            log.info("JWT 서명 검증을 위한 Secret Key 사용: {}", secretKey);
+
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+
+            log.info("JWT 검증 성공 - 유효한 토큰입니다.");
             return true;
-        } catch (io.jsonwebtoken.security.SecurityException ex) {
-            log.error("잘못된 JWT 서명입니다.");
-        } catch (MalformedJwtException ex) {
-            log.error("잘못된 JWT 서명입니다.");
+
+        } catch (SecurityException | MalformedJwtException ex) {
+            log.error("잘못된 JWT 서명 - JWT가 변조되었거나, 서명이 일치하지 않습니다. 원인: {}", ex.getMessage());
+
         } catch (ExpiredJwtException ex) {
-            log.error("만료된 JWT 토큰입니다.");
+            log.error("만료된 JWT 토큰 - 만료 시간: {} | 현재 시간: {}",
+                    ex.getClaims().getExpiration(), new Date());
+
         } catch (UnsupportedJwtException ex) {
-            log.error("지원되지 않는 JWT 토큰입니다.");
+            log.error("지원되지 않는 JWT 형식 - 제공된 토큰이 예상된 형식과 다릅니다. 원인: {}", ex.getMessage());
+
         } catch (IllegalArgumentException ex) {
-            log.error("JWT 토큰이 잘못되었습니다.");
+            log.error("JWT 값이 유효하지 않음 - 빈 값이거나, null이 전달됨. 원인: {}", ex.getMessage());
+
+        } catch (Exception ex) {
+            log.error("예기치 않은 JWT 검증 오류 발생: {}", ex.getMessage(), ex);
         }
+
         return false;
     }
 

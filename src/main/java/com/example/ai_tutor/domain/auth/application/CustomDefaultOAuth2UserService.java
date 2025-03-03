@@ -26,6 +26,7 @@ import java.util.Optional;
 public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
@@ -57,11 +58,11 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
 
     private User registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
         User user = User.builder()
+                .name(oAuth2UserInfo.getName())
+                .email(oAuth2UserInfo.getEmail())
+                .password(encodePassword(oAuth2UserInfo.getId()))
                 .provider(Provider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))
                 .providerId(oAuth2UserInfo.getId())
-                .email(oAuth2UserInfo.getEmail())
-                .name(oAuth2UserInfo.getName())
-                .password(encodePassword(oAuth2UserInfo.getId()))
                 .build();
 
         return userRepository.save(user);
@@ -74,13 +75,14 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
 
     private String encodePassword(String password) {
         // PasswordEncoder를 사용하여 비밀번호 인코딩
-        return customPasswordEncoder().encode(password);
+        return passwordEncoder.encode(password);
     }
 
-    // PasswordEncoder를 Bean으로 등록하여 사용할 수 있도록 설정
-    @Bean
-    public PasswordEncoder customPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    // 중복된 빈 등록으로 인한 오류 발생 -> 주석 처리
+//    // PasswordEncoder를 Bean으로 등록하여 사용할 수 있도록 설정
+//    @Bean
+//    public PasswordEncoder customPasswordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
 
 }
