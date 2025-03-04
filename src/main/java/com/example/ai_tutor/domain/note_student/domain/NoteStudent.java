@@ -1,6 +1,5 @@
 package com.example.ai_tutor.domain.note_student.domain;
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.NoteStatus;

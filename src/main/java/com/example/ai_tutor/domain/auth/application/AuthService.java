@@ -129,15 +129,15 @@ public class AuthService {
                 .build();
         tokenRepository.save(token);
 
-        // 교수자 생성
-        if(user.getProfessor() == null){
-            Professor professor = Professor.builder()
-                    .professorName(user.getName())
-                    .user(user)
-                    .build();
-            professorRepository.save(professor);
-            user.updateProfessor(professor);
-        }
+//        // 교수자 생성
+//        if(user.getProfessor() == null){
+//            Professor professor = Professor.builder()
+//                    .professorName(user.getName())
+//                    .user(user)
+//                    .build();
+//            professorRepository.save(professor);
+//            user.updateProfessor(professor);
+//        }
 
         AuthRes authResponse = AuthRes.builder()
                 .accessToken(tokenMapping.getAccessToken())

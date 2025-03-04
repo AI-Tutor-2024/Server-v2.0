@@ -122,16 +122,11 @@ public class SummaryService {
         """;
 
     public ResponseEntity<?> getSummary(UserPrincipal userPrincipal, Long noteId) {
-//        User user = userRepository.findById(userPrincipal.getId())
-//                .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
-
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Note note = noteRepository.findById(noteId)
-                .orElseThrow(() -> new RuntimeException("해당 노트를 찾을 수 없습니다."));
+        validateUser(userPrincipal);
+        Note note = validateNote(noteId);
 
         // 요약 조회 로직 구현
-        Summary summary = (Summary) summaryRepository.findByNote(note)
-                .orElseThrow(() -> new RuntimeException("해당 노트의 요약을 찾을 수 없습니다."));
+        Summary summary = findSummaryByNote(note);
         SummaryRes sttRes = SummaryRes.builder()
                 .summary(summary.getContent())
                 .build();
@@ -142,5 +137,20 @@ public class SummaryService {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    private User validateUser(UserPrincipal userPrincipal){
+        return userRepository.findById(userPrincipal.getId()).orElseThrow(()
+                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
+    private Note validateNote(Long noteId){
+        return noteRepository.findById(noteId).orElseThrow(()
+                -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+    }
+
+    private Summary findSummaryByNote(Note note){
+        return summaryRepository.findByNote(note)
+                .orElseThrow(() -> new RuntimeException("해당 노트의 요약을 찾을 수 없습니다."));
     }
 }

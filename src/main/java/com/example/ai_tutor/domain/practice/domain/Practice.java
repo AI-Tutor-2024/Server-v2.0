@@ -1,9 +1,7 @@
 package com.example.ai_tutor.domain.practice.domain;
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
-import com.example.ai_tutor.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
