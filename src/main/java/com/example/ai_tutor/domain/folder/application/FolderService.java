@@ -93,6 +93,7 @@ public class FolderService {
         List<FolderListRes> folderRes = folders.stream()
                 .map(folder -> FolderListRes.builder()
                         .folderId(folder.getFolderId())
+                        .noteCount(folder.getNotes().size())
                         .folderName(folder.getFolderName())
                         .professor(folder.getProfessorName())
                         .build(
