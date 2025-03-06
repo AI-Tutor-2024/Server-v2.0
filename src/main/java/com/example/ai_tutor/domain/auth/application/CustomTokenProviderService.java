@@ -125,8 +125,6 @@ public class CustomTokenProviderService {
                 return false;
             }
 
-            log.info("JWT 서명 검증을 위한 Secret Key 사용: {}", secretKey);
-
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
