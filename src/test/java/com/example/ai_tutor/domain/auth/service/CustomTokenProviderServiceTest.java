@@ -6,6 +6,7 @@ import com.example.ai_tutor.global.JwtTestUtil;
 import com.example.ai_tutor.global.config.security.OAuth2Config;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService Test")
 class CustomTokenProviderServiceTest {
@@ -66,8 +68,8 @@ class CustomTokenProviderServiceTest {
         assertNotNull(tokenMapping.getAccessToken());
         assertNotNull(tokenMapping.getRefreshToken());
 
-        System.out.println("Access Token: " + tokenMapping.getAccessToken());
-        System.out.println("Refresh Token: " + tokenMapping.getRefreshToken());
+        log.info("AccessToken: {}", tokenMapping.getAccessToken());
+        log.info("RefreshToken: {}", tokenMapping.getRefreshToken());
     }
 
     @Test

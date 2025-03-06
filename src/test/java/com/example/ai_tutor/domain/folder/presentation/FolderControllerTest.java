@@ -36,7 +36,6 @@ public class FolderControllerTest extends BaseIntegrationTest {
     void ensureBaseIntegrationTestRanAgain() throws Exception {
         super.setUp();  // 부모 클래스의 @BeforeEach 강제 실행
 
-        System.out.println("[FolderControllerTest] @BeforeEach 실행됨");
         log.info("[FolderControllerTest] @BeforeEach 실행됨");
 
         assertNotNull(accessToken, "accessToken이 null 입니다. BaseIntegrationTest가 실행되지 않았을 가능성이 있습니다.");

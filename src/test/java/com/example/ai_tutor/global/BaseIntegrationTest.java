@@ -49,7 +49,6 @@ public class BaseIntegrationTest {
 
     @BeforeEach
     void checkBaseIntegrationTestExecution() {
-        System.out.println("[BaseIntegrationTest] @BeforeEach 실행됨");
         log.info("[BaseIntegrationTest] @BeforeEach 실행됨");
     }
 
