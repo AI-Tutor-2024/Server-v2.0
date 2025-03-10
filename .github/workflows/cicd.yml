@@ -106,10 +106,10 @@ jobs:
             sudo docker rm -f $(sudo docker ps -aq) || echo "No containers to remove"
 
             echo "Pulling the latest Docker image..."
-            sudo docker pull aitutor2024/ai-tutor-2024:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}4:latest
 
             echo "Starting new Docker container..."
-            sudo docker run -d -p 80:8080 --restart always --name ai-tutor-app aitutor2024/ai-tutor-2024:latest
+            sudo docker run -d -p 80:8080 --restart always --name ai-tutor-app ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}latest
 
             echo "Cleaning up unused Docker images..."
             sudo docker image prune -f || echo "No images to prune"
