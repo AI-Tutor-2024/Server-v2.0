@@ -101,7 +101,7 @@ jobs:
           username: ${{secrets.SSH_USER}}
           key: ${{ secrets.SSH_PEM_KEY }}
           envs: GITHUB_SHA
-          script: |
+          run: |
             echo "Stopping and removing existing Docker containers..."
             sudo docker rm -f $(sudo docker ps -aq) || echo "No containers to remove"
             
