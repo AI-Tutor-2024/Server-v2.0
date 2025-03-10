@@ -87,12 +87,10 @@ jobs:
           password: ${{secrets.DOCKER_PASSWORD}}
 
       # Docker image Build해서 DockerHub에 Push
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+      - name: Docker build and push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
 
       # EC2 서버에 배포
       - name: Deploy to prod
