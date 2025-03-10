@@ -1,3 +1,3 @@
-[submodule "ci-cd"]
-	path = ci-cd
+[submodule "Server-v2.0-Config"]
+	path = Server-v2.0-Config
 	url = git@github.com:AI-Tutor-2024/Server-v2.0-Config.git
