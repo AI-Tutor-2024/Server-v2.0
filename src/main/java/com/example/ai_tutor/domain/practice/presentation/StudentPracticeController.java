@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "학습 점검 및 결과", description = "학습 점검 및 결과 관련 API")
+@Tag(name = "Student Practice", description = "학생 유저의 학습 점검 및 결과 관련 API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/student/practice")

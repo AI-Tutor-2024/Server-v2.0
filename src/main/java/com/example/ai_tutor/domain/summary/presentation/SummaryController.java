@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
-@Tag(name = "요약문", description = "요약문 관련 API")
+@Tag(name = "Summary", description = "요약문 관련 API")
 @RequiredArgsConstructor
 @RestController
 @Slf4j
