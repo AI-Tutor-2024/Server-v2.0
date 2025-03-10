@@ -97,21 +97,21 @@ jobs:
         uses: appleboy/ssh-action@master
         id: deploy-prod
         with:
-          host: ${{ secrets.SSH_KNOWN_HOSTS }} # EC2 퍼블릭 IPv4 DNS
+          host: ${{ secrets.SSH_KNOWN_HOSTS }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PEM_KEY }}
-          envs: GITHUB_SHA
           script: |
             echo "Stopping and removing existing Docker containers..."
+            sudo docker stop $(sudo docker ps -aq) || echo "No running containers"
             sudo docker rm -f $(sudo docker ps -aq) || echo "No containers to remove"
 
             echo "Pulling the latest Docker image..."
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+            sudo docker pull aitutor2024/ai-tutor-2024:latest
 
-            echo "Starting deployment with Docker Compose..."
-            cd ~
-            sudo docker-compose up -d --build
+            echo "Starting new Docker container..."
+            sudo docker run -d -p 80:8080 --name ai-tutor-app aitutor2024/ai-tutor-2024:latest
 
             echo "Cleaning up unused Docker images..."
             sudo docker image prune -f || echo "No images to prune"
+
 
