@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.util.List;
 
-@Tag(name = "Professor Practice", description = "교수자 유저의 문제지 생성 및 수정 API")
+@Tag(name = "Professor Practice", description = "교수 사용자의 문제지 생성 및 수정 API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/professor/practice")
