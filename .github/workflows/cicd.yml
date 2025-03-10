@@ -44,6 +44,22 @@ jobs:
           token: ${{secrets.CONFIG_TOKEN}}
           submodules: true
 
+      # 서브모듈 업데이트 (초기화)
+      - name: Update Git Submodules
+        run: |
+          git submodule update --init --recursive
+          ls -al Server-v2.0-Config/yml 
+
+      # Gradle 빌드 전에, application.yml 존재 여부 확인
+      - name: Check application.yml exists
+        run: |
+          if [ -f "Server-v2.0-Config/yml/application.yml" ]; then
+            echo "application.yml exists"
+          else
+            echo "application.yml NOT FOUND"
+            exit 1
+          fi
+
       # 프로젝트 메타정보 추출해서 Docker image에 태그 생성
       - name: Extract metadata (tags, labels) for Docker
         id: meta
