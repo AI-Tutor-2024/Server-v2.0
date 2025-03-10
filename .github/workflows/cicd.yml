@@ -103,7 +103,20 @@ jobs:
           envs: GITHUB_SHA
           # 주의 : 실행중인 컨테이너 전부 종료
           script: |
-            sudo docker stop $(sudo docker ps -a -q)
-            sudo docker pull ${{secrets.DOCKER_USERNAME}}/daily-pay
-            sudo docker run -d -p 80:8080 ${{secrets.DOCKER_USERNAME}}/daily-pay
-            sudo docker image prune -f
+          # 기존 컨테이너 종료 및 제거
+            echo "Stopping and removing existing Docker containers..."
+            sudo docker rm -f $(sudo docker ps -aq) || echo "No containers to remove"
+            
+            # 최신 Docker 이미지 가져오기
+            echo "Pulling the latest Docker image..."
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+            
+            # Docker Compose를 통해 새 컨테이너 실행
+            echo "Starting deployment with Docker Compose..."
+            
+            cd ~
+            sudo docker-compose up -d --build
+            
+            # 사용하지 않는 Docker 이미지 정리
+            echo "Cleaning up unused Docker images..."
+            sudo docker image prune -f || echo "No images to prune"
