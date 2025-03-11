@@ -1,0 +1,5 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: optional:file:Server-v2.0-Config/yml/application.yml
