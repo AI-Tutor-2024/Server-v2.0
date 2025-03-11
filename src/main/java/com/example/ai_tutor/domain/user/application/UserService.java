@@ -23,9 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     public ResponseEntity<?> getHomeUserInfo(UserPrincipal userPrincipal) {
-        User user = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        // User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = validateUser(userPrincipal);
 
         HomeUserRes homeUserRes = HomeUserRes.builder()
                 .userId(user.getUserId())
@@ -38,6 +36,11 @@ public class UserService {
                 .information(homeUserRes)
                 .build();
         return ResponseEntity.ok(apiResponse);
+    }
+
+    private User validateUser(UserPrincipal userPrincipal) {
+        return userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 
 }

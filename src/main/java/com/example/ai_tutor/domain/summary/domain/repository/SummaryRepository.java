@@ -9,5 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface SummaryRepository extends JpaRepository<Summary, Long> {
-    Optional<Object> findByNote(Note note);
+    Optional<Summary> findByNote(Note note);
 }

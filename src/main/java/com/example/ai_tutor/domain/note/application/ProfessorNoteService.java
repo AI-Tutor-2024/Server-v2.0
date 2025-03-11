@@ -1,14 +1,12 @@
 package com.example.ai_tutor.domain.note.application;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.example.ai_tutor.domain.Folder.domain.Folder;
-import com.example.ai_tutor.domain.Folder.domain.repository.FolderRepository;
+import com.example.ai_tutor.domain.folder.domain.Folder;
+import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.answer.domain.repository.AnswerRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
-import com.example.ai_tutor.domain.note.dto.request.NoteCreateProcessReq;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
 import com.example.ai_tutor.domain.note.dto.response.*;
 import com.example.ai_tutor.domain.note_student.application.NoteStudentService;
@@ -27,16 +25,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Random;
-import java.util.UUID;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,8 +48,7 @@ public class ProfessorNoteService {
     // 수업 정보 조회
     @Transactional
     public ResponseEntity<?> getFolderInfo(UserPrincipal userPrincipal, Long folderId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        validateUser(userPrincipal);
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
         FolderInfoRes folderInfoRes = FolderInfoRes.builder()
@@ -78,8 +68,7 @@ public class ProfessorNoteService {
     // 노트 생성
     @Transactional
     public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = validateUser(userPrincipal);
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
 
@@ -164,8 +153,7 @@ public class ProfessorNoteService {
 
     // 문제지 목록 조회
     public ResponseEntity<?> getAllNotesByFolder(UserPrincipal userPrincipal, Long folderId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = validateUser(userPrincipal);
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         DefaultAssert.isTrue(user == folder.getProfessor().getUser(), "사용자가 일치하지 않습니다.");
 
@@ -200,8 +188,7 @@ public class ProfessorNoteService {
     // 문제지 삭제
     @Transactional
     public ResponseEntity<?> deleteNoteById(UserPrincipal userPrincipal, Long noteId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = validateUser(userPrincipal);
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         Folder folder = note.getFolder();
@@ -234,9 +221,7 @@ public class ProfessorNoteService {
     // 문제지 랜덤 코드 생성
     @Transactional
     public ResponseEntity<?> createRandomCode(UserPrincipal userPrincipal, Long noteId) {
-        // User user = userRepository.findById(userPrincipal.getId())
-        //         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User user = userRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        validateUser(userPrincipal);
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
@@ -280,7 +265,7 @@ public class ProfessorNoteService {
     }
 
     public ResponseEntity<?> getNoteResult(UserPrincipal userPrincipal, Long noteId) {
-        // User user = userRepository.findById(userPrincipal.getId()).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        validateUser(userPrincipal);
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         List<NoteStudent> noteStudentList = noteStudentRepository.findByNote(note);
@@ -311,5 +296,10 @@ public class ProfessorNoteService {
 
         return ResponseEntity.ok(apiResponse);
 
+    }
+
+    private User validateUser(UserPrincipal userPrincipal){
+        return userRepository.findById(userPrincipal.getId()).orElseThrow(()
+                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }

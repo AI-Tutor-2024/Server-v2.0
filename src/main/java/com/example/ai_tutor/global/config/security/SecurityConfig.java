@@ -109,7 +109,7 @@ public class SecurityConfig {
         // 모든 출처 허용
         configuration.addAllowedOriginPattern("*");
         configuration.addAllowedOrigin("https://www.ai-tutor.co.kr");
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
