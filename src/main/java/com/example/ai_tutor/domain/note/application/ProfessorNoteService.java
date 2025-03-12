@@ -74,7 +74,8 @@ public class ProfessorNoteService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    public boolean convertSpeechToText(UserPrincipal userPrincipal, Long noteId, MultipartFile file) {
+    @Transactional
+    public boolean convertSpeechToText(Long noteId, MultipartFile file) {
         // 1. Note 조회
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));

@@ -41,6 +41,7 @@ public class SummaryService {
     private final NoteRepository noteRepository;
     private final UserRepository userRepository;
 
+
     // gpt-4o 모델 기준 인코딩 설정
     private final Encoding encoding = Encodings.newDefaultEncodingRegistry()
             .getEncodingForModel("gpt-4o")
@@ -48,7 +49,7 @@ public class SummaryService {
 
     // 토큰 수 기준 제한값 (gpt-4o 기준으로 설정) 4o - 128000개의 토큰 지원
     private static final int MAX_PROMPT_TOKENS = 30000;  // 최종 요약 프롬프트 크기
-    private static final int CHUNK_TOKEN_SIZE = 5000;    // 청크 단위 토큰 수
+    private static final int CHUNK_TOKEN_SIZE = 7000;    // 청크 단위 토큰 수
 
 
     public Mono<String> processSttAndSummary(MultipartFile file, String keywords, String requirement, Long noteId) {
@@ -62,7 +63,7 @@ public class SummaryService {
                     String fullText = response.path("text").asText();
 
                     // 프롬프트 생성
-                    String prompt = generatePrompt(fullText, keywords, requirement);
+                    String prompt = generatePrompt(fullText, keywords, requirement, false);
 
                     // GPT 요약 처리
                     return gptService.callChatGpt(prompt)
@@ -98,109 +99,125 @@ public class SummaryService {
      * @param requirement 요약 시 강조할 추가 요구사항
      * @return 요약을 위한 프롬프트 텍스트
      */
-    private String generatePrompt(String fullText, String keywords, String requirement) {
-        // 기본 프롬프트를 복사한 후, 동적으로 내용을 추가
-        StringBuilder promptBuilder = new StringBuilder(PromptForSummary);
+    private String generatePrompt(String fullText, String keywords, String requirement, boolean isChunk) {
+        StringBuilder promptBuilder = new StringBuilder();
 
-        // 키워드가 있는 경우, 콤마로 구분된 키워드 추가
+        if (isChunk) {
+            // 청크 요약용 프롬프트
+            promptBuilder.append("""
+            당신은 전문적인 강의 분석가입니다.
+            아래 강의 내용을 간결하고 논리적으로 요약하십시오.
+        
+            ---
+            ### 역할과 목표
+            - 역할: 주어진 강의 청크를 분석하고, 핵심 개념과 주요 이론만 추출하는 전문가입니다.
+            - 목표: 최종 요약의 재료로 사용될 일관성 있고 체계적인 부분 요약을 생성하는 것입니다.
+        
+            ---
+            ### 작성 기준
+            1. 핵심 개념과 이론만 요약하며 불필요한 설명과 반복은 반드시 제거합니다.
+            2. 모든 문장은 간결하고 논리적이어야 하며, 전문적이고 학문적인 어투로 작성합니다. 각 문장은 '~이다.'로 끝맺습니다.
+            3. 제공된 키워드와 요구사항은 반드시 반영하고 논리적으로 통합합니다.
+            4. 결과는 마크다운 형식으로 작성하며, 번호나 리스트를 사용하여 시각적 구분을 명확히 합니다.
+            5. 요약 결과는 반드시 500단어 이상 800단어 이하로 제한합니다.
+        
+            ---
+            """);
+
+        } else {
+            // 최종 요약용 프롬프트
+            promptBuilder.append(PromptForSummary);
+        }
+
+        // 키워드 추가
         if (keywords != null && !keywords.isEmpty()) {
-            promptBuilder.append(" Additionally, here are the key keywords provided by the professor: ")
-                    .append(keywords)
-                    .append(". Please ensure these keywords are emphasized and integrated into the summary.");
+            promptBuilder.append("\n- 키워드: ").append(keywords);
         }
 
-        // 요구사항이 있는 경우 추가
+        // 요구사항 추가
         if (requirement != null && !requirement.isEmpty()) {
-            promptBuilder.append(" Special emphasis should be placed on the following points: ")
-                    .append(requirement)
-                    .append(". Make sure these aspects are addressed in detail.");
+            promptBuilder.append("\n- 추가 요구사항: ").append(requirement);
         }
 
-        // 원본 텍스트 추가
-        promptBuilder.append("\nSummarize the following fullText:\n").append(fullText);
+        // 실제 텍스트 추가
+        promptBuilder.append("\n\n아래 내용을 요약하세요:\n").append(fullText);
 
         return promptBuilder.toString();
     }
 
+
     // basePrompt를 멤버 변수로 선언하여 재사용 가능하게 설정
     private final String PromptForSummary = """
-    당신은 다양한 전공 분야의 강의를 완벽하게 요약하는 전문 요약가입니다.
-    아래 제공된 강의 원문을 바탕으로 논리적이고 핵심적인, 빠짐없는 요약문을 작성하십시오.
-    
-    ---
-    ### 역할과 목표
-    - 역할: 다양한 학과 전공(법학, 의학, 공학, 인문학 등)에 상관없이, 모든 학습자가 강의를 쉽고 정확하게 복습할 수 있도록 돕는 전문가입니다.
-    - 목표: 학습자가 해당 강의의 모든 핵심 내용을 한눈에 이해하고, 이후 학습이나 시험 대비에 활용할 수 있도록 논리적이고 체계적인 요약문을 제공합니다.
-    
-    ---
-    ### 작성 기준 및 규칙
-    
-    1. 구조화
-       - 반드시 다음과 같은 목차 구조로 작성합니다.
-         Ⅰ. 서론  
-         Ⅱ. 주요 내용  
-         Ⅲ. 결론 및 시사점  
-       - 목차 순서(Ⅰ. → Ⅱ. → Ⅲ.)를 반드시 유지하십시오.
-    
-    2. 내용 구성
-       - 각 목차 안에는 아래 내용을 반드시 포함합니다.  
-         - 핵심 개념 및 정의  
-         - 이론 및 원리 설명  
-         - 강의에서 제시된 구체적 사례나 실습 내용  
-         - 강사가 반복적으로 강조한 부분 및 주의점  
-         - 과목 특성에 맞는 실용적 시사점 (예: 법학은 판례, 의학은 임상적용, 공학은 실무 적용 등)
-       - 사례나 예시는 "누가, 언제, 무엇을, 어떻게, 왜"의 관점으로 구체적으로 설명하십시오.
-    
-    3. 표현 방식
-       - 모든 문장은 간결하고 명확하게 작성하며, '~이다.'로 끝맺으십시오.
-       - 동일한 개념이나 문장은 절대 반복하지 마십시오.
-       - 항목별로 번호 또는 리스트를 사용해 시각적 구분을 명확히 하십시오.
-    
-    4. 불필요한 내용 제거
-       - 강의 도중의 농담, 서론적인 발언, 잡담, 반복 내용 등 부수적인 정보는 절대 포함하지 않습니다.
-    
-    5. 키워드 반영 및 요구사항
-       - 반드시 제공된 강조 키워드를 포함하고, 관련 개념과 논리적으로 연결하여 설명하십시오.
-       - 추가 요구사항이 있는 경우, 이를 최우선으로 반영하십시오.
-    
-    6. 전체 검증
-       - 요약을 작성한 후, 모든 핵심 개념이 빠짐없이 포함되었는지 다시 검토하고 누락된 내용이 있다면 보완하십시오.
-       - 요약문 전체 분량은 최소 1500단어에서 최대 3000단어로 작성하십시오.
-       - 단, 강의가 짧거나 요약 내용이 간결한 경우, 1000단어 이상으로 유지합니다.
-            
-    
-    ---
-    ### 예시 출력
-    
-    Ⅰ. 서론  
-    - 본 강의는 "OOO 개념의 이해 및 실무 적용"을 목표로 한다.  
-    - 학습자는 본 강의를 통해 OOO에 대한 기초 개념과 실무 응용 능력을 습득할 수 있다.
-    
-    Ⅱ. 주요 내용  
-    1. OOO의 정의  
-       - OOO이란 ...을 의미한다.  
-    2. 핵심 이론 및 원리  
-       - 첫째, ...이다.  
-       - 둘째, ...이다.  
-    3. 사례 및 실습  
-       - 강사는 OOO 사례를 통해 이를 설명하였다.  
-       - 예시: "2023년 법학 세미나에서 언급된 A 판결은 ...에 적용되었다."
-    4. 주의점 및 강조 사항  
-       - 강의에서는 특히 ...을 주의하라고 강조하였다.
-    
-    Ⅲ. 결론 및 시사점  
-    - OOO 개념은 실제 ...에서 중요한 역할을 한다.  
-    - 강사는 본 개념을 학습한 후, ... 분야에 적용할 것을 권장하였다.
-    
-    ---
-    ### 최종 안내
-    아래는 요약해야 할 강의 원문입니다.  
-    위 작성 기준과 규칙을 충실히 반영하여 완전하고 체계적이며 논리적인 요약문을 작성하십시오.
+당신은 다양한 전공 분야의 강의를 쉽고 명료하게 전달하는 교양서적의 저자입니다.
+학습자가 복잡한 개념을 명확히 이해하고, 논리적으로 정리된 지식을 통해 사고를 확장할 수 있도록 돕는 것이 당신의 역할입니다.
+
+※ 주의사항  
+- 반드시 제공된 강의 원문(STT 변환 텍스트)의 내용만 사용하여 작성합니다.  
+- 외부 지식이나 상상, 창작은 절대 포함하지 않습니다.  
+- 원문에 없는 정보는 작성하지 않습니다.
+
+---
+
+### 역할과 목표
+- 역할: 전공과 관계없이 누구나 이해할 수 있도록 논리적이고 명확한 설명을 제공하는 비문학 저자입니다.
+- 목표: 학습자가 해당 강의의 개념과 논지를 체계적으로 파악하고, 이후 학습이나 실제 문제 해결에 활용할 수 있도록 돕습니다.
+
+---
+
+### 작성 기준 및 스타일
+
+1. **톤과 문체**
+   - 객관적이고 신뢰할 수 있는 설명을 제공합니다.
+   - 친절하지만 가벼운 농담이나 감성적인 표현은 사용하지 않습니다.
+   - 종결어는 "~입니다." "~합니다."를 사용하여 명료하게 전달합니다.
+   - 기술적, 전공 용어는 간단한 정의나 설명을 통해 독자가 자연스럽게 이해할 수 있도록 풀어줍니다.
+
+2. **구성**
+   - 주제별로 명확하게 구분하며, 목차 또는 소제목을 통해 논지를 체계적으로 전개합니다.
+   - "서론 - 본론 - 결론" 구조를 기반으로 하되, 흐름은 원문의 전개에 따라 유연하게 구성합니다.
+   - 서론에서는 강의의 문제의식과 목적을 명확히 설명합니다
+   - 핵심 개념, 사례, 이론이 논리적으로 연결되도록 설명합니다.
+
+3. **내용 전달 방식**
+   - 추상적인 이론은 반드시 원문에 포함된 설명을 중심으로 구체적 사례나 맥락을 통해 서술합니다.
+   - 다음 질문에 대한 답이 글 속에 자연스럽게 포함되도록 작성합니다:
+     - "이 개념이 왜 중요한가?"
+     - "강의에서는 이 개념을 어떻게 설명했는가?"
+     - "어떤 사례와 연결되는가?"
+   - 강의에서 반복적으로 강조된 내용은 원문의 표현을 충실히 반영하여 강조합니다.
+   - 강의의 의도와 다르게 해석하거나 의미를 덧붙이는 행위는 절대 하지 않습니다.
+
+4. **형식**
+   - 한 문장은 지나치게 짧거나 단순하지 않으며, 자연스러운 독서 호흡이 가능하도록 20~30단어 내외의 문장 길이를 유지합니다.
+   - 복잡한 개념 설명이 필요한 경우 예외적으로 문장이 길어질 수 있지만, 주어-서술어가 명확한 문장 구조를 유지합니다.
+   - 한 문단은 3~6문장으로 구성하며, 하나의 중심 개념만 설명합니다.
+   - 중복 표현은 피하고, 동일한 개념이나 문장을 반복하지 않습니다.
+   - 감정적 어구나 과도한 수식은 배제하며, 논리적이고 설명 중심의 글쓰기 방식을 유지합니다.
+
+4. **검증**
+   - 요약을 작성한 후, 이전의 요약본과 작성된 요약본을 다시 확인하여, 핵심 겨냄이 빠짐없이 포함되어있는지와 내용의 왜곡이 없는지 확인하고 보완하시오. 
+
+---
+
+### 예시 스타일 (비문학 교양서 예시)
+
+- **도입부 예시**  
+  "사도행전은 초기 기독교 공동체가 직면한 사회적, 문화적 도전을 설명하고 있으며, 이를 통해 오늘날 다문화 사회에 대한 통찰을 제공합니다."
+
+- **개념 설명 예시**  
+  "니체가 언급한 '르상티망'은 억눌린 감정이 왜곡되어 타인에 대한 적대감으로 표출되는 심리 상태를 의미합니다. 강의에서는 이를 현대 사회의 무차별 공격과 같은 현상과 연결지어 설명하고 있습니다."
+
+---
+
+### 최종 안내
+아래는 요약해야 할 강의 원문입니다.  
+- 반드시 해당 텍스트만 기반으로, 논리적이고 체계적인 비문학 스타일로 작성하십시오.  
+- 외부 지식이나 창작은 절대 포함하지 않습니다.
 """;
 
 
-    public ResponseEntity<?> getSummary(UserPrincipal userPrincipal, Long noteId) {
-        validateUser(userPrincipal);
+    public ResponseEntity<?> getSummary(Long noteId) {
+//        validateUser(userPrincipal);
         Note note = validateNote(noteId);
 
         // 요약 조회 로직 구현
@@ -262,9 +279,21 @@ public class SummaryService {
                     return summarizeChunks(chunks, keywords, requirement)
                             .flatMap(partialSummaries -> summarizeFinal(partialSummaries, keywords, requirement))
                             .flatMap(finalSummary -> Mono.fromCallable(() -> {
+
+                                // 기존 summary가 있는지 확인하고
+                                summaryRepository.findByNote(note)
+                                        .ifPresent(existing -> {
+                                            // 있으면 삭제
+                                            summaryRepository.delete(existing);
+                                            log.info("기존 summary 삭제 완료 (noteId: {})", note.getNoteId());
+                                        });
+
+                                // 새로운 summary 생성 및 저장
                                 Summary summary = Summary.create(finalSummary, note);
                                 summaryRepository.save(summary);
+
                                 return finalSummary;
+
                             }).subscribeOn(Schedulers.boundedElastic()));
                 })
                 .onErrorResume(error -> {
@@ -294,12 +323,13 @@ public class SummaryService {
      * 각 청크에 대해 GPT를 호출하여 요약을 생성합니다.
      */
     public Mono<List<String>> summarizeChunks(List<String> chunks, String keywords, String requirement) {
+        log.info("Chunk 개수: {}", chunks.size());
+
         return Flux.fromIterable(chunks)
-                .parallel(3) // 병렬 스트림 수 조정 가능
-                .runOn(Schedulers.parallel())
-                .flatMap(chunk -> getGptResult(keywords, requirement, chunk))
-                .sequential()
+                .delayElements(Duration.ofMillis(500))  // 1초 간격으로 호출
+                .flatMapSequential(chunk -> getGptResult(keywords, requirement, chunk, true))
                 .collectList();
+
     }
 
     /**
@@ -307,16 +337,16 @@ public class SummaryService {
      */
     public Mono<String> summarizeFinal(List<String> summaries, String keywords, String requirement) {
         String mergedSummary = String.join("\n", summaries);
-        return getGptResult(keywords, requirement, mergedSummary);
+        return getGptResult(keywords, requirement, mergedSummary, false);
     }
 
 
-    private Mono<String> getGptResult(String keywords, String requirement, String mergedSummary) {
-        String prompt = generatePrompt(mergedSummary, keywords, requirement);
+    private Mono<String> getGptResult(String keywords, String requirement, String mergedSummary, boolean isChunk) {
+        String prompt = generatePrompt(mergedSummary, keywords, requirement, isChunk);
         validatePromptLength(prompt);
 
         return gptService.callChatGpt(prompt)
-                .retryWhen(Retry.backoff(3, Duration.ofSeconds(1))
+                .retryWhen(Retry.backoff(3, Duration.ofMillis(500))
                         .doBeforeRetry(retrySignal -> log.warn("GPT 호출 재시도 {}회", retrySignal.totalRetriesInARow()))
                 )
                 .map(gptResponse -> {
@@ -334,6 +364,4 @@ public class SummaryService {
             throw new RuntimeException("프롬프트가 너무 깁니다. 토큰 수: " + tokenCount + "/" + SummaryService.MAX_PROMPT_TOKENS);
         }
     }
-
-
 }

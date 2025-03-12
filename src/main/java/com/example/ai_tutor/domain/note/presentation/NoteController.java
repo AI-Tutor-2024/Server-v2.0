@@ -85,14 +85,14 @@ public class NoteController {
     })
     @PostMapping(value = "/{noteId}/stt", consumes = "multipart/form-data")
     public ResponseEntity<?> convertSpeechToText(
-            @Parameter(description = "Access Token을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal,
+//            @Parameter(description = "Access Token을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "노트 ID", required = true) @PathVariable Long noteId,
             @Parameter(description = "STT 변환을 위한 강의 영상 파일", required = true,
                     schema = @Schema(type = "string", format = "binary"))
             @RequestPart MultipartFile file
     ) {
         try {
-            boolean success = professorNoteService.convertSpeechToText(userPrincipal, noteId, file);
+            boolean success = professorNoteService.convertSpeechToText(noteId, file);
             if (success) {
                 return ResponseEntity.ok("STT 변환이 완료되었습니다.");
             } else {
@@ -136,9 +136,9 @@ public class NoteController {
     @Operation(summary = "노트 요약 조회", description = "노트에 대한 요약본을 조회합니다.")
     @GetMapping("/{noteId}/summaries")
     public ResponseEntity<?> getSummary(
-            @CurrentUser UserPrincipal userPrincipal,
+//            @CurrentUser UserPrincipal userPrincipal,
             @PathVariable Long noteId) {
-        return summaryService.getSummary(userPrincipal, noteId);
+        return summaryService.getSummary(noteId);
     }
 
     @Operation(summary = "문제 랜덤 코드 생성 API", description = "특정 문제지의 고유한 랜덤 코드를 생성하는 API입니다.")
