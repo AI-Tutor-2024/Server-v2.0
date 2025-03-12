@@ -1,9 +1,9 @@
 package com.example.ai_tutor.domain.note.application;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.example.ai_tutor.domain.answer.domain.repository.AnswerRepository;
 import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
-import com.example.ai_tutor.domain.answer.domain.repository.AnswerRepository;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.NoteStatus;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
@@ -12,6 +12,7 @@ import com.example.ai_tutor.domain.note.dto.response.*;
 import com.example.ai_tutor.domain.note_student.application.NoteStudentService;
 import com.example.ai_tutor.domain.note_student.domain.NoteStudent;
 import com.example.ai_tutor.domain.note_student.domain.repository.NoteStudentRepository;
+import com.example.ai_tutor.domain.openAPI.clova.ClovaService;
 import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
 import com.example.ai_tutor.domain.professor.domain.Professor;
@@ -21,15 +22,19 @@ import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Random;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProfessorNoteService {
@@ -42,41 +47,19 @@ public class ProfessorNoteService {
     private final NoteStudentRepository noteStudentRepository;
     private final ProfessorRepository professorRepository;
     private final NoteStudentService noteStudentService;
+    private final ClovaService clovaService;
 
     private final AmazonS3 amazonS3;
 
-    // 수업 정보 조회
-    @Transactional
-    public ResponseEntity<?> getFolderInfo(UserPrincipal userPrincipal, Long folderId) {
-        validateUser(userPrincipal);
-        Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
-
-        FolderInfoRes folderInfoRes = FolderInfoRes.builder()
-                .folderName(folder.getFolderName())
-                .professor(folder.getProfessor().getUser().getName())
-                .build();
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(folderInfoRes)
-                .build();
-
-        return ResponseEntity.ok(apiResponse);
-    }
-
-
     // 노트 생성
     @Transactional
-    public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq noteCreateReq) {
-        User user = validateUser(userPrincipal);
+    public ResponseEntity<?> createNewNote(UserPrincipal userPrincipal, Long folderId, NoteCreateReq request) {
+        User user = getUser(userPrincipal);
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         Professor professor = professorRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("교수자를 찾을 수 없습니다."));
 
         DefaultAssert.isTrue(folder.getProfessor().equals(professor), "해당 폴더에 접근할 수 없습니다.");
-        Note note = Note.builder()
-                 .title(noteCreateReq.getTitle())
-                 .folder(folder)
-                 .build();
+        Note note = Note.createNote(folder, request.getTitle(), null, null);
         noteRepository.save(note);
 
         NoteAccessRes noteAccessRes = NoteAccessRes.builder()
@@ -91,6 +74,36 @@ public class ProfessorNoteService {
         return ResponseEntity.ok(apiResponse);
     }
 
+    public boolean convertSpeechToText(UserPrincipal userPrincipal, Long noteId, MultipartFile file) {
+        // 1. Note 조회
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+
+        // 2. 기존 STT 변환이 있다면 중단
+        if (note.getSttText() != null) {
+            log.info("기존 STT 변환 데이터가 존재하므로 변환하지 않습니다.");
+            return false;
+        }
+
+        try {
+            // 3. CLOVA STT API 호출 (동기 처리)
+            JsonNode response = clovaService.processSpeechToText(file).block();
+            log.info("CLOVA STT 응답: {}", response);
+
+            // 4. STT 결과에서 텍스트 추출 및 저장
+            String fullText = response.path("text").asText();
+            note.updateStt(fullText, String.valueOf(response));
+            noteRepository.save(note);
+
+            log.info("STT 변환 완료: {}", noteId);
+            return true;
+        } catch (Exception e) {
+            log.error("STT 변환 중 오류 발생", e);
+            note.markSttFailed(); // 실패 상태 업데이트
+            noteRepository.save(note);
+            return false;
+        }
+    }
 
 //
 //    // 녹음본이 아닌 영상을 업로드하는 방식으로 수정
@@ -153,7 +166,7 @@ public class ProfessorNoteService {
 
     // 문제지 목록 조회
     public ResponseEntity<?> getAllNotesByFolder(UserPrincipal userPrincipal, Long folderId) {
-        User user = validateUser(userPrincipal);
+        User user = getUser(userPrincipal);
         Folder folder = folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
         DefaultAssert.isTrue(user == folder.getProfessor().getUser(), "사용자가 일치하지 않습니다.");
 
@@ -188,7 +201,7 @@ public class ProfessorNoteService {
     // 문제지 삭제
     @Transactional
     public ResponseEntity<?> deleteNoteById(UserPrincipal userPrincipal, Long noteId) {
-        User user = validateUser(userPrincipal);
+        User user = getUser(userPrincipal);
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         Folder folder = note.getFolder();
@@ -221,7 +234,7 @@ public class ProfessorNoteService {
     // 문제지 랜덤 코드 생성
     @Transactional
     public ResponseEntity<?> createRandomCode(UserPrincipal userPrincipal, Long noteId) {
-        validateUser(userPrincipal);
+        getUser(userPrincipal);
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
@@ -265,7 +278,7 @@ public class ProfessorNoteService {
     }
 
     public ResponseEntity<?> getNoteResult(UserPrincipal userPrincipal, Long noteId) {
-        validateUser(userPrincipal);
+        getUser(userPrincipal);
         Note note = noteRepository.findById(noteId).orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
 
         List<NoteStudent> noteStudentList = noteStudentRepository.findByNote(note);
@@ -298,8 +311,8 @@ public class ProfessorNoteService {
 
     }
 
-    private User validateUser(UserPrincipal userPrincipal){
-        return userRepository.findById(userPrincipal.getId()).orElseThrow(()
+    private User getUser(UserPrincipal userPrincipal){
+        return userRepository.findById(1L).orElseThrow(()
                 -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }
