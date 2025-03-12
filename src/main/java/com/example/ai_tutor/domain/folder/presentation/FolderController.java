@@ -1,9 +1,10 @@
-package com.example.ai_tutor.domain.Folder.presentation;
+package com.example.ai_tutor.domain.folder.presentation;
 
-import com.example.ai_tutor.domain.Folder.application.FolderService;
-import com.example.ai_tutor.domain.Folder.dto.request.FolderCreateReq;
-import com.example.ai_tutor.domain.Folder.dto.response.FolderListRes;
-import com.example.ai_tutor.domain.Folder.dto.response.FolderNameListRes;
+import com.example.ai_tutor.domain.folder.application.FolderService;
+import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
+import com.example.ai_tutor.domain.folder.dto.response.FolderListRes;
+import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
+import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -53,6 +55,21 @@ public class FolderController {
     ) {
         return folderService.getAllFolders(userPrincipal);
     }
+
+
+    @Operation(summary = "폴더 정보 조회 API", description = "노트를 생성하기 전 해당 노트의 폴더 - 강의명과 교수자명을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderInfoRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/{folderId}/info")
+    public ResponseEntity<?> getFolderInfoBeforeCreatingNote(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId
+    ) {
+        return folderService.getFolderInfo(userPrincipal, folderId);
+    }
+
 
     @Operation(summary = "폴더 이름 목록 조회 API", description = "폴더 이름 목록을 조회하는 API입니다.")
     @ApiResponses(value = {

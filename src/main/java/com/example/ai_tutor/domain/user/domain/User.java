@@ -1,17 +1,11 @@
 package com.example.ai_tutor.domain.user.domain;
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
-import com.example.ai_tutor.domain.note.domain.Note;
-import com.example.ai_tutor.domain.practice.domain.Practice;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name="User")
@@ -35,7 +29,7 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name="professor_id")
     private Professor professor;
 
@@ -46,14 +40,13 @@ public class User extends BaseEntity {
 
 
     @Builder
-    public User(String name, String email, String password, Provider provider, Professor professor, String providerId, Role role){
+    public User(String name, String email, String password, Provider provider, String providerId){
         this.name = name;
         this.email = email;
         this.password = password;
         this.provider = provider;
-        this.professor = professor;
+        this.professor = new Professor(name, this);
         this.providerId = providerId;
-        this.role = Role.PROFESSOR;
     }
 
     public void updateProfessor(Professor professor) { this.professor = professor; }

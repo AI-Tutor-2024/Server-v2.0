@@ -4,6 +4,7 @@ package com.example.ai_tutor.domain.summary.domain;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name="Summary")
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Getter
 public class Summary extends BaseEntity {
     @Id
@@ -19,17 +22,19 @@ public class Summary extends BaseEntity {
     private Long summaryId;
 
     @Lob
-    @Column(name="content", columnDefinition = "MEDIUMTEXT")
+    @Column(name="content", columnDefinition = "TEXT")
     private String content;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="note_id")
     private Note note;
 
-    @Builder
-    public Summary(String content, Note note) {
-        this.content = content;
-        this.note = note;
+
+    public static Summary create(String content, Note note) {
+        return Summary.builder()
+                .content(content)
+                .note(note)
+                .build();
     }
 
 }

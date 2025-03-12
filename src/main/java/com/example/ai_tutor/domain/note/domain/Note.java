@@ -1,70 +1,73 @@
 package com.example.ai_tutor.domain.note.domain;
 
 
-import com.example.ai_tutor.domain.Folder.domain.Folder;
+import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.summary.domain.Summary;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
-@Table(name="Note")
+@Table(name = "Note")
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
+@Builder
 public class Note extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="note_id", updatable = false)
+    @Column(name = "note_id", updatable = false)
     private Long noteId;
 
     @Column(name="title")
     private String title;
 
-    // 제한시간
-    //private long limitTime;
-
-    // 마감시간
-    //private LocalDateTime endDate;
-
-    // code
+    @Column(name = "code")
     private String code;
 
-    // 총점
-    // private int total;
-
-    // 평균
-    //private double average = 0;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="folder_id")
+    @JoinColumn(name = "folder_id")
     private Folder folder;
 
     @OneToOne(mappedBy = "note", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Summary summary;
 
+    @Lob
+    @Column(name = "stt_text", columnDefinition = "LONGTEXT")
+    private String sttText; // stt로 변환된 텍스트
 
-       // @OneToMany(mappedBy = "note")
-    // private List<Note> notes= new ArrayList<>();
+    @Lob
+    @Column(name = "stt_response", columnDefinition = "LONGTEXT")
+    private String sttResponse; // stt로 변환된 텍스트
 
-//    public void updateStatus(NoteStatus noteStatus) {
-//        this.noteStatus = noteStatus;
-//    }
+    /**
+     * ✅ 생성자 대신 팩토리 메서드 사용
+     */
+    public static Note createNote(Folder folder, String title, String code, String sttResponse) {
+        return Note.builder()
+                .folder(folder)
+                .title(title)
+                .code(code)
+                .sttResponse(sttResponse)
+                .build();
+    }
 
-    @Builder
-    public Note(Folder folder, String title, String code){
-        this.folder = folder;
-        this.title = title;
-        //this.limitTime = limitTime;
-        //this.endDate = endDate;
-        this.code = code;
+
+    /**
+     * ✅ STT 변환 완료 후 업데이트 메서드
+     */
+    public void updateStt(String sttText, String sttResponse) {
+        this.sttText = sttText;
+        this.sttResponse = sttResponse;
+    }
+
+    public void markSttFailed() {
+        this.sttText = null;  // 실패했으므로 변환된 텍스트 제거
+        this.sttResponse = null;  // 응답 데이터도 초기화
     }
 
     public void updateCode(String code) {this.code = code;}

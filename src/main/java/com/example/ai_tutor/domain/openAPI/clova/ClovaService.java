@@ -1,4 +1,4 @@
-package com.example.ai_tutor.domain.openAPI.application;
+package com.example.ai_tutor.domain.openAPI.clova;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +12,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +30,7 @@ public class ClovaService {
         // 멀티파트 데이터로 전송할 Map 생성
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("media", file.getResource());  // 파일을 리소스로 전달
-        body.add("params", "{ \"language\": \"ko-KR\", \"completion\": \"sync\" }");  // 파라미터는 JSON 문자열로 전달
+        body.add("params", "{ \"language\": \"enko\", \"completion\": \"sync\" }");  // 파라미터는 JSON 문자열로 전달
 
         return clovaWebClient.post()
                 .uri(clovaUrl + "/recognizer/upload")
