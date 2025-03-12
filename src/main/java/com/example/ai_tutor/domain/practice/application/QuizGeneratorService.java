@@ -1,6 +1,6 @@
 package com.example.ai_tutor.domain.practice.application;
 
-import com.example.ai_tutor.domain.openAPI.application.GptService;
+import com.example.ai_tutor.domain.openAPI.gpt.GptService;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;

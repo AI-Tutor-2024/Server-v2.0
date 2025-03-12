@@ -1,4 +1,4 @@
-package com.example.ai_tutor.domain.openAPI.application;
+package com.example.ai_tutor.domain.openAPI.clova;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +12,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor

@@ -1,4 +1,4 @@
-package com.example.ai_tutor.domain.openAPI.application;
+package com.example.ai_tutor.domain.openAPI.gpt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
