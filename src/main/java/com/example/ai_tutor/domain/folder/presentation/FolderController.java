@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/folder")
+@RequestMapping("/api/v1/folders")
 @Tag(name = "Folder", description = "폴더 관련 API입니다.")
 public class FolderController {
 
@@ -35,7 +35,7 @@ public class FolderController {
             @ApiResponse(responseCode = "200", description = "새 폴더 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
             @ApiResponse(responseCode = "400", description = "새 폴더 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<?> createNewFolder(
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 FolderCreateReq를 참고해주세요", required = true) @RequestBody FolderCreateReq folderCreateReq
@@ -49,7 +49,7 @@ public class FolderController {
             @ApiResponse(responseCode = "200", description = "폴더 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderListRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "폴더 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<?> getAllFolders(
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
     ) {
