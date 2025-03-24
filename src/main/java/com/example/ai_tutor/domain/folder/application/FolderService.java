@@ -3,6 +3,7 @@ import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.folder.dto.request.FolderReq;
 import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
+import com.example.ai_tutor.domain.folder.dto.response.FolderRes;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
@@ -41,42 +42,23 @@ public class FolderService {
 
     }
 
-    // 폴더 이름 목록 조회
-    public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal) {
-        User user = getUser(userPrincipal);
-        List<FolderNameListRes> folderRes = folders.stream()
-                .map(folder -> FolderNameListRes.builder()
-                        .folderId(folder.getFolderId())
-                        .folderName(folder.getFolderName())
-                        .build(
-                ))
-                .toList();
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(folderRes)
-                .build();
-
-        return ResponseEntity.ok(apiResponse);
-    }
 
     // 폴더 목록 조회 (폴더명, 교수자명 포함)
     public ResponseEntity<?> getAllFolders(UserPrincipal userPrincipal) {
         User user = getUser(userPrincipal);
+        List<Folder> folders = folderRepository.findAllByUser(user);
 
-        List<FolderListRes> folderRes = folders.stream()
-                .map(folder -> FolderListRes.builder()
-                        .folderId(folder.getFolderId())
-                        .noteCount(folder.getNotes().size())
-                        .folderName(folder.getFolderName())
-                        .professor(folder.getProfessorName())
-                        .build(
-                        ))
+        // FolderRes의 fromEntity
+        List<FolderRes> folderResList =  folders.stream()
+                .map( folder -> {
+                    int noteCount = folder.getNotes().size();
+                    return FolderRes.fromEntity(folder, noteCount);
+                })
                 .toList();
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(folderRes)
+                .information(folderResList)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
@@ -90,7 +72,7 @@ public class FolderService {
 
         FolderInfoRes folderInfoRes = FolderInfoRes.builder()
                 .folderName(folder.getFolderName())
-                .professor(folder.getProfessor().getUser().getName())
+                .professor(folder.getUser().getName())
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
@@ -102,12 +84,12 @@ public class FolderService {
     }
 
     @Transactional
-    public ResponseEntity<?> updateFolder(UserPrincipal userPrincipal, Long folderId, FolderCreateReq folderCreateReq) {
+    public ResponseEntity<?> updateFolder(UserPrincipal userPrincipal, Long folderId, FolderReq.FolderUpdateReq folderCreateReq) {
         getUser(userPrincipal);
         Folder folder=folderRepository.findById(folderId).orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
 
 
-        folder.updateFolder(folderCreateReq.getFolderName(), folderCreateReq.getProfessorName());
+        folder.updateFolder(folderCreateReq.getFolderName());
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)

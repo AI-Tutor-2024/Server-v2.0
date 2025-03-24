@@ -29,11 +29,13 @@ public class FolderRes {
     private String professor;
 
     // Folder Entity -> FolderRes
-    public static FolderRes fromEntity(Folder entity) {
-        return FolderRes.builder()
-                .folderUuid(entity.getFolderUuid())  // UUID 매핑
-                .noteCount(entity.getNoteCount())    // 노트 개수 매핑
-                .folderName(entity.getFolderName())  // 폴더 이름 매핑
-                .build();
+    public static FolderRes fromEntity(Folder entity, int noteCount) {
+        {
+            return FolderRes.builder()
+                    .folderUuid(entity.getUuid())  // UUID 매핑
+                    .noteCount(noteCount)    // 노트 개수 매핑
+                    .folderName(entity.getFolderName())  // 폴더 이름 매핑
+                    .build();
+        }
     }
 }
