@@ -8,6 +8,7 @@ import com.example.ai_tutor.global.config.security.auth.OAuth2UserInfo;
 import com.example.ai_tutor.global.config.security.auth.OAuth2UserInfoFactory;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
@@ -30,9 +32,12 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
+        log.info("OAuth2 user loaded: {}", oAuth2User);
         try {
+            log.info("Processing OAuth2 user: {}", oAuth2User);
             return processOAuth2User(oAuth2UserRequest, oAuth2User);
         } catch (Exception e) {
+            log.info("Error processing OAuth2 user: {}", e.getMessage());
             DefaultAssert.isAuthentication(e.getMessage());
         }
         return null;
@@ -48,10 +53,13 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
             user = userOptional.get();
             DefaultAssert.isAuthentication(user.getProvider().equals(Provider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId())));
             user = updateExistingUser(user, oAuth2UserInfo);
+            log.info("User updated: {}", user);
         } else {
             user = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
+            log.info("New user registered: {}", user);
         }
 
+        log.debug("OAuth2 user processed: {}", user);
         return UserPrincipal.create(user, oAuth2User.getAttributes());
     }
 
@@ -64,7 +72,9 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
                 .providerId(oAuth2UserInfo.getId())
                 .build();
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        log.debug("New user registered: {}", savedUser);
+        return savedUser;
     }
 
     private User updateExistingUser(User user, OAuth2UserInfo oAuth2UserInfo) {
