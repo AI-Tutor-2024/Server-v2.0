@@ -1,6 +1,6 @@
 package com.example.ai_tutor.domain.folder.presentation;
 
-import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
+import com.example.ai_tutor.domain.folder.dto.request.FolderReq;
 import com.example.ai_tutor.global.BaseIntegrationTest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -53,9 +53,8 @@ public class FolderControllerTest extends BaseIntegrationTest {
             log.info("createNewFolderSuccess() 테스트 시작...");
             // Given
             // 폴더 생성 요청 객체 생성
-            FolderCreateReq folderCreateReq = FolderCreateReq.builder()
+            FolderReq.FolderCreateReq folderCreateReq = FolderReq.FolderCreateReq.builder()
                     .folderName("데이터베이스")
-                    .professorName("전종훈")
                     .build();
 
             // When: 폴더 생성 요청 API 호출
@@ -66,7 +65,7 @@ public class FolderControllerTest extends BaseIntegrationTest {
         }
 
         // 폴더 생성 API 요청 수행
-        private ResultActions requestCreateFolder(FolderCreateReq request) throws Exception {
+        private ResultActions requestCreateFolder(FolderReq.FolderCreateReq request) throws Exception {
             log.info("requestCreateFolder 시작...");
             log.info("AccessToken: {}", accessToken);
 

@@ -1,8 +1,7 @@
 package com.example.ai_tutor.domain.folder.application;
 
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
-import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
-import com.example.ai_tutor.domain.professor.domain.Professor;
+import com.example.ai_tutor.domain.folder.dto.request.FolderReq;
 import com.example.ai_tutor.domain.user.domain.Provider;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
@@ -40,7 +39,6 @@ public class FolderServiceTest {
 
     private UserPrincipal mockUserPrincipal;
     private User mockUser;
-    private Professor mockProfessor;
 
     @BeforeEach
     void setUp() {
@@ -53,14 +51,7 @@ public class FolderServiceTest {
                 .providerId("google_12345")
                 .build();
 
-        // 2. Mock Professor 생성
-        mockProfessor = Professor.builder()
-                .professorName(mockUser.getName())
-                .user(mockUser)
-                .build();
 
-        // 3. 유저와 교수 연관관계 설정
-        mockUser.updateProfessor(mockProfessor);
 
         // 4. UserPrincipal Mock 객체 생성
         mockUserPrincipal = UserPrincipal.create(mockUser);
@@ -81,11 +72,11 @@ public class FolderServiceTest {
         void createNewFolderSuccess() {
             // given
             // 폴더 생성 요청 객체 생성
-            FolderCreateReq folderCreateReq = new FolderCreateReq("테스트 폴더", "테스트 교수");
+            FolderReq.FolderCreateReq folderCreateReq = new FolderReq.FolderCreateReq("테스트 폴더");
 
             // when
             // 폴더 생성 요청
-            ResponseEntity<?> response = folderService.createNewFolder(mockUserPrincipal, folderCreateReq);
+            ResponseEntity<?> response = folderService.createNewFolder(mockUserPrincipal.getUsername(), folderCreateReq);
 
             // then
             // 폴더 생성 성공
