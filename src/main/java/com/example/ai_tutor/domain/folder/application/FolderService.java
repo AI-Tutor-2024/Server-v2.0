@@ -1,12 +1,9 @@
 package com.example.ai_tutor.domain.folder.application;
 import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
-import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
-import com.example.ai_tutor.domain.folder.dto.response.FolderListRes;
+import com.example.ai_tutor.domain.folder.dto.request.FolderReq;
 import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
-import com.example.ai_tutor.domain.professor.domain.Professor;
-import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
@@ -18,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,48 +23,27 @@ public class FolderService {
 
     private final FolderRepository folderRepository;
     private final UserRepository userRepository;
-    private final ProfessorRepository professorRepository;
 
 
     // 교수자 - 폴더 생성
     @Transactional
-    public ResponseEntity<?> createNewFolder( UserPrincipal userPrincipal, FolderCreateReq folderCreateReq) {
-        User user = getUser(userPrincipal);
-        String folderName = folderCreateReq.getFolderName();
-        String professorName = folderCreateReq.getProfessorName();
+    public ResponseEntity<?> createNewFolder(String email, FolderReq.FolderCreateReq folderCreateReq) {
+        User user = getUserByEmail(email);
 
-        Professor professor = user.getProfessor();
-        if(Objects.isNull(professor)){
-            professor = Professor.builder()
-                    .professorName(user.getName())
-                    .user(user)
-                    .build();
-            professorRepository.save(professor);
-            user.updateProfessor(professor);
-        }
+        // 새로운 폴더 생성
+        Folder newFolder = Folder.create(folderCreateReq);
+        folderRepository.save(newFolder);
 
-        Folder folder = Folder.builder()
-                .folderName(folderName)
-                .professor(professor)
-                .professorName(professorName)
-                .build();
-
-        folderRepository.save(folder);
-
-        ApiResponse apiResponse = ApiResponse.builder()
+        return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
                 .information("폴더 생성 성공")
-                .build();
-
-        return ResponseEntity.ok(apiResponse);
+                .build());
 
     }
 
     // 폴더 이름 목록 조회
     public ResponseEntity<?> getFolderNames(UserPrincipal userPrincipal) {
         User user = getUser(userPrincipal);
-        Professor professor = user.getProfessor();
-        List<Folder> folders = professor.getFolders();
         List<FolderNameListRes> folderRes = folders.stream()
                 .map(folder -> FolderNameListRes.builder()
                         .folderId(folder.getFolderId())
@@ -88,8 +63,7 @@ public class FolderService {
     // 폴더 목록 조회 (폴더명, 교수자명 포함)
     public ResponseEntity<?> getAllFolders(UserPrincipal userPrincipal) {
         User user = getUser(userPrincipal);
-        Professor professor = user.getProfessor();
-        List<Folder> folders = professor.getFolders();
+
         List<FolderListRes> folderRes = folders.stream()
                 .map(folder -> FolderListRes.builder()
                         .folderId(folder.getFolderId())
@@ -161,4 +135,11 @@ public class FolderService {
         return userRepository.findById(userPrincipal.getId()).orElseThrow(()
                 -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
+
+    private User getUserByEmail(String email){
+        return userRepository.findByEmail(email).orElseThrow(()
+                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
+
 }
