@@ -3,7 +3,6 @@ package com.example.ai_tutor.domain.folder.domain;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.folder.dto.request.FolderReq;
 import com.example.ai_tutor.domain.note.domain.Note;
-import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
