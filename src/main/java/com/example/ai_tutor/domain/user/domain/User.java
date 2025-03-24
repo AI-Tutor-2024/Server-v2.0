@@ -29,10 +29,6 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name="professor_id")
-    private Professor professor;
-
     private String providerId;
 
     @Enumerated(EnumType.STRING)
@@ -45,11 +41,8 @@ public class User extends BaseEntity {
         this.email = email;
         this.password = password;
         this.provider = provider;
-        this.professor = new Professor(name, this);
         this.providerId = providerId;
     }
-
-    public void updateProfessor(Professor professor) { this.professor = professor; }
 
     public void updateName(String name) { this.name = name; }
 
