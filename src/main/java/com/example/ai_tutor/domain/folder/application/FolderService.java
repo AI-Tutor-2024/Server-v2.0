@@ -2,7 +2,6 @@ package com.example.ai_tutor.domain.folder.application;
 import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.folder.dto.request.FolderReq;
-import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
 import com.example.ai_tutor.domain.folder.dto.response.FolderRes;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.domain.user.domain.User;

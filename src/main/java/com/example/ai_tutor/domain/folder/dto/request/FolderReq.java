@@ -1,6 +1,5 @@
 package com.example.ai_tutor.domain.folder.dto.request;
 
-import com.example.ai_tutor.domain.folder.domain.Folder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
