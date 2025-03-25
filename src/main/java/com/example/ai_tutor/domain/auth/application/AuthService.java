@@ -7,6 +7,7 @@ import com.example.ai_tutor.domain.auth.domain.repository.TokenRepository;
 import com.example.ai_tutor.domain.auth.dto.AuthRes;
 import com.example.ai_tutor.domain.auth.dto.RefreshTokenReq;
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
+import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
@@ -22,6 +23,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +34,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class AuthService {
 
-    private final JwtUtil jwtUtil;
+    private final CustomTokenProviderService customTokenProviderService;
     private final AuthenticationManager authenticationManager;
 
     private final TokenRepository tokenRepository;
@@ -47,17 +49,17 @@ public class AuthService {
 
         Token token = tokenRepository.findByRefreshToken(tokenRefreshRequest.getRefreshToken())
                 .orElseThrow(InvalidTokenException::new);
-        Authentication authentication = jwtUtil.getAuthenticationByEmail(token.getUserEmail());
+        Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.getUserEmail());
 
         //refresh token 정보 값을 업데이트 한다.
         //시간 유효성 확인
         TokenMapping tokenMapping;
 
-        Long expirationTime = jwtUtil.getExpiration(tokenRefreshRequest.getRefreshToken());
+        Long expirationTime = customTokenProviderService.getExpiration(tokenRefreshRequest.getRefreshToken());
         if(expirationTime > 0){
-            tokenMapping = jwtUtil.refreshToken(authentication, token.getRefreshToken());
+            tokenMapping = customTokenProviderService.refreshToken(authentication, token.getRefreshToken());
         }else{
-            tokenMapping = jwtUtil.createToken(authentication);
+            tokenMapping = customTokenProviderService.createToken(authentication);
         }
 
         Token updateToken = token.updateRefreshToken(tokenMapping.getRefreshToken());
@@ -93,7 +95,7 @@ public class AuthService {
     private boolean valid(String refreshToken){
 
         //1. 토큰 형식 물리적 검증
-        boolean validateCheck = jwtUtil.validateToken(refreshToken);
+        boolean validateCheck = customTokenProviderService.validateToken(refreshToken);
         DefaultAssert.isTrue(validateCheck, "Token 검증에 실패하였습니다.");
 
         //2. refresh token 값을 불러온다.
@@ -101,7 +103,7 @@ public class AuthService {
         DefaultAssert.isTrue(token.isPresent(), "탈퇴 처리된 회원입니다.");
 
         //3. email 값을 통해 인증값을 불러온다
-        Authentication authentication = jwtUtil.getAuthenticationByEmail(token.get().getUserEmail());
+        Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.get().getUserEmail());
         DefaultAssert.isTrue(token.get().getUserEmail().equals(authentication.getName()), "사용자 인증에 실패하였습니다.");
 
         return true;
@@ -120,7 +122,7 @@ public class AuthService {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        TokenMapping tokenMapping = jwtUtil.createToken(authentication);
+        TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
         Token token = Token.builder()
                 .refreshToken(tokenMapping.getRefreshToken())
                 .userEmail(tokenMapping.getUserEmail())
