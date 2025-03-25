@@ -27,6 +27,7 @@ import java.util.Optional;
 public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
@@ -58,7 +59,7 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
             log.info("New user registered: {}", user);
         }
 
-        log.info("OAuth2 user processed: {}", user);
+        log.debug("OAuth2 user processed: {}", user);
         return UserPrincipal.create(user, oAuth2User.getAttributes());
     }
 
@@ -66,12 +67,14 @@ public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
         User user = User.builder()
                 .name(oAuth2UserInfo.getName())
                 .email(oAuth2UserInfo.getEmail())
-                .password("oauth-only")
+                .password(passwordEncoder.encode(oAuth2UserInfo.getId()))
                 .provider(Provider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))
                 .providerId(oAuth2UserInfo.getId())
                 .build();
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        log.debug("New user registered: {}", savedUser);
+        return savedUser;
     }
 
     private User updateExistingUser(User user, OAuth2UserInfo oAuth2UserInfo) {
