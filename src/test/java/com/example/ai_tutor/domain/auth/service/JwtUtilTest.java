@@ -1,5 +1,5 @@
 package com.example.ai_tutor.domain.auth.service;
-import com.example.ai_tutor.domain.auth.application.CustomTokenProviderService;
+import com.example.ai_tutor.domain.auth.application.JwtUtil;
 import com.example.ai_tutor.domain.auth.application.CustomUserDetailsService;
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
 import com.example.ai_tutor.global.JwtTestUtil;
@@ -23,10 +23,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService Test")
-class CustomTokenProviderServiceTest {
+class JwtUtilTest {
 
     @InjectMocks
-    private CustomTokenProviderService tokenProvider;
+    private JwtUtil tokenProvider;
 
     @Mock
     private OAuth2Config oAuth2Config;

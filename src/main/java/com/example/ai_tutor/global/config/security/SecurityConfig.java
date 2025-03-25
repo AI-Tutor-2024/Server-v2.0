@@ -6,14 +6,13 @@ import com.example.ai_tutor.domain.auth.domain.repository.CustomAuthorizationReq
 import com.example.ai_tutor.global.config.security.handler.CustomSimpleUrlAuthenticationFailureHandler;
 import com.example.ai_tutor.global.config.security.handler.CustomSimpleUrlAuthenticationSuccessHandler;
 import com.example.ai_tutor.global.config.security.token.CustomAuthenticationEntryPoint;
-import com.example.ai_tutor.global.config.security.token.CustomOncePerRequestFilter;
+import com.example.ai_tutor.global.config.security.token.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,8 +28,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @RequiredArgsConstructor
 @Configuration
@@ -49,8 +46,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CustomOncePerRequestFilter customOncePerRequestFilter() {
-        return new CustomOncePerRequestFilter();
+    public JwtAuthenticationFilter customOncePerRequestFilter() {
+        return new JwtAuthenticationFilter();
     }
 
     @Bean
