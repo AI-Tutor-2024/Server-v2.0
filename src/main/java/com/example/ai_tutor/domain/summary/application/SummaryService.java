@@ -11,12 +11,16 @@ import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.reactor.ratelimiter.operator.RateLimiterOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -50,6 +54,16 @@ public class SummaryService {
     // 토큰 수 기준 제한값 (gpt-4o 기준으로 설정) 4o - 128000개의 토큰 지원
     private static final int MAX_PROMPT_TOKENS = 30000;  // 최종 요약 프롬프트 크기
     private static final int CHUNK_TOKEN_SIZE = 7000;    // 청크 단위 토큰 수
+
+
+    //
+    RateLimiterConfig rateLimiterConfig = RateLimiterConfig.custom()
+            .timeoutDuration(Duration.ofMillis(500)) // 획득 대기 시간
+            .limitForPeriod(3) // period당 호출 가능 횟수
+            .limitRefreshPeriod(Duration.ofSeconds(1)) // period 단위 시간
+            .build();
+
+    RateLimiter rateLimiter = RateLimiter.of("gptRateLimiter", rateLimiterConfig);
 
 
     public Mono<String> processSttAndSummary(MultipartFile file, String keywords, String requirement, Long noteId) {
@@ -106,21 +120,21 @@ public class SummaryService {
             // 청크 요약용 프롬프트
             promptBuilder.append("""
             당신은 전문적인 강의 분석가입니다.
-            아래 강의 내용을 간결하고 논리적으로 요약하십시오.
-        
+            아래 강의 내용을 **상세하고 논리적으로 요약**하십시오.
+            
             ---
             ### 역할과 목표
-            - 역할: 주어진 강의 청크를 분석하고, 핵심 개념과 주요 이론만 추출하는 전문가입니다.
-            - 목표: 최종 요약의 재료로 사용될 일관성 있고 체계적인 부분 요약을 생성하는 것입니다.
-        
+            - 역할: 주어진 강의 청크를 분석하여 **단일 청크만으로 완전한 내용을 담은 부분 요약**을 생성하는 전문가입니다. \s
+            - 목표: 각 청크 요약이 최종 요약과 동일한 수준의 완결성을 갖추도록 작성합니다. **최종 통합 시 추가하거나 보완하는 과정이 없음을 전제로 작성합니다.**
+            
             ---
             ### 작성 기준
-            1. 핵심 개념과 이론만 요약하며 불필요한 설명과 반복은 반드시 제거합니다.
-            2. 모든 문장은 간결하고 논리적이어야 하며, 전문적이고 학문적인 어투로 작성합니다. 각 문장은 '~이다.'로 끝맺습니다.
-            3. 제공된 키워드와 요구사항은 반드시 반영하고 논리적으로 통합합니다.
-            4. 결과는 마크다운 형식으로 작성하며, 번호나 리스트를 사용하여 시각적 구분을 명확히 합니다.
-            5. 요약 결과는 반드시 500단어 이상 800단어 이하로 제한합니다.
-        
+            1. **핵심 개념, 주요 이론, 사례 및 교수자의 중요한 설명을 절대 누락하지 않고 상세하게 요약합니다.** 특히 해당 강의 주제에서 중요해보이는 사례와 개념을 강조하여 이야기합니다.
+            2. 불필요한 설명과 반복은 제거하되, **내용이 축소되거나 정보가 손실되지 않도록 주의합니다.**
+            3. 모든 문장은 간결하고 논리적이어야 하며, 전문적이고 학문적인 어투로 작성합니다. 각 문장은 ‘~이다.’로 끝맺습니다.
+            4. 제공된 키워드와 요구사항을 반드시 반영하고, 자연스럽게 통합합니다.
+            5. **핵심 내용과 보조 설명, 사례 등을 시각적으로 구분**하여 명확성을 높입니다. 마크다운 형식을 사용하며, 번호나 리스트를 적극적으로 활용합니다.
+            6. 요약 결과는 **500단어 이상, 1200단어 이하로 제한**합니다.
             ---
             """);
 
@@ -151,7 +165,13 @@ public class SummaryService {
 당신은 다양한 전공 분야의 강의를 쉽고 명료하게 전달하는 교양서적의 저자입니다.
 학습자가 복잡한 개념을 명확히 이해하고, 논리적으로 정리된 지식을 통해 사고를 확장할 수 있도록 돕는 것이 당신의 역할입니다.
 
-※ 주의사항  
+지금부터 작성할 내용은 청크별 부분 요약본을 종합하여 작성하는 **최종 요약본**입니다.
+            
+필수 지침
+- 강의의 **모든 핵심 개념, 주요 이론, 사례, 교수자의 강조 의도가 누락되지 않도록 작성하십시오.**
+- 작성 후 반드시 검토하여, 정보 누락과 왜곡이 없는지 확인하고 제출하십시오.
+- 청크별 요약본을 종합하며, 중복 없이 논리적 흐름과 일관성을 유지하십시오.
+
 - 반드시 제공된 강의 원문(STT 변환 텍스트)의 내용만 사용하여 작성합니다.  
 - 외부 지식이나 상상, 창작은 절대 포함하지 않습니다.  
 - 원문에 없는 정보는 작성하지 않습니다.
@@ -186,11 +206,10 @@ public class SummaryService {
 
 4. **형식**
    - 명확하고 간결한 문장으로 서술하며, 한 문장은 지나치게 길지 않게 유지합니다.
-   - 중복 표현은 피하고, 동일한 개념을 반복 설명하지 않습니다.
-   - 불필요한 감정적 어구나 과도한 수식은 사용하지 않습니다.
+   - 불필요한 감정적 어구와 중복 표현은 피하고, 동일한 개념을 반복 설명하지 않습니다.
    
 4. **검증**
-   - 요약을 작성한 후, 이전의 요약본과 작성된 요약본을 다시 확인하여, 핵심 겨냄이 빠짐없이 포함되어있는지와 내용의 왜곡이 없는지 확인하고 보완하시오. 
+   - 요약을 작성한 후, 이전의 요약본과 작성된 요약본을 다시 확인하여, 핵심 개념이 빠짐없이 포함되어있는지와 내용의 왜곡이 없는지 확인하고 보완하시오. 
 
 ---
 
@@ -201,6 +220,19 @@ public class SummaryService {
 
 - **개념 설명 예시**  
   "니체가 언급한 '르상티망'은 억눌린 감정이 왜곡되어 타인에 대한 적대감으로 표출되는 심리 상태를 의미합니다. 강의에서는 이를 현대 사회의 무차별 공격과 같은 현상과 연결지어 설명하고 있습니다."
+  
+---
+### 수식 작성 기준 (선택적 적용)
+1. 강의 내용에 수식이 포함된 경우, 반드시 **LaTeX 문법**을 사용하여 작성합니다.
+2. 수식은 문장 내에 `$ ... $` 형태로 인라인으로 작성합니다. 
+   예시: "피타고라스 정리는 $a^2 + b^2 = c^2$이다."
+3. 복잡하거나 강조가 필요한 수식은 `$$ ... $$`으로 감싸서 별도의 수식 블록으로 작성합니다. 
+   예시: 
+   $$ 
+   E = mc^2 
+   $$
+4. 수식이 없는 경우는 수식을 억지로 생성하지 않고, 텍스트 기반 설명만 제공합니다.
+5. 수식이 포함될 경우에도 설명과 함께 자연스럽게 통합하여, 논리적인 흐름을 유지합니다.
 
 ---
 
@@ -321,11 +353,12 @@ public class SummaryService {
         log.info("Chunk 개수: {}", chunks.size());
 
         return Flux.fromIterable(chunks)
-                .delayElements(Duration.ofMillis(500))  // 1초 간격으로 호출
-                .flatMapSequential(chunk -> getGptResult(keywords, requirement, chunk, true))
+                .flatMap(chunk -> getGptResult(keywords, requirement, chunk, true)
+                                .transformDeferred(RateLimiterOperator.of(rateLimiter)) // 비동기 처리
+                        , 2) // 동시 처리 수 조절 가능
                 .collectList();
-
     }
+
 
     /**
      * 부분 요약을 합쳐 최종 요약을 생성합니다.
@@ -341,14 +374,26 @@ public class SummaryService {
         validatePromptLength(prompt);
 
         return gptService.callChatGpt(prompt)
-                .retryWhen(Retry.backoff(3, Duration.ofMillis(500))
-                        .doBeforeRetry(retrySignal -> log.warn("GPT 호출 재시도 {}회", retrySignal.totalRetriesInARow()))
+                .retryWhen(
+                        Retry.backoff(4, Duration.ofSeconds(1))
+                                .maxBackoff(Duration.ofSeconds(5))
+                                .jitter(0.5) // 최대 50% 랜덤 지연
+                                .filter(this::isTooManyRequests)
+                                .doBeforeRetry(retry -> log.warn("GPT 호출 재시도 {}회", retry.totalRetriesInARow()))
                 )
                 .map(gptResponse -> {
                     JsonNode choices = gptResponse.get("choices");
                     return choices.get(0).get("message").get("content").asText();
                 });
     }
+
+    private boolean isTooManyRequests(Throwable throwable) {
+        if (throwable instanceof WebClientResponseException.TooManyRequests) {
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * 프롬프트 길이를 토큰 수 기준으로 검증합니다.

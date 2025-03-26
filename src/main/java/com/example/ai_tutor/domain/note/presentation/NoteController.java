@@ -58,11 +58,24 @@ public class NoteController {
     })
     @GetMapping()
     public ResponseEntity<?> getAllNotes(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId
+            @Parameter(description = "Access Token을 입력해주세요.", required = false) @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "folder의 id를 입력해주세요") @PathVariable Long folderId
 
     ) {
         return professorNoteService.getAllNotesByFolder(userPrincipal, folderId);
+    }
+
+    @Operation(summary = "노트 단일 조회 API", description = "강의 노트 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteListRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "강의 노트 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/{noteId}")
+    public ResponseEntity<?> getNote(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "삭제하려는 note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+    ) {
+        return professorNoteService.deleteNoteById(userPrincipal, noteId);
     }
 
     @Operation(summary = "노트 삭제 API", description = "특정 강의 노트를 삭제하는 API입니다.")
@@ -77,6 +90,8 @@ public class NoteController {
     ) {
         return professorNoteService.deleteNoteById(userPrincipal, noteId);
     }
+
+
 
     @Operation(summary = "노트 STT 변환 API", description = "노트의 강의 영상을 CLOVA API를 활용하여 STT 변환하는 API입니다. 처음 영상을 올리는 것이라면 이 API를 활용하여 영상을 TEXT로 변환하여야 합니다.")
     @ApiResponses(value = {
