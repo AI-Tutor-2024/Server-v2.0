@@ -88,6 +88,10 @@ dependencies {
     // Spring Boot Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
+
+springBoot {
+    mainClassName = 'com.example.ai_tutor.AiTutorApplication'
+}
 test {
     testLogging {
         events "passed", "skipped", "failed"
