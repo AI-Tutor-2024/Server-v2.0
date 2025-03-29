@@ -55,25 +55,28 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
                 .build();
         tokenRepository.save(token);
 
-        // 3) JSON으로 응답
-        response.setContentType("application/json;charset=UTF-8");
-        response.setCharacterEncoding("UTF-8");
+        // 3) 세션에서 redirec_url 가져오기
+        String redirectUrl = (String) request.getSession().getAttribute("OAUTH2_REDIRECT_URL");
+        if (redirectUrl == null || redirectUrl.isEmpty()) {
+            redirectUrl = "https://ai-tutor.ac.kr/";  // 기본 URL 설정
+//            redirectUrl = "http://localhost:8080/";
+        }
+        log.info("redirectUrl: {}", redirectUrl);
 
-        String jsonResponse = String.format(
-                "{\"accessToken\":\"%s\",\"refreshToken\":\"%s\"}",
-                tokenMapping.getAccessToken(),
-                tokenMapping.getRefreshToken()
-        );
+        // accessToken과 refreshToken을 쿼리 파라미터로 추가
+        redirectUrl = this.setRedirectUrl(redirectUrl, tokenMapping.getAccessToken(), tokenMapping.getRefreshToken());
 
-        // 4) OAuth2 인증 과정에서 사용된 쿠키/세션 정리
-        clearAuthenticationAttributes(request, response);
-        customAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+        // 리디렉션 처리
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
 
-        // 5) 최종 응답
-        response.getWriter().write(jsonResponse);
-        response.getWriter().flush();
+        log.info("리디렉션 완료 - URL: {}", redirectUrl);
+    }
 
-        log.info("OAuth2 로그인 성공. JWT 토큰 발급 후 JSON으로 응답 완료.");
+    private String setRedirectUrl(String redirectUrl, String accessToken, String refreshToken) {
+        return UriComponentsBuilder.fromUriString(redirectUrl)
+                .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
+                .build().toUriString();
     }
 
     /**
