@@ -74,6 +74,8 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
 
+    implementation 'org.apache.commons:commons-compress:1.21'
+
     // test Dependencies
 
     // springboot, junit 버전: https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html
