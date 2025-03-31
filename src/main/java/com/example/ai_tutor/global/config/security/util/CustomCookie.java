@@ -26,12 +26,17 @@ public class CustomCookie {
 
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
-
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+        cookie.setSecure(true); // ✅ HTTPS 환경에서는 반드시 필요
+
+        // SameSite=None 속성은 setAttribute가 없기 때문에 아래처럼 수동 추가 필요
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=/; Secure; HttpOnly; SameSite=None",
+                cookie.getName(), cookie.getValue(), maxAge);
+        response.addHeader("Set-Cookie", cookieHeader);
     }
+
 
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
         Cookie[] cookies = request.getCookies();
