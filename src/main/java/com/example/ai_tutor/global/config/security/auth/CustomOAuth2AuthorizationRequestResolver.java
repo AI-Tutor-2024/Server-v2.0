@@ -17,10 +17,7 @@ public class CustomOAuth2AuthorizationRequestResolver implements OAuth2Authoriza
         this.delegate = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorize");
 
         this.delegate.setAuthorizationRequestCustomizer(builder -> {
-            String registrationId = (String) builder.build().getAttributes().get("registration_id");
-            if ("google".equals(registrationId)) {
-                builder.additionalParameters(params -> params.put("prompt", "select_account"));
-            }
+            builder.additionalParameters(params -> params.put("prompt", "consent"));
         });
     }
 

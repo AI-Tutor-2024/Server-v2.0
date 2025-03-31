@@ -5,8 +5,6 @@ import com.example.ai_tutor.domain.auth.domain.Token;
 import com.example.ai_tutor.domain.auth.domain.repository.CustomAuthorizationRequestRepository;
 import com.example.ai_tutor.domain.auth.domain.repository.TokenRepository;
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
-import com.example.ai_tutor.global.DefaultAssert;
-import com.example.ai_tutor.global.config.security.OAuth2Config;
 import com.example.ai_tutor.global.config.security.util.CustomCookie;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
