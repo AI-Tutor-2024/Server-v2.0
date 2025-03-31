@@ -22,26 +22,29 @@ import static com.example.ai_tutor.domain.auth.domain.repository.CustomAuthoriza
 @Component
 @Slf4j
 public class CustomSimpleUrlAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
-    private final CustomAuthorizationRequestRepository customAuthorizationRequestRepository;
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         log.error("OAuth2 로그인 실패: {}", exception.getMessage());
 
+        String errorMessage = exception.getMessage();
+
         log.info("Request URI: {}", request.getRequestURI());
         log.info("Query String: {}", request.getQueryString());
         log.info("Cookies: {}", Arrays.toString(request.getCookies()));
 
-        String targetUrl = CustomCookie.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
-                .map(Cookie::getValue)
-                .orElse(("/"));
+        // 세션에서 error_redirect_url 가져오기
+        String errorRedirectUrl = (String) request.getSession().getAttribute("OAUTH2_ERROR_REDIRECT_URL");
+        if (errorRedirectUrl == null || errorRedirectUrl.isEmpty()) {
+            errorRedirectUrl = "https://ai-tutor.ac.kr/login?error";  // 기본 오류 리디렉션 URL
+        }
 
-        targetUrl = UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("error", "invalid_request")
-                .build()
-                .toUriString();
-        customAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
+        // 에러를 쿼리 파라미터에 추가
+        errorRedirectUrl = UriComponentsBuilder.fromUriString(errorRedirectUrl)
+                .queryParam("error", errorMessage)
+                .build().toUriString();
 
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        log.info("OAuth2 로그인 실패 - 에러 메시지: {}", errorMessage);
+        getRedirectStrategy().sendRedirect(request, response, errorRedirectUrl);
     }
 }

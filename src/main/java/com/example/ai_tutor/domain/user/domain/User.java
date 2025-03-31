@@ -3,6 +3,7 @@ package com.example.ai_tutor.domain.user.domain;
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name="User")
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Getter
 public class User extends BaseEntity {
     @Id
@@ -26,8 +29,7 @@ public class User extends BaseEntity {
     @Column(name="password")
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    private Provider provider;
+    private String provider;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name="professor_id")
@@ -37,17 +39,6 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.PROFESSOR;
-
-
-    @Builder
-    public User(String name, String email, String password, Provider provider, String providerId){
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.provider = provider;
-        this.professor = new Professor(name, this);
-        this.providerId = providerId;
-    }
 
     public void updateProfessor(Professor professor) { this.professor = professor; }
 

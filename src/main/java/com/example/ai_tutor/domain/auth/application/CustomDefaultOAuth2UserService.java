@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -27,48 +28,37 @@ import java.util.Optional;
 public class CustomDefaultOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final OAuth2UserInfoFactory oAuth2UserInfoFactory;
 
     @Override
+    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
+        log.info("loadUser Start");
         OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
-        log.info("OAuth2 user loaded: {}", oAuth2User);
-        try {
-            log.info("Processing OAuth2 user: {}", oAuth2User);
-            return processOAuth2User(oAuth2UserRequest, oAuth2User);
-        } catch (Exception e) {
-            log.info("Error processing OAuth2 user: {}", e.getMessage());
-            DefaultAssert.isAuthentication(e.getMessage());
-        }
-        return null;
-    }
+        String registrationId = oAuth2UserRequest.getClientRegistration().getRegistrationId();
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        User user = this.processOAuth2User(registrationId, attributes);
+        log.info("Processing OAuth2 user: {}", oAuth2User);
+        UserPrincipal userPrincipal = UserPrincipal.create(user);
+        log.info("OAuth2 로그인 UserPrincipal 생성됨 - UUID: {}", userPrincipal.getUsername());
 
-    private OAuth2User processOAuth2User(OAuth2UserRequest oAuth2UserRequest, OAuth2User oAuth2User) {
-        OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(oAuth2UserRequest.getClientRegistration().getRegistrationId(), oAuth2User.getAttributes());
+        return userPrincipal;
+        }
+
+    private User processOAuth2User(String registrationId, Map<String, Object> attributes) {
+        OAuth2UserInfo oAuth2UserInfo = oAuth2UserInfoFactory.getOAuthUserInfo(registrationId, attributes);
         DefaultAssert.isAuthentication(!oAuth2UserInfo.getEmail().isEmpty());
-
-        Optional<User> userOptional = userRepository.findByEmail(oAuth2UserInfo.getEmail());
-        User user;
-        if(userOptional.isPresent()) {
-            user = userOptional.get();
-            DefaultAssert.isAuthentication(user.getProvider().equals(Provider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId())));
-            user = updateExistingUser(user, oAuth2UserInfo);
-            log.info("User updated: {}", user);
-        } else {
-            user = registerNewUser(oAuth2UserRequest, oAuth2UserInfo);
-            log.info("New user registered: {}", user);
-        }
-
-        log.info("OAuth2 user processed: {}", user);
-        return UserPrincipal.create(user, oAuth2User.getAttributes());
+        Optional<User> user = userRepository.findByEmail(oAuth2UserInfo.getEmail());
+        return user.orElseGet(() -> this.registerNewUser(oAuth2UserInfo, registrationId));
     }
 
-    private User registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
+    private User registerNewUser(OAuth2UserInfo oAuth2UserInfo, String registrationId) {
         User user = User.builder()
                 .name(oAuth2UserInfo.getName())
                 .email(oAuth2UserInfo.getEmail())
                 .password("oauth-only")
-                .provider(Provider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))
-                .providerId(oAuth2UserInfo.getId())
+                .provider(registrationId)
+                .providerId(oAuth2UserInfo.getProviderId())
                 .build();
 
         return userRepository.save(user);
