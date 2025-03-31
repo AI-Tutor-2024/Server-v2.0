@@ -1,5 +1,6 @@
 package com.example.ai_tutor.global.config.security.auth;
 
+import com.example.ai_tutor.global.config.security.util.CustomCookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,13 +25,13 @@ public class CustomOAuth2AuthorizationRequestRedirectFilter extends OAuth2Author
         String redirectUrl = request.getParameter("redirect_url");
         String errorRedirectUrl = request.getParameter("error_redirect_url");
 
-        // 쿼리 파라미터가 있다면 세션에 저장
+        // 쿼리 파라미터가 있다면 쿠키에 저장
         if (redirectUrl != null) {
-            request.getSession().setAttribute("OAUTH2_REDIRECT_URL", redirectUrl);
+            CustomCookie.addCookie(response, "redirect_uri", redirectUrl, 180);
         }
 
         if (errorRedirectUrl != null) {
-            request.getSession().setAttribute("OAUTH2_ERROR_REDIRECT_URL", errorRedirectUrl);
+            CustomCookie.addCookie(response, "error_redirect_uri", errorRedirectUrl, 180);
         }
 
         // 기존 필터 체인 동작

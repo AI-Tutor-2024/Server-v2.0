@@ -38,6 +38,7 @@ public class User extends BaseEntity {
     private String providerId;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Role role = Role.PROFESSOR;
 
     public void updateProfessor(Professor professor) { this.professor = professor; }
