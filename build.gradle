@@ -92,7 +92,7 @@ dependencies {
 }
 
 springBoot {
-    mainClass = 'com.example.ai_tutor.AiTutorApplication'
+    mainClassName = 'com.example.ai_tutor.AiTutorApplication'
 }
 test {
     testLogging {
