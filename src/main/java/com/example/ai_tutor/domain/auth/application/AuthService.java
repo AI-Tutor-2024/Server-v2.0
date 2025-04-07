@@ -8,6 +8,7 @@ import com.example.ai_tutor.domain.auth.dto.AuthRes;
 import com.example.ai_tutor.domain.auth.dto.RefreshTokenReq;
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
+import com.example.ai_tutor.domain.user.domain.Provider;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
@@ -109,9 +110,12 @@ public class AuthService {
 
     @Transactional
     public ResponseEntity<?> signIn(SignInReq signInReq) {
-        User user = userRepository.findByEmail(signInReq.getEmail())
+        String email = signInReq.getEmail();
+        // 유저 조회
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new DefaultException(ErrorCode.INVALID_CHECK, "유저 정보가 유효하지 않습니다."));
 
+        // 인증 객체 생성 및 SecurityContext 등록
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         signInReq.getEmail(),
@@ -120,23 +124,17 @@ public class AuthService {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        // JWT 토큰 생성
         TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
+
+        // 리프레시 토큰 DB 저장
         Token token = Token.builder()
                 .refreshToken(tokenMapping.getRefreshToken())
                 .userEmail(tokenMapping.getEmail())
                 .build();
         tokenRepository.save(token);
 
-//        // 교수자 생성
-//        if(user.getProfessor() == null){
-//            Professor professor = Professor.builder()
-//                    .professorName(user.getName())
-//                    .user(user)
-//                    .build();
-//            professorRepository.save(professor);
-//            user.updateProfessor(professor);
-//        }
-
+        // 응답 DTO 생성
         AuthRes authResponse = AuthRes.builder()
                 .accessToken(tokenMapping.getAccessToken())
                 .refreshToken(token.getRefreshToken())
@@ -144,7 +142,8 @@ public class AuthService {
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
-                .information(authResponse).build();
+                .information(authResponse)
+                .build();
 
         return ResponseEntity.ok(apiResponse);
     }
