@@ -31,15 +31,24 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "사용자가 로그인을 수행합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRes.class) ) } ),
-            @ApiResponse(responseCode = "400", description = "로그인 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "로그인 성공", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRes.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "로그인 실패", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
     })
-    @PostMapping(value="/sign-in")
+    @PostMapping(value = "/sign-in")
     public ResponseEntity<?> signIn(
-            @Parameter(description = "SignInReq Schema를 확인해주세요.", required = true) @RequestBody SignInReq signInReq
+            @Parameter(description = "SignInReq Schema를 확인해주세요.", required = true)
+            @RequestBody SignInReq signInReq,
+
+            @Parameter(hidden = true) // Swagger 문서에 안 보이게
+            @RequestHeader("Authorization") String authorizationHeader
     ) {
-        return authService.signIn(signInReq);
+        return authService.signIn(signInReq, authorizationHeader);
     }
+
 
     @Operation(summary = "토큰 갱신", description = "신규 토큰 갱신을 수행합니다.")
     @ApiResponses(value = {
