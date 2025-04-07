@@ -1,6 +1,6 @@
 package com.example.ai_tutor.global.config.security.token;
 
-import com.example.ai_tutor.domain.auth.application.JwtUtil;
+import com.example.ai_tutor.domain.auth.application.CustomTokenProviderService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private CustomTokenProviderService customTokenProviderService;
 
     public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
     public static final String BEARER_TOKEN_PREFIX = "Bearer ";
@@ -29,8 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = getJwtFromRequest(request);
 
-        if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
-            UsernamePasswordAuthenticationToken authentication = jwtUtil.getAuthenticationById(jwt);
+        if (StringUtils.hasText(jwt) && customTokenProviderService.validateToken(jwt)) {
+            UsernamePasswordAuthenticationToken authentication = customTokenProviderService.getAuthenticationByEmail(jwt);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

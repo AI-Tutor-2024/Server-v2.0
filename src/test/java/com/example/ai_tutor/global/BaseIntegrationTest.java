@@ -1,6 +1,6 @@
 package com.example.ai_tutor.global;
 
-import com.example.ai_tutor.domain.auth.application.JwtUtil;
+import com.example.ai_tutor.domain.auth.application.CustomTokenProviderService;
 import com.example.ai_tutor.domain.auth.dto.SignInReq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class BaseIntegrationTest {
     protected ObjectMapper objectMapper;
 
     @Autowired
-    protected JwtUtil tokenProvider;
+    protected CustomTokenProviderService tokenProvider;
 
     protected String accessToken;
 
