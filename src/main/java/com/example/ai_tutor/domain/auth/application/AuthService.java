@@ -1,21 +1,16 @@
 package com.example.ai_tutor.domain.auth.application;
 
 import com.example.ai_tutor.domain.auth.domain.Token;
-import com.example.ai_tutor.domain.auth.dto.SignInReq;
+import com.example.ai_tutor.domain.auth.dto.*;
 import com.example.ai_tutor.domain.auth.exception.InvalidTokenException;
 import com.example.ai_tutor.domain.auth.domain.repository.TokenRepository;
-import com.example.ai_tutor.domain.auth.dto.AuthRes;
-import com.example.ai_tutor.domain.auth.dto.RefreshTokenReq;
-import com.example.ai_tutor.domain.auth.dto.TokenMapping;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.user.domain.Provider;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
-import com.example.ai_tutor.global.error.DefaultException;
 import com.example.ai_tutor.global.payload.ApiResponse;
-import com.example.ai_tutor.global.payload.ErrorCode;
 import com.example.ai_tutor.global.payload.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +18,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Optional;
 
@@ -35,6 +33,8 @@ public class AuthService {
 
     private final CustomTokenProviderService customTokenProviderService;
     private final AuthenticationManager authenticationManager;
+    private final IdTokenVerifier idTokenVerifier;
+    private final UserDetailsService userDetailsService;
 
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
@@ -108,33 +108,46 @@ public class AuthService {
         return true;
     }
 
+
     @Transactional
-    public ResponseEntity<?> signIn(SignInReq signInReq) {
-        String email = signInReq.getEmail();
-        // 유저 조회
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new DefaultException(ErrorCode.INVALID_CHECK, "유저 정보가 유효하지 않습니다."));
+    public ResponseEntity<?> signIn(SignInReq signInReq, @RequestHeader("Authorization") String authorizationHeader) {
+        // 1. 토큰 파싱
+        String googleAccessToken = authorizationHeader.replace("Bearer ", "").trim();
 
+        UserInfo userInfo = idTokenVerifier.verifyIdToken(googleAccessToken, signInReq.getEmail());
+
+        // 2. ID 토큰 검증 및 사용자 정보 추출
+        if (userInfo == null) {
+            throw new RuntimeException("유효하지 않은 ID 토큰");
+        }
+        User user = userRepository.findByEmail(userInfo.getEmail())
+                .orElseGet(() -> {
+                    User newUser = User.builder()
+                            .email(userInfo.getEmail())
+                            .name(userInfo.getName())
+                            .password("oauth-only")
+                            .provider(Provider.google)
+                            .providerId(signInReq.getProviderId())
+                            .build();
+                    return userRepository.save(newUser);
+                });
+
+        // 4. Spring Security 인증 객체 생성
         // 인증 객체 생성 및 SecurityContext 등록
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        signInReq.getEmail(),
-                        signInReq.getProviderId()
-                )
-        );
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // JWT 토큰 생성
+        // 5. JWT 토큰 생성 및 refresh 저장
         TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
 
-        // 리프레시 토큰 DB 저장
         Token token = Token.builder()
+                .userEmail(user.getEmail())
                 .refreshToken(tokenMapping.getRefreshToken())
-                .userEmail(tokenMapping.getEmail())
                 .build();
         tokenRepository.save(token);
 
-        // 응답 DTO 생성
+        // 6. 응답 구성
         AuthRes authResponse = AuthRes.builder()
                 .accessToken(tokenMapping.getAccessToken())
                 .refreshToken(token.getRefreshToken())
@@ -147,5 +160,8 @@ public class AuthService {
 
         return ResponseEntity.ok(apiResponse);
     }
+
+
+
 
 }
