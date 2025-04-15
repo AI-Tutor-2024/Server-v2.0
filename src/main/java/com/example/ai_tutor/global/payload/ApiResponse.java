@@ -5,20 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class ApiResponse {
+public class ApiResponse<T> {
 
-    @Schema( type = "boolean", example = "true", description="올바르게 로직을 처리했으면 True, 아니면 False를 반환합니다.")
+    @Schema(type = "boolean", example = "true", description = "올바르게 로직을 처리했으면 true, 아니면 false를 반환합니다.")
     private boolean check;
 
-    @Schema( type = "object", example = "information", description="restful의 정보를 감싸 표현합니다. object형식으로 표현합니다.")
-    private Object information;
+    @Schema(description = "응답 데이터를 감싸는 객체입니다. 실제 응답 내용이 여기에 포함됩니다.")
+    private T information;
 
-    public ApiResponse(){};
+    public ApiResponse() {}
 
     @Builder
-    public ApiResponse(boolean check, Object information) {
+    public ApiResponse(boolean check, T information) {
         this.check = check;
         this.information = information;
     }
-
 }
