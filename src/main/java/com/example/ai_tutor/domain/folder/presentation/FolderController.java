@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/folder")
+@RequestMapping("/api/v1/folders")
 @Tag(name = "Folder", description = "폴더 관련 API입니다.")
 public class FolderController {
 

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
     id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
 }
@@ -44,11 +45,6 @@ dependencies {
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 
-    // OPENAPI
-    dependencies {
-        implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
-    }
-
     // GPT
     implementation 'io.github.flashvayne:chatgpt-spring-boot-starter:1.0.4'
 
@@ -92,7 +88,7 @@ dependencies {
 }
 
 springBoot {
-    mainClass = 'com.example.ai_tutor.AiTutorApplication'
+    mainClassName = 'com.example.ai_tutor.AiTutorApplication'
 }
 test {
     testLogging {
@@ -102,4 +98,8 @@ test {
 }
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+application {
+    mainClass = 'com.example.ai_tutor.AiTutorApplication' // 실제 main 클래스 경로로 수정
 }
