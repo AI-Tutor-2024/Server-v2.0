@@ -5,8 +5,6 @@ import com.example.ai_tutor.domain.auth.domain.Token;
 import com.example.ai_tutor.domain.auth.domain.repository.CustomAuthorizationRequestRepository;
 import com.example.ai_tutor.domain.auth.domain.repository.TokenRepository;
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
-import com.example.ai_tutor.global.DefaultAssert;
-import com.example.ai_tutor.global.config.security.OAuth2Config;
 import com.example.ai_tutor.global.config.security.util.CustomCookie;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -56,15 +54,18 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
         tokenRepository.save(token);
 
         // 3) 세션에서 redirec_url 가져오기
-        String redirectUrl = (String) request.getSession().getAttribute("OAUTH2_REDIRECT_URL");
-        if (redirectUrl == null || redirectUrl.isEmpty()) {
-            redirectUrl = "https://ai-tutor.ac.kr/";  // 기본 URL 설정
-//            redirectUrl = "http://localhost:8080/";
-        }
+//        String redirectUrl = (String) request.getSession().getAttribute("OAUTH2_REDIRECT_URL");
+        Optional<String> redirectUri = CustomCookie.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
+                .map(Cookie::getValue);
+        String redirectUrl = redirectUri.orElse("https://ai-tutor.ac.kr/");
+
         log.info("redirectUrl: {}", redirectUrl);
 
         // accessToken과 refreshToken을 쿼리 파라미터로 추가
         redirectUrl = this.setRedirectUrl(redirectUrl, tokenMapping.getAccessToken(), tokenMapping.getRefreshToken());
+
+        // 리디렉션 처리 전에 쿠키 제거
+        customAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
 
         // 리디렉션 처리
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
