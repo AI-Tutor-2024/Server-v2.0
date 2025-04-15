@@ -67,9 +67,9 @@ public class ProfessorNoteService {
                 .build();
 
         ApiResponse apiResponse = ApiResponse.builder()
-                     .check(true)
-                     .information(noteAccessRes)
-                     .build();
+                .check(true)
+                .information(noteAccessRes)
+                .build();
 
         return ResponseEntity.ok(apiResponse);
     }
@@ -312,8 +312,32 @@ public class ProfessorNoteService {
 
     }
 
+    // ProfessorNoteService.java
+    public ResponseEntity<?> getNote(UserPrincipal userPrincipal, Long noteId) {
+        User user = getUser(userPrincipal);
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+
+        // 접근 권한 체크
+        Folder folder = note.getFolder();
+        DefaultAssert.isTrue(folder.getProfessor().getUser().equals(user), "접근 권한이 없습니다.");
+
+        // DTO로 변환 (예시)
+        NoteDetailRes noteDetailRes = NoteDetailRes.from(note);
+
+        ApiResponse<Object> apiResponse = ApiResponse.builder()
+                .check(true)
+                .information(noteDetailRes)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+
+
     private User getUser(UserPrincipal userPrincipal){
-        return userRepository.findById(1L).orElseThrow(()
+        String email = userPrincipal.getEmail();
+        return userRepository.findByEmail(email).orElseThrow(()
                 -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }

@@ -4,6 +4,7 @@ import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
 import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
 import com.example.ai_tutor.domain.folder.dto.response.FolderListRes;
 import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
+import com.example.ai_tutor.domain.folder.dto.response.FolderResponse;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
@@ -55,9 +56,9 @@ public class FolderService {
 
         folderRepository.save(folder);
 
-        ApiResponse apiResponse = ApiResponse.builder()
+        ApiResponse<Object> apiResponse = ApiResponse.builder()
                 .check(true)
-                .information("폴더 생성 성공")
+                .information(FolderResponse.from(folder))
                 .build();
 
         return ResponseEntity.ok(apiResponse);
