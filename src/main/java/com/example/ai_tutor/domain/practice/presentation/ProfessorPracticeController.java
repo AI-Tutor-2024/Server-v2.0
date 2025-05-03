@@ -2,9 +2,10 @@ package com.example.ai_tutor.domain.practice.presentation;
 
 import com.example.ai_tutor.domain.practice.application.ProfessorPracticeService;
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
-import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +35,10 @@ public class ProfessorPracticeController {
 
     @Operation(
             summary = "요약본에 대한 문제 생성",
-            description = "교수자가 제공한 강의를 저장해둔 데이터를 기반으로 요약본을 생성하고, 이를 통해 문제를 생성합니다." +
-                    "이는 CreatePracticeReq를 참고하여 문제를 생성하고 파일을 업로드합니다. ",
+            security = { @SecurityRequirement(name = "BearerAuth") },
+            description = "이전에 요약본 생성 API를 통해 저장한 요약본 데이터를 기반으로 문제를 생성합니다." +
+                    "이는 CreatePracticeReq를 참고하여 문제를 생성하고 파일을 업로드합니다. " +
+                    "주의할 점은 이 요청은 응답을 DB에 저장하지 않습니다. 이는 응답만 할 뿐, 이후 선택된 문제들만 문제 저장 API를 요청하여 저장해주세요.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Practice 문제 생성 성공",
                             content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
@@ -43,28 +47,44 @@ public class ProfessorPracticeController {
                     @ApiResponse(responseCode = "500", description = "서버 오류",
                             content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class)))
             })
-    @PostMapping(value = "/{noteId}/new", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<com.example.ai_tutor.global.payload.ApiResponse>> generatePractice(
+    @PostMapping(value = "/{noteId}/new")
+    public Mono<ResponseEntity<com.example.ai_tutor.global.payload.ApiResponse<CreatePracticeListRes>>> generatePractice(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId,
-            @Parameter(description = "Schemas의 CreatePracticeReq를 참고해주세요", required = true)
-            @RequestPart CreatePracticeReq createPracticeReq,
-
-            @Parameter(description = "Multipart form-data", required = true,
-                    schema = @Schema(type = "string", format = "binary"))
-            @RequestPart MultipartFile file
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Schemas의 CreatePracticeReq를 참고해주세요",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = CreatePracticeReq.class))
+            )
+            @RequestBody CreatePracticeReq createPracticeReq
     ) {
-        return professorPracticeService.generatePractice(createPracticeReq, file, noteId)
-                .map(apiResponse -> ResponseEntity.ok((com.example.ai_tutor.global.payload.ApiResponse) apiResponse));  // ApiResponse를 ResponseEntity로 감싸서 반환
+        return professorPracticeService.generatePractice(userPrincipal, noteId, createPracticeReq)
+                .map(ResponseEntity::ok);
     }
 
-
     // 문제 저장
+    @Operation(
+            summary = "선택된 문제를 저장하는 문제 저장 API 입니다.",
+            security = { @SecurityRequirement(name = "BearerAuth") },
+            description = "문제 생성 API를 통해 요청했던 문제들 중 교수님이 원하는 문제들만 선택하여 저장하는 API 입니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Practice 문제 저장 성공",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 오류",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class)))
+            })
     @PostMapping("/{noteId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> savePractice(
 
             @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Parameter(description = "Schemas의 SavePracticeListReq를 참고해주세요", required = true) @RequestBody List<SavePracticeReq> savePracticeReqs,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Schemas의 SavePracticeListReq를 참고해주세요",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = SavePracticeListReq.class))
+            )@RequestBody List<SavePracticeReq> savePracticeReqs,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
 
     ) {
@@ -79,7 +99,7 @@ public class ProfessorPracticeController {
     })
     @GetMapping("/{noteId}")
     public ResponseEntity<?> findPractices(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
     ) {
         return professorPracticeService.getPractices(userPrincipal, noteId);

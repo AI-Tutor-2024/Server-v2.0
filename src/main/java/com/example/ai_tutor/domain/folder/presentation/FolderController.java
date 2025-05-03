@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,34 +31,34 @@ public class FolderController {
 
     private final FolderService folderService;
 
-    @Operation(summary = "폴더 생성 API", description = "폴더를 생성하는 API입니다.")
+    @Operation(summary = "폴더 생성 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "폴더를 생성하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "새 폴더 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
             @ApiResponse(responseCode = "400", description = "새 폴더 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PostMapping("")
     public ResponseEntity<?> createNewFolder(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Parameter(description = "Schemas의 FolderCreateReq를 참고해주세요", required = true) @RequestBody FolderCreateReq folderCreateReq
             ) {
         return folderService.createNewFolder(userPrincipal, folderCreateReq);
     }
 
     // 교수자 - 폴더 목록 조회
-    @Operation(summary = "폴더 목록 조회 API", description = "폴더 목록을 조회하는 API입니다.")
+    @Operation(summary = "폴더 목록 조회 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "폴더 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "폴더 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderListRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "폴더 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @GetMapping("")
     public ResponseEntity<?> getAllFolders(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
         return folderService.getAllFolders(userPrincipal);
     }
 
 
-    @Operation(summary = "폴더 정보 조회 API", description = "노트를 생성하기 전 해당 노트의 폴더 - 강의명과 교수자명을 조회하는 API입니다.")
+    @Operation(summary = "폴더 정보 조회 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "노트를 생성하기 전 해당 노트의 폴더 - 강의명과 교수자명을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderInfoRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
@@ -71,40 +72,40 @@ public class FolderController {
     }
 
 
-    @Operation(summary = "폴더 이름 목록 조회 API", description = "폴더 이름 목록을 조회하는 API입니다.")
+    @Operation(summary = "폴더 이름 목록 조회 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "폴더 이름 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "폴더 이름 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderNameListRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "폴더 이름 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @GetMapping("/names")
     public ResponseEntity<?> getFolderNames(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
         ) {
         return folderService.getFolderNames(userPrincipal);
     }
 
-    @Operation(summary = "폴더 정보 수정 API", description = "폴더 정보(강좌명/교수자명)를 수정하는 API입니다.")
+    @Operation(summary = "폴더 정보 수정 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "폴더 정보(강좌명/교수자명)를 수정하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "폴더 정보 수정 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
             @ApiResponse(responseCode = "400", description = "폴더 정보 수정 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PatchMapping("/{folderId}")
     public ResponseEntity<?> updateFolder(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId,
             @Parameter(description = "Schemas의 FolderCreateReq를 참고해주세요", required = true) @RequestBody FolderCreateReq folderCreateReq
     ) {
         return folderService.updateFolder(userPrincipal, folderId, folderCreateReq);
     }
 
-    @Operation(summary = "폴더 삭제 API", description = "특정 폴더를 삭제하는 API입니다.")
+    @Operation(summary = "폴더 삭제 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "특정 폴더를 삭제하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "폴더 정보 수정 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
             @ApiResponse(responseCode = "400", description = "폴더 정보 수정 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @DeleteMapping("/{folderId}")
     public ResponseEntity<?> deleteFolder(
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
             @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId
     ) {
         return folderService.deleteFolder(userPrincipal, folderId);
