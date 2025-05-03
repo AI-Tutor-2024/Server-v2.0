@@ -66,6 +66,7 @@ public class SummaryService {
     RateLimiter rateLimiter = RateLimiter.of("gptRateLimiter", rateLimiterConfig);
 
 
+    // 사용 안함
     public Mono<String> processSttAndSummary(MultipartFile file, String keywords, String requirement, Long noteId) {
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new RuntimeException("해당 노트를 찾을 수 없습니다."));

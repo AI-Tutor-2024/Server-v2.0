@@ -1,5 +1,6 @@
 package com.example.ai_tutor.domain.practice.application;
 
+import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.note.domain.Note;
 import com.example.ai_tutor.domain.note.domain.repository.NoteRepository;
 import com.example.ai_tutor.domain.practice.domain.Practice;
@@ -15,6 +16,7 @@ import com.example.ai_tutor.domain.professor.domain.repository.ProfessorReposito
 import com.example.ai_tutor.domain.summary.application.SummaryService;
 import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
+import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +44,15 @@ public class ProfessorPracticeService {
     private final QuizGeneratorService quizGeneratorService;
     private final SummaryService summaryService;
 
-    // 문제 생성
-    public Mono<ApiResponse> generatePractice(CreatePracticeReq createPracticeReq, MultipartFile file, Long noteId) {
-        return summaryService.processSttAndSummary(file, createPracticeReq.getKeywords(), createPracticeReq.getRequirement(), noteId)
-                .flatMap(summary -> {
+    public Mono<Note> getNoteAsync(Long noteId) {
+        return Mono.fromCallable(() -> getNote(noteId))
+                .subscribeOn(Schedulers.boundedElastic());  // 블로킹 작업 분리
+    }
+
+    public Mono<ApiResponse<CreatePracticeListRes>> generatePractice(UserPrincipal userPrincipal, Long noteId, CreatePracticeReq createPracticeReq) {
+        return getNoteAsync(noteId)
+                .flatMap(note -> {
+                    String summary = note.getSummary().getContent();
                     int practiceSize = determinePracticeSize(createPracticeReq.getPracticeSize());
 
                     if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
@@ -56,16 +63,14 @@ public class ProfessorPracticeService {
                 })
                 .onErrorResume(error -> {
                     log.error("문제 생성 중 오류 발생", error);
-                    return Mono.just(ApiResponse.builder()
+                    return Mono.just(ApiResponse.<CreatePracticeListRes>builder()
                             .check(false)
-                            .information("문제 생성 실패")
+                            .information(null)
                             .build());
                 });
     }
 
-
-    // BOTH 타입의 문제 생성
-    private Mono<ApiResponse> generateBothTypesOfQuestions(String summary, int practiceSize) {
+    private Mono<ApiResponse<CreatePracticeListRes>> generateBothTypesOfQuestions(String summary, int practiceSize) {
         int oxCount = calculateOxCount(practiceSize);
         int shortCount = practiceSize - oxCount;
 
@@ -73,60 +78,45 @@ public class ProfessorPracticeService {
         Mono<List<CreatePracticeRes>> shortPracticesMono = quizGeneratorService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
 
         return Mono.zip(oxPracticesMono, shortPracticesMono)
-                .map(tuple -> combineQuestionLists(tuple.getT1(), tuple.getT2(), summary));
+                .map(tuple -> buildApiResponse(combineQuestions(tuple.getT1(), tuple.getT2()), summary));
     }
 
-    // 단일 타입의 문제 생성
-    private Mono<ApiResponse> generateSingleTypeOfQuestions(String summary, int practiceSize, String type) {
+    private Mono<ApiResponse<CreatePracticeListRes>> generateSingleTypeOfQuestions(String summary, int practiceSize, String type) {
         return quizGeneratorService.generateQuestions(summary, practiceSize, type, 1)
                 .map(practices -> buildApiResponse(practices, summary));
     }
 
-    // 문제 생성 시 문제 수 설정
-    // 기본 값 10으로 고정
     private int determinePracticeSize(int requestedSize) {
         return requestedSize > 0 ? requestedSize : 10;
     }
 
-    // OX 문제 수 계산
     private int calculateOxCount(int practiceSize) {
         return (practiceSize % 2 == 0) ? practiceSize / 2 : practiceSize / 2 + 1;
     }
 
-    // 문제 리스트 결합 (문제 타입이 BOTH인 경우 쓰임)
-    private ApiResponse combineQuestionLists(List<CreatePracticeRes> oxQuestions, List<CreatePracticeRes> shortQuestions, String summary) {
-        List<CreatePracticeRes> combinedList = new ArrayList<>();
-        combinedList.addAll(oxQuestions);
-        combinedList.addAll(shortQuestions);
-
-        return buildApiResponse(combinedList, summary);
+    private List<CreatePracticeRes> combineQuestions(List<CreatePracticeRes> oxList, List<CreatePracticeRes> shortList) {
+        List<CreatePracticeRes> combined = new ArrayList<>(oxList);
+        combined.addAll(shortList);
+        return combined;
     }
 
-    // 문제 생성 결과 반환
-    private ApiResponse buildApiResponse(List<CreatePracticeRes> practices, String summary) {
+    private ApiResponse<CreatePracticeListRes> buildApiResponse(List<CreatePracticeRes> practices, String summary) {
         CreatePracticeListRes createPracticeListRes = CreatePracticeListRes.builder()
                 .practiceResList(practices)
                 .summary(summary)
                 .build();
 
-        return ApiResponse.builder()
+        return ApiResponse.<CreatePracticeListRes>builder()
                 .check(true)
                 .information(createPracticeListRes)
                 .build();
     }
 
-
-
-    // 문제 저장
     @Transactional
     public ResponseEntity<?> savePractice(UserPrincipal userPrincipal, Long noteId, List<SavePracticeReq> savePracticeReqs) {
         User user = validateUser(userPrincipal);
         Professor professor = validateProfessor(userPrincipal);
         Note note = validateNote(noteId);
-
-        // 제한시간을 밀리초로 변환
-        // convertToMilliseconds(savePracticeListReq.getMinute(), savePracticeListReq.getSecond(), note);
-        //note.updateEndDate(savePracticeListReq.getEndDate());
 
         for (SavePracticeReq req : savePracticeReqs) {
             List<String> additionalRes = Objects.equals(req.getPracticeType(), "OX") ? null : req.getAdditionalResults();
@@ -142,7 +132,7 @@ public class ProfessorPracticeService {
             practiceRepository.save(practice);
         }
 
-        ApiResponse apiResponse = ApiResponse.builder()
+        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
                 .check(true)
                 .information("문제가 저장되었습니다.")
                 .build();
@@ -150,57 +140,62 @@ public class ProfessorPracticeService {
         return ResponseEntity.ok(apiResponse);
     }
 
-    // 문제 조회
     public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
         validateUser(userPrincipal);
         Note note = validateNote(noteId);
         List<Practice> practices = practiceRepository.findByNoteOrderBySequenceAsc(note);
 
         List<ProfessorPracticeRes> practiceResList = practices.stream()
-                .map(practice -> {
-                        List<String> additionalRes = practice.getPracticeType() == PracticeType.OX ? null : practice.getAdditionalResults();
-                        return ProfessorPracticeRes.builder()
-                                .praticeId(practice.getPracticeId())
-                                .practiceNumber(practice.getSequence())
-                                .content(practice.getContent())
-                                .additionalResults(additionalRes)
-                                .result(practice.getResult())
-                                .solution(practice.getSolution())
-                                .practiceType(practice.getPracticeType().toString())
-                                .build();}
-                        )
-                        .toList();
+                .map(practice -> ProfessorPracticeRes.builder()
+                        .praticeId(practice.getPracticeId())
+                        .practiceNumber(practice.getSequence())
+                        .content(practice.getContent())
+                        .additionalResults(practice.getPracticeType() == PracticeType.OX ? null : practice.getAdditionalResults())
+                        .result(practice.getResult())
+                        .solution(practice.getSolution())
+                        .practiceType(practice.getPracticeType().toString())
+                        .build())
+                .toList();
 
-        ApiResponse apiResponse = ApiResponse.builder()
+        ApiResponse<List<ProfessorPracticeRes>> apiResponse = ApiResponse.<List<ProfessorPracticeRes>>builder()
                 .check(true)
                 .information(practiceResList)
                 .build();
+
         return ResponseEntity.ok(apiResponse);
     }
 
     public int[] convertToMinutesAndSeconds(long milliseconds) {
-        // 밀리초를 초로 변환
         long totalSeconds = milliseconds / 1000;
-        // 초를 분과 초로 변환
         int minutes = (int) (totalSeconds / 60);
         int seconds = (int) (totalSeconds % 60);
-        // 분과 초를 배열에 담아 반환
         return new int[] { minutes, seconds };
     }
 
-    private User validateUser(UserPrincipal userPrincipal){
-        return userRepository.findById(userPrincipal.getId()).orElseThrow(()
-                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    private User validateUser(UserPrincipal userPrincipal) {
+        return userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 
-    private Professor validateProfessor(UserPrincipal userPrincipal){
-        return professorRepository.findByUser(userRepository.findById(userPrincipal.getId()).orElseThrow(()
-                -> new IllegalArgumentException("사용자를 찾을 수 없습니다."))).orElseThrow(()
-                -> new IllegalArgumentException("교수를 찾을 수 없습니다."));
+    private Professor validateProfessor(UserPrincipal userPrincipal) {
+        return professorRepository.findByUser(userRepository.findById(userPrincipal.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")))
+                .orElseThrow(() -> new IllegalArgumentException("교수를 찾을 수 없습니다."));
     }
 
-    private Note validateNote(Long noteId){
-        return noteRepository.findById(noteId).orElseThrow(()
-                -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+    private Note validateNote(Long noteId) {
+        return noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+    }
+
+    public Note getNote(Long noteId) {
+        return noteRepository.findById(noteId)
+                .orElseThrow(() -> new IllegalArgumentException("노트를 찾을 수 없습니다."));
+    }
+
+    private User getUser(UserPrincipal userPrincipal) {
+        String email = userPrincipal.getEmail();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }

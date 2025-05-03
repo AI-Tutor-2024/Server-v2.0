@@ -21,7 +21,7 @@ public class QuizGeneratorService {
     public Mono<List<CreatePracticeRes>> generateQuestions(String summary, int size, String type, int num) {
         // 프롬프트 생성
         String prompt = generatePrompt(summary, type, size);
-
+        log.info("GPT API 호출하여 문제를 생성합니다.");
         // 비동기 방식으로 GPT API 호출
         return gptService.callChatGpt(prompt)
                 .flatMap(response -> {

@@ -66,7 +66,7 @@ public class ProfessorNoteService {
                 .noteId(note.getNoteId())
                 .build();
 
-        ApiResponse apiResponse = ApiResponse.builder()
+        ApiResponse<Object> apiResponse = ApiResponse.builder()
                 .check(true)
                 .information(noteAccessRes)
                 .build();
@@ -88,6 +88,7 @@ public class ProfessorNoteService {
 
         try {
             // 3. CLOVA STT API 호출 (동기 처리)
+            log.info("CLOVA STT 응답");
             JsonNode response = clovaService.processSpeechToText(file).block();
             log.info("CLOVA STT 응답: {}", response);
 
@@ -223,7 +224,7 @@ public class ProfessorNoteService {
                 noteStudentRepository.delete(noteStudent));
 
         noteRepository.delete(note);
-        ApiResponse apiResponse = ApiResponse.builder()
+        ApiResponse<Object> apiResponse = ApiResponse.builder()
                 .check(true)
                 .information("노트 삭제 성공")
                 .build();
@@ -248,7 +249,7 @@ public class ProfessorNoteService {
                 .code(note.getCode())
                 .build();
 
-        ApiResponse apiResponse = ApiResponse.builder()
+        ApiResponse<Object> apiResponse = ApiResponse.builder()
                 .check(true)
                 .information(noteCodeRes)
                 .build();
@@ -303,7 +304,7 @@ public class ProfessorNoteService {
                 .build();
 
 
-        ApiResponse apiResponse = ApiResponse.builder()
+        ApiResponse<Object> apiResponse = ApiResponse.builder()
                 .check(true)
                 .information(noteResultOfAllStudentListRes)
                 .build();
@@ -312,7 +313,6 @@ public class ProfessorNoteService {
 
     }
 
-    // ProfessorNoteService.java
     public ResponseEntity<?> getNote(UserPrincipal userPrincipal, Long noteId) {
         User user = getUser(userPrincipal);
         Note note = noteRepository.findById(noteId)
