@@ -1,5 +1,0 @@
-spring:
-  config:
-    activate:
-      on-profile: prod
-    import: optional:file:/home/ubuntu/Server-v2.0-Config/yml/application.yml

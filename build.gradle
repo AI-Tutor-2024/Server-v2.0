@@ -15,6 +15,19 @@ jar {
     enabled = false
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'Server-v2.0-Config/yml'
+            include 'application.yml'
+        }
+    }
+}
+
+tasks.named('processResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
