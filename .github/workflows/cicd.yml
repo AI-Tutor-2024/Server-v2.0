@@ -59,7 +59,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_KNOWN_HOSTS }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PEM_KEY }}
           script: |
             echo "Stopping existing container..."
             sudo docker stop ai-tutor-app || echo "No running container to stop"
