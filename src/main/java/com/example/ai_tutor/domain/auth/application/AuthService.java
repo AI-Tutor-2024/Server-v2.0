@@ -13,6 +13,7 @@ import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
 import com.example.ai_tutor.global.payload.Message;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,6 +30,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 public class AuthService {
 
     private final CustomTokenProviderService customTokenProviderService;
@@ -43,22 +45,28 @@ public class AuthService {
     @Transactional
     public ResponseEntity<?> refresh(RefreshTokenReq tokenRefreshRequest){
         //1차 검증
-        boolean checkValid = valid(tokenRefreshRequest.getRefreshToken());
+        String refreshToken = tokenRefreshRequest.getRefreshToken().replace("Bearer ", "").trim();
+        log.info("refreshToken : {}", refreshToken);
+
+        boolean checkValid = valid(refreshToken);
         DefaultAssert.isAuthentication(checkValid);
+        log.info("refresh token 검증 성공");
 
-        Token token = tokenRepository.findByRefreshToken(tokenRefreshRequest.getRefreshToken())
+        Token token = tokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(InvalidTokenException::new);
-        Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.getUserEmail());
 
-        //refresh token 정보 값을 업데이트 한다.
+        Authentication authentication = customTokenProviderService.getAuthenticationByToken(refreshToken);
+
         //시간 유효성 확인
         TokenMapping tokenMapping;
 
         Long expirationTime = customTokenProviderService.getExpiration(tokenRefreshRequest.getRefreshToken());
         if(expirationTime > 0){
             tokenMapping = customTokenProviderService.refreshToken(authentication, token.getRefreshToken());
+            log.info("refresh token 갱신 성공");
         }else{
             tokenMapping = customTokenProviderService.createToken(authentication);
+            log.info("refresh token 갱신 실패");
         }
 
         Token updateToken = token.updateRefreshToken(tokenMapping.getRefreshToken());
@@ -102,7 +110,7 @@ public class AuthService {
         DefaultAssert.isTrue(token.isPresent(), "탈퇴 처리된 회원입니다.");
 
         //3. email 값을 통해 인증값을 불러온다
-        Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.get().getUserEmail());
+        Authentication authentication = customTokenProviderService.getAuthenticationByToken(refreshToken);
         DefaultAssert.isTrue(token.get().getUserEmail().equals(authentication.getName()), "사용자 인증에 실패하였습니다.");
 
         return true;
@@ -113,6 +121,8 @@ public class AuthService {
     public ResponseEntity<?> signIn(SignInReq signInReq, @RequestHeader("Authorization") String authorizationHeader) {
         // 1. 토큰 파싱
         String googleAccessToken = authorizationHeader.replace("Bearer ", "").trim();
+
+        log.info("signInReq : {}", signInReq);
 
         UserInfo userInfo = idTokenVerifier.verifyIdToken(googleAccessToken, signInReq.getEmail());
 
