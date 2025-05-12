@@ -46,6 +46,8 @@ public class CustomTokenProviderService {
                 .compact();
 
         String refreshToken = Jwts.builder()
+                .setSubject(userPrincipal.getEmail())
+                .setIssuedAt(new Date())
                 .setExpiration(refreshTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
@@ -102,6 +104,11 @@ public class CustomTokenProviderService {
 
     public String getEmailFromToken(String token) {
         log.debug("Extracting email from token: {}", token);  // 추가된 로깅
+
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(oAuth2Config.getAuth().getTokenSecret())
                 .build()
@@ -113,8 +120,8 @@ public class CustomTokenProviderService {
         return email;
     }
 
-    public UsernamePasswordAuthenticationToken getAuthenticationByEmail(String token) {
-        String email = getEmailFromToken(token);
+    public UsernamePasswordAuthenticationToken getAuthenticationByToken(String jwtToken) {
+        String email = getEmailFromToken(jwtToken);
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
