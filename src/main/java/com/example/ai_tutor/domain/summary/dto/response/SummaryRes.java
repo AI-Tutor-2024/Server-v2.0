@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SummaryRes {
+    @Schema(description = "노트 번호")
+    private Long noteId;
     @Schema(description = "요약된 텍스트")
     private String summary;
 }
