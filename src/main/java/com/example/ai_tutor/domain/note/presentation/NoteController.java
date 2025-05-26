@@ -2,10 +2,12 @@ package com.example.ai_tutor.domain.note.presentation;
 
 import com.example.ai_tutor.domain.note.application.ProfessorNoteService;
 import com.example.ai_tutor.domain.note.dto.request.NoteCreateReq;
+import com.example.ai_tutor.domain.note.dto.response.NoteAccessRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteCodeRes;
 import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.summary.application.SummaryService;
+import com.example.ai_tutor.domain.summary.dto.response.SummaryRes;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
@@ -42,7 +44,7 @@ public class NoteController {
             description = "새 비어있는 강의 노트를 생성하는 API입니다. 특정 folder ID에 title(강의 제목) 값만 요청하면 됩니다. 이때 폴더 ID 는 로그인한 회원이 생성한 폴더만 노트가 생성 가능합니다. (타인 계정으로 불가능)"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "강의 노트 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "강의 노트 생성 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteAccessRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "강의 노트 생성 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PostMapping()
@@ -115,7 +117,7 @@ public class NoteController {
             @Parameter(description = "노트 ID", required = true) @PathVariable Long noteId,
             @Parameter(description = "STT 변환을 위한 강의 영상 파일", required = true,
                     schema = @Schema(type = "string", format = "binary"))
-            @RequestPart MultipartFile file
+            @RequestPart("file") MultipartFile file
     ) {
         try {
             boolean success = professorNoteService.convertSpeechToText(noteId, file);
@@ -134,17 +136,16 @@ public class NoteController {
     // ===============================
     // 📑 노트 요약 생성 & 조회
     // ===============================
-
     @Operation(summary = "노트 요약 생성", security = { @SecurityRequirement(name = "BearerAuth") }, description = "저장된 STT 데이터를 기반으로 노트 요약을 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "노트 요약 생성 성공",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SummaryRes.class))),
             @ApiResponse(responseCode = "400", description = "노트 요약 생성 실패",
                     content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/{noteId}/summaries")
-    public Mono<ResponseEntity<String>> createSummary(
+    public Mono<ResponseEntity<SummaryRes>> createSummary(
             @Parameter(description = "note id를 입력해주세요", required = true) @PathVariable Long noteId,
             @Parameter(description = "folder의 id를 입력해주세요", required = true) @PathVariable Long folderId,
             @RequestParam(required = false) String keywords,
@@ -152,11 +153,9 @@ public class NoteController {
 
         return summaryService.processSummaryFromSavedStt(noteId, keywords, requirement)
                 .map(ResponseEntity::ok)
-                .onErrorResume(error -> {
-                    return Mono.just(ResponseEntity
-                            .badRequest()
-                            .body(error.getMessage()));
-                });
+                .onErrorResume(error -> Mono.just(ResponseEntity
+                        .badRequest()
+                        .build()));
     }
 
 
