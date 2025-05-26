@@ -251,6 +251,7 @@ public class SummaryService {
         // 요약 조회 로직 구현
         Summary summary = findSummaryByNote(note);
         SummaryRes sttRes = SummaryRes.builder()
+                .noteId(summary.getNote().getNoteId())
                 .summary(summary.getContent())
                 .build();
 
@@ -284,9 +285,8 @@ public class SummaryService {
      * 저장된 STT 데이터를 사용하여 요약을 생성하고 결과를 반환합니다.
      */
     @Transactional
-    public Mono<String> processSummaryFromSavedStt(Long noteId, String keywords, String requirement) {
+    public Mono<SummaryRes> processSummaryFromSavedStt(Long noteId, String keywords, String requirement) {
         return Mono.fromCallable(() -> {
-                    // 1. note 조회 및 fullText 추출 (블로킹)
                     Note note = noteRepository.findById(noteId)
                             .orElseThrow(() -> new RuntimeException("해당 노트를 찾을 수 없습니다."));
 
@@ -308,19 +308,19 @@ public class SummaryService {
                             .flatMap(partialSummaries -> summarizeFinal(partialSummaries, keywords, requirement))
                             .flatMap(finalSummary -> Mono.fromCallable(() -> {
 
-                                // 기존 summary가 있는지 확인하고
                                 summaryRepository.findByNote(note)
                                         .ifPresent(existing -> {
-                                            // 있으면 삭제
                                             summaryRepository.delete(existing);
                                             log.info("기존 summary 삭제 완료 (noteId: {})", note.getNoteId());
                                         });
 
-                                // 새로운 summary 생성 및 저장
                                 Summary summary = Summary.create(finalSummary, note);
                                 summaryRepository.save(summary);
 
-                                return finalSummary;
+                                return SummaryRes.builder()
+                                        .noteId(note.getNoteId())
+                                        .summary(finalSummary)
+                                        .build();
 
                             }).subscribeOn(Schedulers.boundedElastic()));
                 })
