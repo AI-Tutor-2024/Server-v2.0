@@ -4,13 +4,13 @@ import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -31,7 +31,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         return UserPrincipal.create(user);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("유저 정보를 찾을 수 없습니다: " + email));
+    }
+
+    @Transactional(readOnly = true)
     public UserDetails loadUserById(Long id) {
         log.debug("Trying to load user by ID: {}", id);
         Optional<User> user = userRepository.findById(id);
