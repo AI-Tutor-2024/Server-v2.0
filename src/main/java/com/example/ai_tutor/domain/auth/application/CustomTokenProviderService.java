@@ -1,6 +1,7 @@
 package com.example.ai_tutor.domain.auth.application;
 
 import com.example.ai_tutor.domain.auth.dto.TokenMapping;
+import com.example.ai_tutor.domain.user.domain.User;
 import com.example.ai_tutor.global.config.security.OAuth2Config;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import io.jsonwebtoken.*;
@@ -122,8 +123,10 @@ public class CustomTokenProviderService {
 
     public UsernamePasswordAuthenticationToken getAuthenticationByToken(String jwtToken) {
         String email = getEmailFromToken(jwtToken);
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        User user = customUserDetailsService.getUserByEmail(email);
+        UserPrincipal userPrincipal = UserPrincipal.create(user);
+
+        return new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
     }
 
     public Long getExpiration(String token) {
