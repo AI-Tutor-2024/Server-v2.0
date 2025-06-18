@@ -4,12 +4,16 @@ import com.example.ai_tutor.domain.practice.application.ProfessorPracticeService
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
+import com.example.ai_tutor.domain.practice.dto.response.PracticeSaveApiResponse;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeListRes;
+import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeRes;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -68,27 +72,72 @@ public class ProfessorPracticeController {
             security = { @SecurityRequirement(name = "BearerAuth") },
             description = "문제 생성 API를 통해 요청했던 문제들 중 교수님이 원하는 문제들만 선택하여 저장하는 API 입니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Practice 문제 저장 성공",
-                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
+                    @ApiResponse(
+                        responseCode = "200",
+                        description = "Practice 문제 저장 성공",
+                        content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PracticeSaveApiResponse.class)
+                        )),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청",
                             content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
                     @ApiResponse(responseCode = "500", description = "서버 오류",
                             content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class)))
             })
+
     @PostMapping("/{noteId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> savePractice(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true)
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
 
-            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Schemas의 SavePracticeListReq를 참고해주세요",
+                    description = "SavePracticeReq 배열을 전달해주세요",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = SavePracticeListReq.class))
-            )@RequestBody List<SavePracticeReq> savePracticeReqs,
-            @Parameter(description = "note의 id를 입력해주세요", required = true) @PathVariable Long noteId
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SavePracticeReq.class)))
+            )
+            @RequestBody List<SavePracticeReq> savePracticeReqs,
 
+            @Parameter(description = "note의 id를 입력해주세요", required = true)
+            @PathVariable Long noteId
     ) {
         return professorPracticeService.savePractice(userPrincipal, noteId, savePracticeReqs);
+    }
+
+
+    // 저장된 문제 수정 메서드
+    @PatchMapping("/{noteId}/{practiceId}")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "문제 수정",
+            security = { @SecurityRequirement(name = "BearerAuth") },
+            description = "저장된 문제의 내용‧답안‧해설 등을 부분 수정합니다. additionalResults 필드는 신경쓰지마시고 필드에서 제외하고 요청해주셔도 됩니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Practice 문제 저장 성공",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = PracticeSaveApiResponse.class)
+                            )),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "서버 오류",
+                            content = @Content(schema = @Schema(implementation = com.example.ai_tutor.global.payload.ApiResponse.class)))
+            })
+    public ResponseEntity<?> updatePractice(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true)
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @Parameter(description = "note의 id를 입력해주세요", required = true)
+            @PathVariable Long noteId,
+            @Parameter(description = "practice의 id를 입력해주세요", required = true)
+            @PathVariable Long practiceId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "수정할 필드만 포함한 UpdatePracticeReq",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = UpdatePracticeReq.class))
+            )
+            @RequestBody UpdatePracticeReq updateReq
+    ) {
+        return professorPracticeService.updatePractice(
+                userPrincipal, noteId, practiceId, updateReq);
     }
 
     // 문제 조회

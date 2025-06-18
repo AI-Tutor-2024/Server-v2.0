@@ -16,7 +16,7 @@ import java.util.List;
 public class ProfessorPracticeRes {
 
     @Schema(type = "Long", example ="1", description="문제의 id입니다.")
-    private Long praticeId;
+    private Long practiceId;
 
     @Schema(type = "int", example ="1", description="문제의 번호입니다.")
     private int practiceNumber;
