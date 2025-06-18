@@ -8,6 +8,7 @@ import com.example.ai_tutor.domain.practice.domain.PracticeType;
 import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository;
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.request.UpdatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
 import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
 import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeRes;
@@ -19,6 +20,7 @@ import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
+import com.example.ai_tutor.global.payload.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -112,32 +114,59 @@ public class ProfessorPracticeService {
                 .build();
     }
 
+    // 문제 저장 메서드
     @Transactional
     public ResponseEntity<?> savePractice(UserPrincipal userPrincipal, Long noteId, List<SavePracticeReq> savePracticeReqs) {
-        User user = validateUser(userPrincipal);
-        Professor professor = validateProfessor(userPrincipal);
+        validateUser(userPrincipal);
+        validateProfessor(userPrincipal);
         Note note = validateNote(noteId);
 
-        for (SavePracticeReq req : savePracticeReqs) {
-            List<String> additionalRes = Objects.equals(req.getPracticeType(), "OX") ? null : req.getAdditionalResults();
-            Practice practice = Practice.builder()
+
+        List<Practice> practices = savePracticeReqs.stream().map(request -> {
+            PracticeType type = PracticeType.valueOf(request.getPracticeType());
+            List<String> add = type == PracticeType.OX ? null : request.getAdditionalResults();
+            return Practice.builder()
                     .note(note)
-                    .sequence(req.getPracticeNumber())
-                    .content(req.getContent())
-                    .additionalResults(additionalRes)
-                    .result(req.getResult())
-                    .solution(req.getSolution())
-                    .practiceType(PracticeType.valueOf(req.getPracticeType()))
+                    .sequence(request.getPracticeNumber())
+                    .content(request.getContent())
+                    .additionalResults(add)
+                    .result(request.getResult())
+                    .solution(request.getSolution())
+                    .practiceType(type)
                     .build();
-            practiceRepository.save(practice);
+        }).toList();
+
+        practiceRepository.saveAll(practices);   // 배치 저장
+
+        ApiResponse<List<ProfessorPracticeRes>> api = ApiResponse.<List<ProfessorPracticeRes>>builder()
+                .check(true)
+                .information(practices.stream().map(this::toResponse).toList())
+                .build();
+        return ResponseEntity.ok(api);
+    }
+
+    @Transactional
+    public ResponseEntity<?> updatePractice(UserPrincipal userPrincipal, Long noteId,
+                                            Long practiceId, UpdatePracticeReq req) {
+        validateUser(userPrincipal);
+        validateProfessor(userPrincipal);
+        Note note = validateNote(noteId);     // 노트 존재 확인
+
+        Practice practice = practiceRepository.findById(practiceId)
+                .orElseThrow(() -> new IllegalArgumentException("문제가 존재하지 않습니다."));
+
+        // 노트–문제 매핑 검증
+        if (!practice.getNote().getNoteId().equals(note.getNoteId())) {
+            throw new IllegalArgumentException("noteId와 practiceId가 일치하지 않습니다.");
         }
 
-        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+        practice.update(req);
+        practiceRepository.save(practice);
+        ApiResponse<ProfessorPracticeRes> api = ApiResponse.<ProfessorPracticeRes>builder()
                 .check(true)
-                .information("문제가 저장되었습니다.")
+                .information(toResponse(practice))
                 .build();
-
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.ok(api);
     }
 
     public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
@@ -147,7 +176,7 @@ public class ProfessorPracticeService {
 
         List<ProfessorPracticeRes> practiceResList = practices.stream()
                 .map(practice -> ProfessorPracticeRes.builder()
-                        .praticeId(practice.getPracticeId())
+                        .practiceId(practice.getPracticeId())
                         .practiceNumber(practice.getSequence())
                         .content(practice.getContent())
                         .additionalResults(practice.getPracticeType() == PracticeType.OX ? null : practice.getAdditionalResults())
@@ -197,5 +226,19 @@ public class ProfessorPracticeService {
         String email = userPrincipal.getEmail();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
+
+    /** Practice → ProfessorPracticeRes 매핑용 */
+    private ProfessorPracticeRes toResponse(Practice p) {
+        return ProfessorPracticeRes.builder()
+                .practiceId(p.getPracticeId())
+                .practiceNumber(p.getSequence())
+                .content(p.getContent())
+                .additionalResults(p.getPracticeType() == PracticeType.OX ? null : p.getAdditionalResults())
+                .result(p.getResult())
+                .solution(p.getSolution())
+                .practiceType(p.getPracticeType().toString())
+                .build();
     }
 }

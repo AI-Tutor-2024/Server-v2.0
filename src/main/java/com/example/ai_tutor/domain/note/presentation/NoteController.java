@@ -106,7 +106,7 @@ public class NoteController {
 
 
 
-    @Operation(summary = "노트 STT 변환 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "노트의 강의 영상을 CLOVA API를 활용하여 STT 변환하는 API입니다. 처음 영상을 올리는 것이라면 필수적으로 이 API를 요청하여 영상을 TEXT로 변환하여야 합니다.")
+    @Operation(summary = "1. 노트 STT 변환 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "노트의 강의 영상을 CLOVA API를 활용하여 STT 변환하는 API입니다. 처음 영상을 올리는 것이라면 필수적으로 이 API를 요청하여 영상을 TEXT로 변환하여야 합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "STT 변환 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class)) }),
             @ApiResponse(responseCode = "400", description = "STT 변환 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)) }),
@@ -136,7 +136,7 @@ public class NoteController {
     // ===============================
     // 📑 노트 요약 생성 & 조회
     // ===============================
-    @Operation(summary = "노트 요약 생성", security = { @SecurityRequirement(name = "BearerAuth") }, description = "저장된 STT 데이터를 기반으로 노트 요약을 생성합니다.")
+    @Operation(summary = "2. 노트 요약 생성", security = { @SecurityRequirement(name = "BearerAuth") }, description = "저장된 STT 데이터를 기반으로 노트 요약을 생성합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "노트 요약 생성 성공",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = SummaryRes.class))),

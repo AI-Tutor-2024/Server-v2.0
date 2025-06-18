@@ -2,6 +2,8 @@ package com.example.ai_tutor.domain.practice.domain;
 
 import com.example.ai_tutor.domain.common.BaseEntity;
 import com.example.ai_tutor.domain.note.domain.Note;
+import com.example.ai_tutor.domain.practice.dto.request.UpdatePracticeReq;
+import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeRes;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,4 +62,16 @@ public class Practice extends BaseEntity {
     }
 
     // public void updateUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
+    public void update(UpdatePracticeReq dto) {
+        if (dto.getPracticeNumber() != null) this.sequence = dto.getPracticeNumber();
+        if (dto.getContent() != null) this.content = dto.getContent();
+        if (dto.getSolution() != null) this.solution = dto.getSolution();
+        if (dto.getResult() != null) this.result = dto.getResult();
+        if (dto.getPracticeType() != null)
+            this.practiceType = PracticeType.valueOf(dto.getPracticeType());
+        if (dto.getAdditionalResults() != null
+                && !PracticeType.OX.name().equalsIgnoreCase(dto.getPracticeType())) {
+            this.additionalResults = dto.getAdditionalResults();
+        }
+    }
 }
