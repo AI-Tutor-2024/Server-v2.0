@@ -14,12 +14,18 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreatePracticeRes {
+    @Schema(type = "Long", example ="1", description="문제의 id입니다.")
+    private Long practiceId;
 
     @Schema(type = "int", example ="1", description="문제의 번호입니다.")
     private int practiceNumber;
 
     @Schema(type = "String", example ="광복절의 중앙경축식은 매년 서울에서만 거행된다.", description="문제의 내용입니다.")
     private String content;
+
+    // 추가 답안 (교수자가 입력할 시 사용)
+    @ArraySchema(schema = @Schema(type = "String", example ="[Answer, ANSWER, answer, 정답]", description="문제의 추가 인정 답안으로, 교수자가 직접 작성하며 단답형 문제에만 해당합니다."))
+    private List<String> additionalResults;
 
     // 문제 답안
     @Schema(type = "String", example ="X",
@@ -30,6 +36,6 @@ public class CreatePracticeRes {
     private String solution;
 
     // 문제 타입
-    @Schema(type = "String", example ="OX", description="문제의 타입입니다. OX, MULTIPLE")
+    @Schema(type = "String", example ="OX", description="문제의 타입입니다. OX, SHORT")
     private String practiceType;
 }

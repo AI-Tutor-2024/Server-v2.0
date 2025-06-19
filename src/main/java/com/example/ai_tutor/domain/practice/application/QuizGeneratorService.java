@@ -6,8 +6,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,12 +27,12 @@ public class QuizGeneratorService {
         log.info("GPT API 호출하여 문제를 생성합니다.");
         // 비동기 방식으로 GPT API 호출
         return gptService.callChatGpt(prompt)
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .filter(e -> e instanceof WebClientResponseException.TooManyRequests))
                 .flatMap(response -> {
                     if (response == null) {
                         return Mono.error(new RuntimeException("GPT API 응답이 없습니다."));
                     }
-
-                    // 응답 파싱하여 List<CreatePracticeRes> 반환
                     List<CreatePracticeRes> practiceResList = parseResponse(response, num, type);
                     return Mono.just(practiceResList);
                 })
