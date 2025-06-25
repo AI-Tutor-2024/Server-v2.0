@@ -1,11 +1,11 @@
 package com.example.ai_tutor.domain.folder.presentation;
 
 import com.example.ai_tutor.domain.folder.application.FolderService;
+import com.example.ai_tutor.domain.folder.dto.response.FolderAndNoteListRes;
 import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
 import com.example.ai_tutor.domain.folder.dto.response.FolderListRes;
 import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
-import com.example.ai_tutor.global.config.security.token.CurrentUser;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -110,5 +111,30 @@ public class FolderController {
     ) {
         return folderService.deleteFolder(userPrincipal, folderId);
     }
+
+    // 폴더-노트 구조 조회
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "폴더-노트 구조 조회 API",
+            security = { @SecurityRequirement(name = "BearerAuth") },
+            description = "폴더와 그 안에 있는 노트들의 구조를 조회하는 API입니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "폴더-노트 구조 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = FolderAndNoteListRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "폴더-노트 구조 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/notes")
+    public ResponseEntity<com.example.ai_tutor.global.payload.ApiResponse> getFolderAndNoteList(
+            @Parameter(description = "Access Token을 입력해주세요.", required = true) @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        FolderAndNoteListRes result =  folderService.getFolderAndNoteList(userPrincipal);
+
+        com.example.ai_tutor.global.payload.ApiResponse<Object> apiResponse = com.example.ai_tutor.global.payload.ApiResponse.builder()
+                .check(true)
+                .information(result)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+
+    }
+
 
 }
