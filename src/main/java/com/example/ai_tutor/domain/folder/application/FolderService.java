@@ -1,10 +1,8 @@
 package com.example.ai_tutor.domain.folder.application;
 import com.example.ai_tutor.domain.folder.domain.Folder;
 import com.example.ai_tutor.domain.folder.domain.repository.FolderRepository;
+import com.example.ai_tutor.domain.folder.dto.response.*;
 import com.example.ai_tutor.domain.folder.dto.request.FolderCreateReq;
-import com.example.ai_tutor.domain.folder.dto.response.FolderListRes;
-import com.example.ai_tutor.domain.folder.dto.response.FolderNameListRes;
-import com.example.ai_tutor.domain.folder.dto.response.FolderResponse;
 import com.example.ai_tutor.domain.note.dto.response.FolderInfoRes;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
@@ -20,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -156,10 +155,57 @@ public class FolderService {
                 .build();
 
         return ResponseEntity.ok(apiResponse);
+
     }
+
+
+    public FolderAndNoteListRes getFolderAndNoteList(UserPrincipal userPrincipal) {
+        validateUser(userPrincipal);
+        Professor professor = validateProfessor(userPrincipal);
+
+        List<Folder> folders = professor.getFolders();
+        List<FolderAndNoteDetailRes> folderNoteDetailList = mapToFolderAndNoteDetailResList(folders);
+
+        return FolderAndNoteListRes.builder()
+                .folderCount(folderNoteDetailList.size())
+                .folderNoteDetailList(folderNoteDetailList)
+                .build();
+    }
+
+    private List<FolderAndNoteDetailRes> mapToFolderAndNoteDetailResList(List<Folder> folders) {
+        return folders.stream()
+                .map(folder -> {
+                    List<FolderAndNoteDetailRes.NotesInFolderRes> notes = folder.getNotes().stream()
+                            .map(note -> FolderAndNoteDetailRes.NotesInFolderRes.from(
+                                    note.getNoteId(),
+                                    note.getTitle()
+                            ))
+                            .collect(Collectors.toList());
+
+                    return FolderAndNoteDetailRes.from(
+                            folder.getFolderId(),
+                            folder.getFolderName(),
+                            notes
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
 
     private User getUser(UserPrincipal userPrincipal){
         return userRepository.findById(userPrincipal.getId()).orElseThrow(()
                 -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
+
+    private User validateUser(UserPrincipal userPrincipal) {
+        return userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
+    private Professor validateProfessor(UserPrincipal userPrincipal) {
+        return professorRepository.findByUser(userRepository.findById(userPrincipal.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")))
+                .orElseThrow(() -> new IllegalArgumentException("교수를 찾을 수 없습니다."));
+    }
+
 }
