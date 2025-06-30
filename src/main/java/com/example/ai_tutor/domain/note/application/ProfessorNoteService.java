@@ -22,6 +22,7 @@ import com.example.ai_tutor.domain.user.domain.repository.UserRepository;
 import com.example.ai_tutor.global.DefaultAssert;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ApiResponse;
+import com.example.ai_tutor.global.util.ConvertToMp3;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.Random;
 import java.util.List;
 
@@ -50,6 +52,7 @@ public class ProfessorNoteService {
     private final ClovaService clovaService;
 
     private final AmazonS3 amazonS3;
+    private final ConvertToMp3 convertToMp3;
 
     // 노트 생성
     @Transactional
@@ -89,7 +92,8 @@ public class ProfessorNoteService {
         try {
             // 3. CLOVA STT API 호출 (동기 처리)
             log.info("CLOVA STT 응답");
-            JsonNode response = clovaService.processSpeechToText(file).block();
+            File mp3File = convertToMp3.convert(file);
+            JsonNode response = clovaService.processSpeechToText(mp3File).block();
             log.info("CLOVA STT 응답: {}", response);
 
             // 4. STT 결과에서 텍스트 추출 및 저장

@@ -148,14 +148,21 @@ public class AuthService {
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         // 5. JWT 토큰 생성 및 refresh 저장
         TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
 
+        // 기존 토큰이 있으면 삭제
+        tokenRepository.findByUserEmail(user.getEmail())
+                .ifPresent(tokenRepository::delete);
+
+        // 새 토큰 저장
         Token token = Token.builder()
                 .userEmail(user.getEmail())
                 .refreshToken(tokenMapping.getRefreshToken())
                 .build();
         tokenRepository.save(token);
+
 
         // 6. 응답 구성
         AuthRes authResponse = AuthRes.builder()
