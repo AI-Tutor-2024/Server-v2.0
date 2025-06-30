@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.io.File;
 
 @Service
 @RequiredArgsConstructor
@@ -47,4 +50,30 @@ public class ClovaService {
                     return Mono.error(new RuntimeException("Clova Speech API 호출 실패", error));
                 });
     }
+
+    public Mono<JsonNode> processSpeechToText(File mp3File) {
+        // 1. 파일을 Resource로 감싸기
+        FileSystemResource resource = new FileSystemResource(mp3File);
+
+        // 2. 멀티파트 구성
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("media", resource);
+        body.add("params", "{ \"language\": \"enko\", \"completion\": \"sync\" }");
+
+        return clovaWebClient.post()
+                .uri(clovaUrl + "/recognizer/upload")
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .header("X-CLOVASPEECH-API-KEY", secret)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .doOnSuccess(response -> log.info("Clova Speech API 응답 성공: {}", response))
+                .doOnError(error -> log.error("Clova Speech API 호출 중 오류 발생: {}", error.getMessage()))
+                .onErrorResume(error -> {
+                    log.error("Clova Speech API 호출 중 예외 처리 발생: {}", error.getMessage());
+                    return Mono.error(new RuntimeException("Clova Speech API 호출 실패", error));
+                });
+    }
+
 }
