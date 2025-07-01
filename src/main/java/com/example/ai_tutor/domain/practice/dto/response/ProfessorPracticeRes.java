@@ -1,5 +1,7 @@
 package com.example.ai_tutor.domain.practice.dto.response;
 
+import com.example.ai_tutor.domain.note.domain.Note;
+import com.example.ai_tutor.domain.professor.domain.Professor;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,5 @@
 package com.example.ai_tutor.domain.practice.dto.response;
 
-import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -17,16 +16,17 @@ import java.util.List;
 @Builder
 public class ProfessorPracticeListRes {
 
-    // 제한시간
-    @Schema( type = "int", example ="60", description="문제의 제한 시간 중 분을 의미합니다.")
-    private int minute;
+    @Schema(type = "Long", example = "1", description = "노트 ID입니다.")
+    private Long noteId;
 
-    @Schema( type = "int", example ="59", description="문제의 제한 시간 중 초를 의미합니다.")
-    private int second;
+    @Schema(type = "String", example = "광복절 강의 노트", description = "노트 제목입니다.")
+    private String noteTitle;
 
-    // 마감시간
-    @Schema( type = "LocalDateTime", example ="2024-08-16 21:04:51", description="문제의 마감 시간입니다.")
-    private LocalDateTime endDate;
+    @Schema(type = "Long", example = "2", description = "교수자의 ID입니다.")
+    private Long professorId;
+
+    @Schema(type = "String", example = "김철수", description = "교수자의 이름입니다.")
+    private String professorName;
 
     @ArraySchema(schema = @Schema(implementation = ProfessorPracticeRes.class))
     private List<ProfessorPracticeRes> reqList;
