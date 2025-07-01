@@ -9,9 +9,7 @@ import com.example.ai_tutor.domain.practice.domain.repository.PracticeRepository
 import com.example.ai_tutor.domain.practice.dto.request.CreatePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeReq;
 import com.example.ai_tutor.domain.practice.dto.request.UpdatePracticeReq;
-import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeListRes;
-import com.example.ai_tutor.domain.practice.dto.response.CreatePracticeRes;
-import com.example.ai_tutor.domain.practice.dto.response.ProfessorPracticeRes;
+import com.example.ai_tutor.domain.practice.dto.response.*;
 import com.example.ai_tutor.domain.professor.domain.Professor;
 import com.example.ai_tutor.domain.professor.domain.repository.ProfessorRepository;
 import com.example.ai_tutor.domain.summary.application.SummaryService;
@@ -162,11 +160,20 @@ public class ProfessorPracticeService {
 
         practice.update(req);
         practiceRepository.save(practice);
-        ApiResponse<ProfessorPracticeRes> api = ApiResponse.<ProfessorPracticeRes>builder()
+
+        Folder folder = note.getFolder();
+        Professor professor = folder.getProfessor();
+
+        PracticeUpdateApiResponse apiResponse = PracticeUpdateApiResponse.builder()
                 .check(true)
-                .information(toResponse(practice))
+                .noteId(note.getNoteId())
+                .noteTitle(note.getTitle())
+                .professorId(professor.getProfessorId())
+                .professorName(professor.getProfessorName())
+                .information(toResponse(practice)) // ProfessorPracticeRes 변환 함수
                 .build();
-        return ResponseEntity.ok(api);
+
+        return ResponseEntity.ok(apiResponse);
     }
 
     public ResponseEntity<?> getPractices(UserPrincipal userPrincipal, Long noteId) {
@@ -186,9 +193,21 @@ public class ProfessorPracticeService {
                         .build())
                 .toList();
 
-        ApiResponse<List<ProfessorPracticeRes>> apiResponse = ApiResponse.<List<ProfessorPracticeRes>>builder()
+        // NOTE → FOLDER → PROFESSOR 추출
+        Folder folder = note.getFolder();
+        Professor professor = folder.getProfessor();
+
+        ProfessorPracticeListRes response = ProfessorPracticeListRes.builder()
+                .noteId(note.getNoteId())
+                .noteTitle(note.getTitle())
+                .professorId(professor.getProfessorId())
+                .professorName(professor.getProfessorName())
+                .reqList(practiceResList)
+                .build();
+
+        ApiResponse<ProfessorPracticeListRes> apiResponse = ApiResponse.<ProfessorPracticeListRes>builder()
                 .check(true)
-                .information(practiceResList)
+                .information(response)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
@@ -229,7 +248,7 @@ public class ProfessorPracticeService {
     }
 
     @Transactional
-    public Mono<ResponseEntity<ApiResponse<List<ProfessorPracticeRes>>>> generateAndSavePractice(
+    public Mono<ResponseEntity<ApiResponse<ProfessorPracticeListRes>>> generateAndSavePractice(
             UserPrincipal userPrincipal, Long noteId, CreatePracticeReq createPracticeReq) {
 
         // 유저와 교수 인증 (예외 발생 시 중단)
@@ -287,15 +306,26 @@ public class ProfessorPracticeService {
                                     .map(this::toResponse)
                                     .toList();
 
-                                ApiResponse<List<ProfessorPracticeRes>> api = ApiResponse.<List<ProfessorPracticeRes>>builder()
-                                    .check(true)
-                                    .information(responses)
-                                    .build();
+                                var folder = note.getFolder();
+                                var professor = folder.getProfessor();
+
+                                ProfessorPracticeListRes response = ProfessorPracticeListRes.builder()
+                                        .noteId(note.getNoteId())
+                                        .noteTitle(note.getTitle())
+                                        .professorId(professor.getProfessorId())
+                                        .professorName(professor.getProfessorName())
+                                        .reqList(responses)
+                                        .build();
+
+                                ApiResponse<ProfessorPracticeListRes> api = ApiResponse.<ProfessorPracticeListRes>builder()
+                                        .check(true)
+                                        .information(response)
+                                        .build();
 
                                 return ResponseEntity.ok(api);
-                        });}));
+                            });
+                    }));
             });
-
     }
 
 
