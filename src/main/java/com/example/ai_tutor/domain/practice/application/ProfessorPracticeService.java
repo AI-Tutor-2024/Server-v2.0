@@ -251,43 +251,49 @@ public class ProfessorPracticeService {
     public Mono<ResponseEntity<ApiResponse<ProfessorPracticeListRes>>> generateAndSavePractice(
             UserPrincipal userPrincipal, Long noteId, CreatePracticeReq createPracticeReq) {
 
-        // 유저와 교수 인증 (예외 발생 시 중단)
-        validateUser(userPrincipal);
-        validateProfessor(userPrincipal);
+        // 유저와 교수 인증 (세션 내에서 실행 → Lazy 문제 없음)
+        User user = validateUser(userPrincipal);
+        Professor professor = validateProfessor(userPrincipal);
+        Note note = validateNote(noteId);
 
-        // 비동기로 노트 조회 (블로킹 방지)
-        return getNoteAsync(noteId)
-            .flatMap(note -> {
-                String summary = note.getSummary().getContent();
-                int practiceSize = determinePracticeSize(createPracticeReq.getPracticeSize());
+        // Lazy 객체 → 여기서 모두 안전하게 초기화
+        Folder folder = note.getFolder();
+        Long professorId = folder.getProfessor().getProfessorId();
+        String professorName = folder.getProfessor().getProfessorName();
+        String noteTitle = note.getTitle();
+        Long realNoteId = note.getNoteId();
 
-                Mono<List<CreatePracticeRes>> practiceMono;
-                if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
-                    int oxCount = calculateOxCount(practiceSize);
-                    int shortCount = practiceSize - oxCount;
+        String summary = note.getSummary().getContent();
+        int practiceSize = determinePracticeSize(createPracticeReq.getPracticeSize());
 
-                    Mono<List<CreatePracticeRes>> oxMono = quizGeneratorService.generateQuestions(summary, oxCount, "OX", 1);
-                    Mono<List<CreatePracticeRes>> shortMono = quizGeneratorService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
-                    practiceMono = Mono.zip(oxMono, shortMono)
-                            .map(tuple -> combineQuestions(tuple.getT1(), tuple.getT2()));
-                } else {
-                    practiceMono = quizGeneratorService.generateQuestions(summary, practiceSize, createPracticeReq.getType(), 1);
-                }
+        Mono<List<CreatePracticeRes>> practiceMono;
+        if ("BOTH".equalsIgnoreCase(createPracticeReq.getType())) {
+            int oxCount = calculateOxCount(practiceSize);
+            int shortCount = practiceSize - oxCount;
 
-                // 기존 sequence 최대값 조회 → Mono로 감싸서 flatMap 안에서 사용
-                return Mono.fromCallable(() -> practiceRepository.findMaxSequenceByNoteId(noteId))
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .flatMap(lastSequence -> practiceMono.flatMap(practices -> {
+            Mono<List<CreatePracticeRes>> oxMono = quizGeneratorService.generateQuestions(summary, oxCount, "OX", 1);
+            Mono<List<CreatePracticeRes>> shortMono = quizGeneratorService.generateQuestions(summary, shortCount, "SHORT", oxCount + 1);
+            practiceMono = Mono.zip(oxMono, shortMono)
+                    .map(tuple -> combineQuestions(tuple.getT1(), tuple.getT2()));
+        } else {
+            practiceMono = quizGeneratorService.generateQuestions(summary, practiceSize, createPracticeReq.getType(), 1);
+        }
 
-                        int startSequence = lastSequence + 1; // 기존 마지막 번호 다음부터 시작
-                        List<Practice> entities = new ArrayList<>();
+        // 비동기로 넘어가는 부분 → 엔티티 사용 x, 값만 사용 o
 
-                        for (int i = 0; i < practices.size(); i++) {
-                            CreatePracticeRes p = practices.get(i);
-                            PracticeType type = PracticeType.valueOf(p.getPracticeType());
+        return Mono.fromCallable(() -> practiceRepository.findMaxSequenceByNoteId(noteId))
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(lastSequence -> practiceMono.flatMap(practices -> {
 
-                            entities.add(Practice.builder()
-                                .note(note)
+                    int startSequence = lastSequence + 1;
+                    List<Practice> entities = new ArrayList<>();
+
+                    for (int i = 0; i < practices.size(); i++) {
+                        CreatePracticeRes p = practices.get(i);
+                        PracticeType type = PracticeType.valueOf(p.getPracticeType());
+
+                        entities.add(Practice.builder()
+                                .note(note)  // 여기까진 안전함
                                 .sequence(startSequence + i)
                                 .content(p.getContent())
                                 .result(p.getResult())
@@ -295,25 +301,19 @@ public class ProfessorPracticeService {
                                 .additionalResults(type == PracticeType.OX ? null : p.getAdditionalResults())
                                 .practiceType(type)
                                 .build());
-                        }
+                    }
 
-                        return Mono.fromCallable(() -> {
-                            practiceRepository.saveAll(entities);
-                            return entities;
+                    return Mono.fromCallable(() -> {
+                                practiceRepository.saveAll(entities);
+                                return entities.stream().map(this::toResponse).toList();
                             }).subscribeOn(Schedulers.boundedElastic())
-                            .map(saved -> {
-                                List<ProfessorPracticeRes> responses = saved.stream()
-                                    .map(this::toResponse)
-                                    .toList();
-
-                                var folder = note.getFolder();
-                                var professor = folder.getProfessor();
+                            .map(responses -> {
 
                                 ProfessorPracticeListRes response = ProfessorPracticeListRes.builder()
-                                        .noteId(note.getNoteId())
-                                        .noteTitle(note.getTitle())
-                                        .professorId(professor.getProfessorId())
-                                        .professorName(professor.getProfessorName())
+                                        .noteId(realNoteId)
+                                        .noteTitle(noteTitle)
+                                        .professorId(professorId)
+                                        .professorName(professorName)
                                         .reqList(responses)
                                         .build();
 
@@ -324,11 +324,8 @@ public class ProfessorPracticeService {
 
                                 return ResponseEntity.ok(api);
                             });
-                    }));
-            });
+                }));
     }
-
-
 
     /** Practice → ProfessorPracticeRes 매핑용 */
     private ProfessorPracticeRes toResponse(Practice p) {
