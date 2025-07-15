@@ -15,4 +15,6 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     boolean existsByCode(String code);
 
     Optional<Object> findByCode(String code);
+
+    List<Note> findAllByFolderAndSummaryIsNotNullOrderByCreatedAtDesc(Folder folder);
 }
