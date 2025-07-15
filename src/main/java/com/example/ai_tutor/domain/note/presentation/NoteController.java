@@ -8,7 +8,6 @@ import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.summary.application.SummaryService;
 import com.example.ai_tutor.domain.summary.dto.response.SummaryRes;
-import com.example.ai_tutor.global.aop.LogExecutionTime;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
@@ -129,7 +128,6 @@ public class NoteController {
             @ApiResponse(responseCode = "200", description = "STT 변환 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class)) }),
             @ApiResponse(responseCode = "400", description = "STT 변환 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)) }),
     })
-    @LogExecutionTime("STT 변환 요청")
     @PostMapping(value = "/{noteId}/stt", consumes = "multipart/form-data")
     public ResponseEntity<?> convertSpeechToText(
 //            @Parameter(description = "Access Token을 입력해주세요.", required = false) @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -163,7 +161,6 @@ public class NoteController {
                     content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize("isAuthenticated()")
-    @LogExecutionTime("노트 요약본 생성")
     @PostMapping("/{noteId}/summaries")
     public Mono<ResponseEntity<SummaryRes>> createSummary(
             @Parameter(description = "note id를 입력해주세요", required = true) @PathVariable Long noteId,
