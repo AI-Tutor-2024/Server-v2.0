@@ -86,7 +86,7 @@ public class NoteController {
             @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteListRes.class) ) } ),
             @ApiResponse(responseCode = "400", description = "강의 노트 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @GetMapping("/summary/{folderId}")
+    @GetMapping("/summary")
     public ResponseEntity<?> getAllNotesByFolderWithSummary(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long folderId
