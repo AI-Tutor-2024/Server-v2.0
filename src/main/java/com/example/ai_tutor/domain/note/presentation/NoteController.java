@@ -8,6 +8,7 @@ import com.example.ai_tutor.domain.note.dto.response.NoteListRes;
 import com.example.ai_tutor.domain.practice.dto.request.SavePracticeListReq;
 import com.example.ai_tutor.domain.summary.application.SummaryService;
 import com.example.ai_tutor.domain.summary.dto.response.SummaryRes;
+import com.example.ai_tutor.global.aop.LogExecutionTime;
 import com.example.ai_tutor.global.config.security.token.UserPrincipal;
 import com.example.ai_tutor.global.payload.ErrorResponse;
 import com.example.ai_tutor.global.payload.Message;
@@ -78,6 +79,23 @@ public class NoteController {
         return professorNoteService.getAllNotesByFolder(userPrincipal, folderId);
     }
 
+    // 노트 목록 조회
+    @Operation(summary = "노트 목록 조회 중  API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "로그인한 유저가 만든 요청한 폴더에 대한 강의 노트 목록을 조회하는 API입니다.")
+    @ApiResponses(value = {
+
+            @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteListRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "강의 노트 목록 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/summary/{folderId}")
+    public ResponseEntity<?> getAllNotesByFolderWithSummary(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long folderId
+    ) {
+        return professorNoteService.getAllNotesByFolderWithSummary(userPrincipal, folderId);
+    }
+
+
+
     @Operation(summary = "노트 단일 조회 API", security = { @SecurityRequirement(name = "BearerAuth") }, description = "로그인한 유저가 만든 특정 강의 노트 목록을 조회하는 API입니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "강의 노트 목록 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = NoteListRes.class) ) } ),
@@ -111,6 +129,7 @@ public class NoteController {
             @ApiResponse(responseCode = "200", description = "STT 변환 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Message.class)) }),
             @ApiResponse(responseCode = "400", description = "STT 변환 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)) }),
     })
+    @LogExecutionTime("STT 변환 요청")
     @PostMapping(value = "/{noteId}/stt", consumes = "multipart/form-data")
     public ResponseEntity<?> convertSpeechToText(
 //            @Parameter(description = "Access Token을 입력해주세요.", required = false) @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -128,7 +147,7 @@ public class NoteController {
             }
         } catch (Exception e) {
             log.error("STT 변환 중 오류 발생: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body("STT 변환 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body("STT     변환 실패: " + e.getMessage());
         }
     }
 
@@ -144,6 +163,7 @@ public class NoteController {
                     content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize("isAuthenticated()")
+    @LogExecutionTime("노트 요약본 생성")
     @PostMapping("/{noteId}/summaries")
     public Mono<ResponseEntity<SummaryRes>> createSummary(
             @Parameter(description = "note id를 입력해주세요", required = true) @PathVariable Long noteId,

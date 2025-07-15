@@ -204,6 +204,35 @@ public class ProfessorNoteService {
         return ResponseEntity.ok(noteListRes);
     }
 
+    public ResponseEntity<?> getAllNotesByFolderWithSummary(UserPrincipal userPrincipal, Long folderId) {
+        User user = getUser(userPrincipal);
+        Folder folder = folderRepository.findById(folderId)
+                .orElseThrow(() -> new IllegalArgumentException("폴더를 찾을 수 없습니다."));
+        DefaultAssert.isTrue(user.equals(folder.getProfessor().getUser()), "사용자가 일치하지 않습니다.");
+
+        // summary가 있는 노트만 조회
+        List<Note> notes = noteRepository
+                .findAllByFolderAndSummaryIsNotNullOrderByCreatedAtDesc(folder);
+
+        List<ProfessorNoteListDetailRes> noteListDetailRes = notes.stream()
+                .map(note -> ProfessorNoteListDetailRes.builder()
+                        .noteId(note.getNoteId())
+                        .title(note.getTitle())
+                        .createdAt(note.getCreatedAt().toLocalDate())
+                        .practiceSize(practiceRepository.countByNote(note))
+                        .code(note.getCode())
+                        .build())
+                .toList();
+
+        NoteListRes<ProfessorNoteListDetailRes> noteListRes = NoteListRes.<ProfessorNoteListDetailRes>builder()
+                .folderName(folder.getFolderName())
+                .professor(folder.getProfessor().getUser().getName())
+                .noteListDetailRes(noteListDetailRes)
+                .build();
+        return ResponseEntity.ok(noteListRes);
+    }
+
+
     // 문제지 삭제
     @Transactional
     public ResponseEntity<?> deleteNoteById(UserPrincipal userPrincipal, Long noteId) {
